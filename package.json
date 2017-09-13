@@ -1,0 +1,28 @@
+{
+  "name": "role-acl",
+  "version": "0.0.1",
+  "description": "Role based access control using actions, attributes and conditions ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tensult/role-acl.git"
+  },
+  "keywords": [
+    "role",
+    "rbac",
+    "access",
+    "control",
+    "permissions",
+    "attributes",
+    "conditions"
+  ],
+  "author": "admin@tensult.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tensult/role-acl/issues"
+  },
+  "homepage": "https://github.com/tensult/role-acl#readme"
+}
