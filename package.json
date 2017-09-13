@@ -1,6 +1,6 @@
 {
   "name": "role-acl",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Role based access control using actions, attributes and conditions ",
   "main": "index.js",
   "scripts": {
