@@ -1,28 +1,70 @@
 {
   "name": "role-acl",
-  "version": "0.0.3",
-  "description": "Role based access control using actions, attributes and conditions ",
-  "main": "index.js",
+  "version": "0.0.5",
+  "description": "Role, Attribute and Condition based Access Control for Node.js",
+  "main": "./index.js",
+  "directories": {
+    "lib": "./lib",
+    "test": "./test"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE"
+  ],
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rimraf ./lib",
+    "build": "npm run clean && mkdirp ./lib && tsc",
+    "test": "npm run build && node test",
+    "docs": "docma -c ./docma.config.json"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tensult/role-acl.git"
   },
   "keywords": [
-    "role",
-    "rbac",
     "access",
-    "control",
-    "permissions",
-    "attributes",
-    "conditions"
+    "access-control",
+    "role",
+    "attribute",
+    "grant",
+    "deny",
+    "allow",
+    "reject",
+    "condition",
+    "permission",
+    "action",
+    "possession",
+    "rbac",
+    "abac",
+    "crud",
+    "create",
+    "read",
+    "update",
+    "delete",
+    "resource",
+    "express",
+    "admin",
+    "user"
   ],
-  "author": "admin@tensult.com",
+  "author": "Dilip Kola <dilip@tensult.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tensult/role-acl/issues"
   },
-  "homepage": "https://github.com/tensult/role-acl#readme"
+  "homepage": "https://github.com/tensult/role-acl#readme",
+  "devDependencies": {
+    "@types/node": "^8.0.24",
+    "docma": "^1.5.1",
+    "jasmine": "^2.7.0",
+    "jasmine-console-reporter": "^1.2.7",
+    "mkdirp": "^0.5.1",
+    "ncp": "^2.0.0",
+    "rimraf": "^2.6.1",
+    "typescript": "^2.4.2"
+  },
+  "dependencies": {
+    "notation": "^1.0.0"
+  }
 }
