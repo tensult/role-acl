@@ -17,6 +17,9 @@ e.g. `ac.can(role).createOwn(resource)`
 - Grant permissions by attributes defined by glob notation (with nested object support).
 - Ability to filter data (model) instance by allowed attributes.
 - Ability to control access on "own" or "any" resources.
+- Ability to control access using conditions.
+- Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH,
+- Policies are JSON compatible so can be stored and retrieved from database.
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
 
@@ -25,9 +28,9 @@ _In order to build on more solid foundations, this library (v1.5.0+) is complete
 ## Guide
 
 ```js
-const AccessControl = require('accesscontrol');
+const AccessControl = require('role-acl');
 // or:
-// import { AccessControl } from 'accesscontrol';
+// import { AccessControl } from 'role-acl';
 ```
 
 ### Basic Example

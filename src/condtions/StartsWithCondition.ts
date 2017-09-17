@@ -18,7 +18,7 @@ export class StartsWithCondition implements IConditionFunction {
         }
 
         return Object.keys(args).every((key) => {
-            return utils.type(context[key]) !== 'string'
+            return utils.type(context[key]) === 'string'
                 && utils.matchesAnyElement(args[key],
                     (elm) => {
                         return context[key].startsWith(elm)
