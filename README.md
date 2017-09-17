@@ -275,7 +275,7 @@ ac.setGrants(grantsObject);
 console.log(ac.getGrants());
 ```
 ### Read more
-[Examples from tests]: https://github.com/tensult/role-acl/blob/master/test/ac.spec.js
+[More Examples][tests]
 
 ## License
 
@@ -286,3 +286,5 @@ console.log(ac.getGrants());
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
 [nist-paper]:http://csrc.nist.gov/groups/SNS/rbac/documents/kuhn-coyne-weil-10.pdf
 [onury-accesscontrol]: https://github.com/onury/accesscontrol
+[license]:https://github.com/tensult/role-acl/blob/master/LICENSE
+[tests]:https://github.com/tensult/role-acl/blob/master/test/ac.spec.js
