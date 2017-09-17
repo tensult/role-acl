@@ -18,7 +18,7 @@ e.g. `ac.can(role).createOwn(resource)`
 - Ability to filter data (model) instance by allowed attributes.
 - Ability to control access on "own" or "any" resources.
 - Ability to control access using conditions.
-- Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH,
+- Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH, LIST_CONTAINS conditions
 - Policies are JSON compatible so can be stored and retrieved from database.
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
