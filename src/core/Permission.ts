@@ -56,7 +56,7 @@ class Permission {
         this._.role = query.role;
         this._.resource = query.resource;
         this._.context = query.context;
-        const conditionalAttributes = utils.getUnionConditionalAttrsOfRoles(grants, query, query.context);
+        const conditionalAttributes = utils.getUnionConditionalAttrsOfRoles(grants, query);
         this._.attributes = this.computePermittedAttributes(conditionalAttributes);
     }
 

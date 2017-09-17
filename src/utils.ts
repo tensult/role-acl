@@ -227,7 +227,7 @@ const utils = {
      *
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
-    getUnionConditionalAttrsOfRoles(grants: any, query: IQueryInfo, context: any): string[] {
+    getUnionConditionalAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -237,7 +237,7 @@ const utils = {
         let attrsList: Array<any> = [];
 
         // get roles and extended roles in a flat array
-        let roles: string[] = utils.getFlatRoles(grants, query.role, context);
+        let roles: string[] = utils.getFlatRoles(grants, query.role, query.context);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
         roles.forEach((role: string, index: number) => {
