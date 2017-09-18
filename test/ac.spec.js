@@ -268,6 +268,41 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').deleteOwn('photo').attributes).toEqual(attrs);
     });
 
+    it('should grant access with custom actions and check permissions', function () {
+        const ac = this.ac;
+        const attrs = ['*', '!status'];
+        const conditionalAttrs = [{
+            attributes: attrs,
+            condition: undefined
+        }];
+
+        ac.grant('editor').execute('publish').on('article', attrs);
+        expect(ac.getGrants().editor.article['publish:any']).toEqual(conditionalAttrs);
+        let permission = ac.can('editor').execute('publish').on('article');
+        expect(permission.attributes).toEqual(attrs);
+        expect(permission.granted).toEqual(true);
+
+        ac.grant('sports/editor').execute('publish').when(categorySportsCondition).on('article', attrs);
+        permission = ac.can('sports/editor').execute('publish').with(categorySportsContext).on('article');
+        expect(permission.attributes).toEqual(attrs);
+        expect(permission.granted).toEqual(true);
+
+        permission = ac.can('sports/editor').execute('publish').with(categoryPoliticsContext).on('article');
+        expect(permission.attributes).toEqual([]);
+        expect(permission.granted).toEqual(false);
+
+        ac.grant({
+            role: 'politics/editor',
+            action: 'publish',
+            resource: 'article',
+            condition: categoryPoliticsCondition,
+            attributes: attrs
+        });
+        permission = ac.can('politics/editor').execute('publish').with(categoryPoliticsContext).on('article');
+        expect(permission.attributes).toEqual(attrs);
+        expect(permission.granted).toEqual(true);
+    });
+
     it('should grant access with OR condition and check permissions', function () {
         const ac = this.ac;
 
@@ -813,8 +848,6 @@ describe('Test Suite: Access Control', function () {
             category: 'sports',
             status: 'published'
         }).createAny('post').granted).toEqual(false);
-
-
     });
 
     it('should remove roles when conditions used', function () {
@@ -850,14 +883,6 @@ describe('Test Suite: Access Control', function () {
             role: 'moderator',
             resource: null, // invalid resource, should be non-empty string
             action: 'create:any',
-            attributes: ['*'] // grant only
-        };
-        expect(() => ac.grant(o)).toThrow();
-
-        o = {
-            role: 'admin',
-            resource: 'post',
-            action: 'put:any', // invalid action, should be create|read|update|delete
             attributes: ['*'] // grant only
         };
         expect(() => ac.grant(o)).toThrow();

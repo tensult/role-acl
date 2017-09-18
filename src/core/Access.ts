@@ -19,14 +19,14 @@ class Access {
      *  @protected
      *  @type {IAccessInfo}
      */
-    protected _:IAccessInfo = {};
+    protected _: IAccessInfo = {};
 
     /**
      *  Main grants object.
      *  @protected
      *  @type {Any}
      */
-    protected _grants:any;
+    protected _grants: any;
 
     /**
      *  Initializes a new instance of `Access`.
@@ -44,7 +44,7 @@ class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(grants:any, roleOrInfo?:string|string[]|IAccessInfo, denied:boolean = false) {
+    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo, denied: boolean = false) {
         this._grants = grants;
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
@@ -67,7 +67,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    role(value:string|string[]):Access {
+    role(value: string | string[]): Access {
         this._.role = value;
         return this;
     }
@@ -79,11 +79,68 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    resource(value:string|string[]):Access {
+    resource(value: string | string[]): Access {
         this._.resource = value;
         return this;
     }
 
+    /**
+     *  Sets the resource and possession to `"any"` and commits the
+     *  current access instance to the underlying grant model.
+     *
+     *  @param {String|Array<String>} [resource]
+     *         Defines the target resource this access is granted or denied for.
+     *         This is only optional if the resource is previously defined.
+     *         If not defined and omitted, this will throw.
+     *  @param {String|Array<String>} [attributes]
+     *         Defines the resource attributes for which the access is granted
+     *         for. If granted before via `.grant()`, this will default
+     *         to `["*"]` (which means all attributes allowed.)
+     *
+     *  @throws {AccessControlError}
+     *          If the access instance to be committed has any invalid
+     *  data.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    onAny(resource: string | string[], attributes?: string | string[]): Access {
+        return this._prepareAndCommit(this._.action, Possession.ANY, resource, attributes);        
+    }
+
+    /**
+     *  Sets the resource and possession to `"own"` and commits the
+     *  current access instance to the underlying grant model.
+     *
+     *  @param {String|Array<String>} [resource]
+     *         Defines the target resource this access is granted or denied for.
+     *         This is only optional if the resource is previously defined.
+     *         If not defined and omitted, this will throw.
+     *  @param {String|Array<String>} [attributes]
+     *         Defines the resource attributes for which the access is granted
+     *         for. If granted before via `.grant()`, this will default
+     *         to `["*"]` (which means all attributes allowed.)
+     *
+     *  @throws {AccessControlError}
+     *          If the access instance to be committed has any invalid
+     *  data.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    onOwn(resource: string | string[], attributes?: string | string[]): Access {
+        return this._prepareAndCommit(this._.action, Possession.OWN, resource, attributes);        
+    }
+
+    /**
+     *  Alias of `onAny`
+     */
+    on(resource: string | string[], attributes?: string | string[]): Access {
+        return this.onAny(resource, attributes);   
+    }
+    
     /**
      *  Sets the array of allowed attributes for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -91,7 +148,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    attributes(value:string|string[]):Access {
+    attributes(value: string | string[]): Access {
         this._.attributes = value;
         return this;
     }
@@ -115,7 +172,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    extend(roles:string|string[]):Access {
+    extend(roles: string | string[]): Access {
         utils.extendRole(this._grants, this._.role, roles);
         return this;
     }
@@ -135,7 +192,7 @@ class Access {
      *  ac.grant('user').createOwn('video')
      *    .grant('admin').updateAny('video');
      */
-    grant(roleOrInfo?:string|string[]|IAccessInfo):Access {
+    grant(roleOrInfo?: string | string[] | IAccessInfo): Access {
         return (new Access(this._grants, roleOrInfo, false)).attributes(['*']);
     }
 
@@ -154,8 +211,38 @@ class Access {
      *  ac.grant('admin').createAny('video')
      *    .deny('user').deleteAny('video');
      */
-    deny(roleOrInfo?:string|string[]|IAccessInfo):Access {
-        return (new Access(this._grants, roleOrInfo, true)).attributes([]);        
+    deny(roleOrInfo?: string | string[] | IAccessInfo): Access {
+        return (new Access(this._grants, roleOrInfo, true)).attributes([]);
+    }
+
+    /**
+     *  Sets the action.
+     *
+     *  @param {String} action
+     *         Defines the action this access is granted for.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    execute(action: string): Access {
+        this._.action = action;
+        return this
+    }
+
+    /**
+     *  Sets the condition for access.
+     *
+     *  @param {String} condition
+     *         Defines the action this access is granted for.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    when(condtion: ICondition): Access {
+        this._.condition = condtion;
+        return this
     }
 
     /**
@@ -181,7 +268,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    createOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.OWN, resource, attributes);
     }
 
@@ -210,14 +297,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createAny(resource?:string|string[], attributes?:string|string[]):Access {
+    createAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `createAny`
      *  @private
      */
-    create(resource?:string|string[], attributes?:string|string[]):Access {
+    create(resource?: string | string[], attributes?: string | string[]): Access {
         return this.createAny(resource, attributes);
     }
 
@@ -243,7 +330,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    readOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.READ, Possession.OWN, resource, attributes);
     }
 
@@ -272,14 +359,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readAny(resource?:string|string[], attributes?:string|string[]):Access {
+    readAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.READ, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `readAny`
      *  @private
      */
-    read(resource?:string|string[], attributes?:string|string[]):Access {
+    read(resource?: string | string[], attributes?: string | string[]): Access {
         return this.readAny(resource, attributes);
     }
 
@@ -305,7 +392,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    updateOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.OWN, resource, attributes);
     }
 
@@ -334,14 +421,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateAny(resource?:string|string[], attributes?:string|string[]):Access {
+    updateAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `updateAny`
      *  @private
      */
-    update(resource?:string|string[], attributes?:string|string[]):Access {
+    update(resource?: string | string[], attributes?: string | string[]): Access {
         return this.updateAny(resource, attributes);
     }
 
@@ -367,7 +454,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.OWN, resource, attributes);
     }
 
@@ -396,14 +483,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteAny(resource?:string|string[], attributes?:string|string[]):Access {
+    deleteAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `deleteAny`
      *  @private
      */
-    delete(resource?:string|string[], attributes?:string|string[]):Access {
+    delete(resource?: string | string[], attributes?: string | string[]): Access {
         return this.deleteAny(resource, attributes);
     }
 
@@ -420,12 +507,12 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action:string, possession:string, resource?:string|string[], attributes?:string|string[]):Access {
+    private _prepareAndCommit(action: string, possession: string, resource?: string | string[], attributes?: string | string[]): Access {
         this._.action = action;
         this._.possession = possession;
         if (resource) this._.resource = resource;
         if (attributes) this._.attributes = attributes;
-        this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];        
+        this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];
         utils.commitToGrants(this._grants, this._, false);
         // important: reset attributes for chained methods
         this._.attributes = undefined;

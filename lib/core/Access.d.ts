@@ -56,6 +56,54 @@ declare class Access {
      */
     resource(value: string | string[]): Access;
     /**
+     *  Sets the resource and possession to `"any"` and commits the
+     *  current access instance to the underlying grant model.
+     *
+     *  @param {String|Array<String>} [resource]
+     *         Defines the target resource this access is granted or denied for.
+     *         This is only optional if the resource is previously defined.
+     *         If not defined and omitted, this will throw.
+     *  @param {String|Array<String>} [attributes]
+     *         Defines the resource attributes for which the access is granted
+     *         for. If granted before via `.grant()`, this will default
+     *         to `["*"]` (which means all attributes allowed.)
+     *
+     *  @throws {AccessControlError}
+     *          If the access instance to be committed has any invalid
+     *  data.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    onAny(resource: string | string[], attributes?: string | string[]): Access;
+    /**
+     *  Sets the resource and possession to `"own"` and commits the
+     *  current access instance to the underlying grant model.
+     *
+     *  @param {String|Array<String>} [resource]
+     *         Defines the target resource this access is granted or denied for.
+     *         This is only optional if the resource is previously defined.
+     *         If not defined and omitted, this will throw.
+     *  @param {String|Array<String>} [attributes]
+     *         Defines the resource attributes for which the access is granted
+     *         for. If granted before via `.grant()`, this will default
+     *         to `["*"]` (which means all attributes allowed.)
+     *
+     *  @throws {AccessControlError}
+     *          If the access instance to be committed has any invalid
+     *  data.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    onOwn(resource: string | string[], attributes?: string | string[]): Access;
+    /**
+     *  Alias of `onAny`
+     */
+    on(resource: string | string[], attributes?: string | string[]): Access;
+    /**
      *  Sets the array of allowed attributes for this `Access` instance.
      *  @param {String|Array<String>} value
      *         Attributes to be set.
@@ -111,6 +159,28 @@ declare class Access {
      *    .deny('user').deleteAny('video');
      */
     deny(roleOrInfo?: string | string[] | IAccessInfo): Access;
+    /**
+     *  Sets the action.
+     *
+     *  @param {String} action
+     *         Defines the action this access is granted for.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    execute(action: string): Access;
+    /**
+     *  Sets the condition for access.
+     *
+     *  @param {String} condition
+     *         Defines the action this access is granted for.
+     *
+     *  @returns {Access}
+     *           Self instance of `Access` so that you can chain and define
+     *           another access instance to be committed.
+     */
+    when(condtion: ICondition): Access;
     /**
      *  Sets the action to `"create"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.

@@ -79,7 +79,54 @@ class Query {
         return this;
     }
 
-        /**
+    /**
+     *  Queries the underlying grant model and checks whether the current
+     *  role(s) can execute "action" on any instance of "resource".
+     *
+     *  @param {String} [resource]
+     *         Defines the target resource to be checked.
+     *         This is only optional if the target resource is previously
+     *         defined. If not defined and omitted, this will throw.
+     *
+     *  @throws {Error} If the access query instance to be committed has any
+     *  invalid data.
+     *
+     *  @returns {Permission}
+     *           An object that defines whether the permission is granted; and
+     *           the resource attributes that the permission is granted for.
+     */
+    onAny(resource:string):Permission {
+        return this._getPermission(this._.action, Possession.ANY, resource);        
+    }
+
+    /**
+     *  Queries the underlying grant model and checks whether the current
+     *  role(s) can execute "action" on own instance of "resource".
+     *
+     *  @param {String} [resource]
+     *         Defines the target resource to be checked.
+     *         This is only optional if the target resource is previously
+     *         defined. If not defined and omitted, this will throw.
+     *
+     *  @throws {Error} If the access query instance to be committed has any
+     *  invalid data.
+     *
+     *  @returns {Permission}
+     *           An object that defines whether the permission is granted; and
+     *           the resource attributes that the permission is granted for.
+     */
+    onOwn(resource:string):Permission {
+        return this._getPermission(this._.action, Possession.OWN, resource);        
+    }
+
+    /**
+     * Alias of `onAny`
+     */
+    on(resource:string):Permission {
+        return this.onAny(resource)      
+    }
+
+    /**
      *  A chainer method that sets the context for this `Query` instance.
      *  @param {String} context
      *         Target context for this `Query` instance.
@@ -91,6 +138,23 @@ class Query {
         return this;
     }
 
+    /**
+     *  Alias of `context`
+     */
+    with(context:any):Query {
+        return this.context(context);
+    }
+
+    /**
+     *  A chainer method that sets the action for this `Query` instance.
+     * 
+     * @param {String} action
+     *         Action that we are check if role has access or not
+     */
+    execute(action: string): Query {
+        this._.action = action;
+        return this;
+    }
 
     /**
      *  Queries the underlying grant model and checks whether the current

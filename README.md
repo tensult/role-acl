@@ -150,6 +150,36 @@ For example, an `admin` role can `create`, `read`, `update` or `delete` (CRUD) *
 ac.grant('role').readOwn('resource');
 ```
 
+### Custom Actions
+Along with CRUD actions we can define custom actions.
+
+```js
+ac.grant('editor').execute('publish').on('article');
+let permission = ac.can('editor').execute('publish').on('article');
+console(permission.attributes); // —> ['*'] (all attributes)
+console(permission.granted); // -> true
+
+ac.grant('sports/editor').execute('publish').when({Fn: 'EQUALS', args: {category: 'sports'}}).on('article');
+permission = ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article');
+console(permission.attributes); // —> ['*'] (all attributes)
+console(permission.granted); // -> true
+
+permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article');
+console(permission.attributes).toEqual([]);
+console(permission.granted).toEqual(false);
+
+ac.grant({
+    role: 'politics/editor',
+    action: 'publish',
+    resource: 'article',
+    condition: {Fn: 'EQUALS', args: {category: 'politics'}},
+    attributes: attrs
+});
+permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article');
+console(permission.attributes).toEqual(attrs);
+console(permission.granted).toEqual(true);
+```
+
 ### Resources and Resource-Attributes
 
 Multiple roles can have access to a specific resource. But depending on the context, you may need to limit the contents of the resource for specific roles.  

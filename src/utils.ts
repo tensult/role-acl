@@ -87,10 +87,12 @@ const utils = {
             throw new AccessControlError(`Invalid action: ${info.action}`);
         }
 
+        
         let s: string[] = info.action.split(':');
+        /*
         if (actions.indexOf(s[0].trim().toLowerCase()) < 0) {
             throw new AccessControlError(`Invalid action: ${s[0]}`);
-        }
+        }*/
         info.action = s[0].trim().toLowerCase();
 
         // validate and normalize possession

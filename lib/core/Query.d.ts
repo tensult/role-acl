@@ -50,13 +50,62 @@ declare class Query {
      */
     resource(resource: string): Query;
     /**
- *  A chainer method that sets the context for this `Query` instance.
- *  @param {String} context
- *         Target context for this `Query` instance.
- *  @returns {Query}
- *           Self instance of `Query`.
- */
+     *  Queries the underlying grant model and checks whether the current
+     *  role(s) can execute "action" on any instance of "resource".
+     *
+     *  @param {String} [resource]
+     *         Defines the target resource to be checked.
+     *         This is only optional if the target resource is previously
+     *         defined. If not defined and omitted, this will throw.
+     *
+     *  @throws {Error} If the access query instance to be committed has any
+     *  invalid data.
+     *
+     *  @returns {Permission}
+     *           An object that defines whether the permission is granted; and
+     *           the resource attributes that the permission is granted for.
+     */
+    onAny(resource: string): Permission;
+    /**
+     *  Queries the underlying grant model and checks whether the current
+     *  role(s) can execute "action" on own instance of "resource".
+     *
+     *  @param {String} [resource]
+     *         Defines the target resource to be checked.
+     *         This is only optional if the target resource is previously
+     *         defined. If not defined and omitted, this will throw.
+     *
+     *  @throws {Error} If the access query instance to be committed has any
+     *  invalid data.
+     *
+     *  @returns {Permission}
+     *           An object that defines whether the permission is granted; and
+     *           the resource attributes that the permission is granted for.
+     */
+    onOwn(resource: string): Permission;
+    /**
+     * Alias of `onAny`
+     */
+    on(resource: string): Permission;
+    /**
+     *  A chainer method that sets the context for this `Query` instance.
+     *  @param {String} context
+     *         Target context for this `Query` instance.
+     *  @returns {Query}
+     *           Self instance of `Query`.
+     */
     context(context: any): Query;
+    /**
+     *  Alias of `context`
+     */
+    with(context: any): Query;
+    /**
+     *  A chainer method that sets the action for this `Query` instance.
+     *
+     * @param {String} action
+     *         Action that we are check if role has access or not
+     */
+    execute(action: string): Query;
     /**
      *  Queries the underlying grant model and checks whether the current
      *  role(s) can "create" their "own" resource.
