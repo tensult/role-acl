@@ -277,6 +277,48 @@ const ac = new AccessControl();
 ac.setGrants(grantsObject);
 console.log(ac.getGrants());
 ```
+
+### Extending Roles
+```js
+const ac = new AccessControl();
+const editorGrant = {
+    role: 'editor',
+    resource: 'post',
+    action: 'create:any', // action:possession
+    attributes: ['*'] // grant only
+};
+ac.grant(editorGrant);
+// first level of extension (extending with condition)
+ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}});
+ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}});
+
+let permission = ac.can('sports/editor').context({category: 'sports'}).createAny('post');
+console.log(permission.granted);    // —> true
+console.log(permission.attributes); // —> ['*']
+
+permission = ac.can('sports/editor').context({category: 'politics'}).createAny('post');
+console.log(permission.granted);    // —> false
+console.log(permission.attributes); // —> []
+
+// second level of extension (extending without condition)
+ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
+permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).createAny('post');
+console.log(permission.granted);    // —> true
+console.log(permission.attributes); // —> ['*']
+
+// third level of extension (extending with condition)
+ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
+    Fn: 'EQUALS',
+    args: { status: 'draft' }
+});
+permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).createAny('post');
+console.log(permission.granted);    // —> true
+console.log(permission.attributes); // —> ['*']
+
+permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'published'}).createAny('post');
+console.log(permission.granted);    // —> false
+console.log(permission.attributes); // —> []
+```
 ### Read more
 [More Examples][tests]
 
