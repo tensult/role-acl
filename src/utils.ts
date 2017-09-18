@@ -62,7 +62,7 @@ const utils = {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    getFlatRoles(grants: any, roles: string | string[], context): string[] {
+    getFlatRoles(grants: any, roles: string | string[], context?: any): string[] {
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.concat();
@@ -75,7 +75,7 @@ const utils = {
                 }).map((roleCondition: any) => {
                     return roleCondition.role;
                 })
-                arr = utils.uniqConcat(arr, rolesMetCondition);
+                arr = utils.uniqConcat(arr, utils.getFlatRoles(grants, rolesMetCondition, context));
             }
         });
         return arr;

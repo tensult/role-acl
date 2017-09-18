@@ -439,8 +439,8 @@ describe('Test Suite: Access Control', function () {
                     tags: 'sports'
                 }
             }).createAny('article');
-        expect(ac.can('user').context({tags: ['sports']}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: ['politics']}).createAny('article').granted).toEqual(false);
+        expect(ac.can('user').context({ tags: ['sports'] }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['politics'] }).createAny('article').granted).toEqual(false);
     });
 
     it('should grant access with starts with condition with single value and check permissions', function () {
@@ -453,8 +453,8 @@ describe('Test Suite: Access Control', function () {
                     tags: 'sports'
                 }
             }).createAny('article');
-        expect(ac.can('user').context({tags: 'sports'}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: 'politics'}).createAny('article').granted).toEqual(false);
+        expect(ac.can('user').context({ tags: 'sports' }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'politics' }).createAny('article').granted).toEqual(false);
     });
 
     it('should grant access with starts with condition with list value and check permissions', function () {
@@ -467,9 +467,9 @@ describe('Test Suite: Access Control', function () {
                     tags: ['sports', 'politics']
                 }
             }).createAny('article');
-        expect(ac.can('user').context({tags: 'sports'}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: 'politics'}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: 'tech'}).createAny('article').granted).toEqual(false);        
+        expect(ac.can('user').context({ tags: 'sports' }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'politics' }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'tech' }).createAny('article').granted).toEqual(false);
     });
 
     it('should grant access with list contains condition with multiple value and check permissions', function () {
@@ -482,9 +482,9 @@ describe('Test Suite: Access Control', function () {
                     tags: ['sports', 'politics']
                 }
             }).createAny('article');
-        expect(ac.can('user').context({tags: ['sports']}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: ['politics']}).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({tags: ['tech']}).createAny('article').granted).toEqual(false);        
+        expect(ac.can('user').context({ tags: ['sports'] }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['politics'] }).createAny('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['tech'] }).createAny('article').granted).toEqual(false);
     });
 
     it('should grant access to attribute based on conditions', function () {
@@ -775,6 +775,48 @@ describe('Test Suite: Access Control', function () {
 
     });
 
+    it('should support multi-level extension of roles when conditions used', function () {
+        let ac = this.ac;
+        let editorGrant = {
+            role: 'editor',
+            resource: 'post',
+            action: 'create:any', // action:possession
+            attributes: ['*'] // grant only
+        };
+        ac.grant(editorGrant);
+        // first level of extension
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
+
+        // second level of extension
+        ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
+        expect(ac.can('sports-and-politics/editor').context(categorySportsContext).createAny('post').granted).toEqual(true);
+        expect(ac.can('sports-and-politics/editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(true);
+
+        // third level of extension
+        ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
+            Fn: 'EQUALS',
+            args: { status: 'draft' }
+        });
+
+        expect(ac.can('conditonal/sports-and-politics/editor').context({
+            category: 'sports',
+            status: 'draft'
+        }).createAny('post').granted).toEqual(true);
+
+        expect(ac.can('conditonal/sports-and-politics/editor').context({
+            category: 'tech',
+            status: 'draft'
+        }).createAny('post').granted).toEqual(false);
+        
+        expect(ac.can('conditonal/sports-and-politics/editor').context({
+            category: 'sports',
+            status: 'published'
+        }).createAny('post').granted).toEqual(false);
+
+
+    });
+
     it('should remove roles when conditions used', function () {
         let ac = this.ac;
         let editorGrant = {
@@ -786,7 +828,7 @@ describe('Test Suite: Access Control', function () {
         ac.grant(editorGrant);
         ac.extendRole('sports/editor', 'editor', categorySportsCondition);
         ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
-        
+
         ac.removeRoles('editor');
         expect(ac.can('sports/editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(false);
         expect(ac.can('sports/editor').context(categorySportsContext).createAny('post').granted).toEqual(false);
