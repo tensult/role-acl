@@ -268,6 +268,11 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').deleteOwn('photo').attributes).toEqual(attrs);
     });
 
+    it('should filter object properties', function () {
+        expect(AccessControl.filter({ status: 'approved', id: 123 }, ['*', '!status'])).toEqual({ id: 123 });
+        expect(AccessControl.filter({ status: 'approved', id: 123 }, ['*'])).toEqual({ status: 'approved', id: 123 });
+    })
+
     it('should grant access with custom actions and check permissions', function () {
         const ac = this.ac;
         const attrs = ['*', '!status'];
