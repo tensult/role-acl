@@ -23,8 +23,6 @@ e.g. `ac.can(role).createOwn(resource)`
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
 
-_In order to build on more solid foundations, this library (v1.5.0+) is completely re-written in TypeScript._
-
 ## Guide
 
 ```js
