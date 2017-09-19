@@ -38,7 +38,7 @@ declare class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo, denied?: boolean);
+    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo);
     /**
      *  A chainer method that sets the role(s) for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -55,6 +55,12 @@ declare class Access {
      *           Self instance of `Access`.
      */
     resource(value: string | string[]): Access;
+    /**
+     * Commits the grant
+    *  @returns {Access}
+     *           Self instance of `Access`.
+     */
+    commit(): Access;
     /**
      *  Sets the resource and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -76,7 +82,7 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    onAny(resource: string | string[], attributes?: string | string[]): Access;
+    onAny(resource?: string | string[], attributes?: string | string[]): Access;
     /**
      *  Sets the resource and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -98,11 +104,11 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    onOwn(resource: string | string[], attributes?: string | string[]): Access;
+    onOwn(resource?: string | string[], attributes?: string | string[]): Access;
     /**
      *  Alias of `onAny`
      */
-    on(resource: string | string[], attributes?: string | string[]): Access;
+    on(resource?: string | string[], attributes?: string | string[]): Access;
     /**
      *  Sets the array of allowed attributes for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -144,22 +150,6 @@ declare class Access {
      */
     grant(roleOrInfo?: string | string[] | IAccessInfo): Access;
     /**
-     *  Shorthand to switch to a new `Access` instance with a different
-     *  (or same) role within the method chain.
-     *
-     *  @param {String|Array<String>|IAccessInfo} [roleOrInfo]
-     *         Either a single or an array of roles or an
-     *         {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object}.
-     *
-     *  @returns {Access}
-     *           A new `Access` instance.
-     *
-     *  @example
-     *  ac.grant('admin').createAny('video')
-     *    .deny('user').deleteAny('video');
-     */
-    deny(roleOrInfo?: string | string[] | IAccessInfo): Access;
-    /**
      *  Sets the action.
      *
      *  @param {String} action
@@ -170,6 +160,10 @@ declare class Access {
      *           another access instance to be committed.
      */
     execute(action: string): Access;
+    /**
+     * Alias of `execute`
+     */
+    action(action: string): Access;
     /**
      *  Sets the condition for access.
      *

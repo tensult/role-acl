@@ -450,7 +450,7 @@ class AccessControl {
      *  // which means all attributes (of the resource) are allowed.
      */
     grant(role:string|string[]|IAccessInfo):Access {
-        return new Access(this._grants, role, false);
+        return new Access(this._grants, role);
     }
 
     /**

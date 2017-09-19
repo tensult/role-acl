@@ -44,15 +44,18 @@ class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo, denied: boolean = false) {
+    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo) {
         this._grants = grants;
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
         } else if (utils.type(roleOrInfo) === 'object') {
             // if an IAccessInfo instance is passed and it has 'action' defined, we
             // should directly commit it to grants.
-            this._ = utils.resetAttributes(roleOrInfo);
-            if (utils.isInfoFulfilled(this._)) utils.commitToGrants(this._grants, this._, true);
+            this._ = roleOrInfo;
+        }
+
+        if (utils.isInfoFulfilled(this._)) {
+            utils.commitToGrants(grants, this._, true);
         }
     }
 
@@ -85,6 +88,16 @@ class Access {
     }
 
     /**
+     * Commits the grant
+    *  @returns {Access}
+     *           Self instance of `Access`.
+     */
+    commit(): Access {
+        utils.commitToGrants(this._grants, this._, true);
+        return this
+    }
+
+    /**
      *  Sets the resource and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
      *
@@ -105,8 +118,8 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    onAny(resource: string | string[], attributes?: string | string[]): Access {
-        return this._prepareAndCommit(this._.action, Possession.ANY, resource, attributes);        
+    onAny(resource?: string | string[], attributes?: string | string[]): Access {
+        return this._prepareAndCommit(this._.action, Possession.ANY, resource, attributes);
     }
 
     /**
@@ -130,17 +143,17 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    onOwn(resource: string | string[], attributes?: string | string[]): Access {
-        return this._prepareAndCommit(this._.action, Possession.OWN, resource, attributes);        
+    onOwn(resource?: string | string[], attributes?: string | string[]): Access {
+        return this._prepareAndCommit(this._.action, Possession.OWN, resource, attributes);
     }
 
     /**
      *  Alias of `onAny`
      */
-    on(resource: string | string[], attributes?: string | string[]): Access {
-        return this.onAny(resource, attributes);   
+    on(resource?: string | string[], attributes?: string | string[]): Access {
+        return this.onAny(resource, attributes);
     }
-    
+
     /**
      *  Sets the array of allowed attributes for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -193,26 +206,7 @@ class Access {
      *    .grant('admin').updateAny('video');
      */
     grant(roleOrInfo?: string | string[] | IAccessInfo): Access {
-        return (new Access(this._grants, roleOrInfo, false)).attributes(['*']);
-    }
-
-    /**
-     *  Shorthand to switch to a new `Access` instance with a different
-     *  (or same) role within the method chain.
-     *
-     *  @param {String|Array<String>|IAccessInfo} [roleOrInfo]
-     *         Either a single or an array of roles or an
-     *         {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object}.
-     *
-     *  @returns {Access}
-     *           A new `Access` instance.
-     *
-     *  @example
-     *  ac.grant('admin').createAny('video')
-     *    .deny('user').deleteAny('video');
-     */
-    deny(roleOrInfo?: string | string[] | IAccessInfo): Access {
-        return (new Access(this._grants, roleOrInfo, true)).attributes([]);
+        return (new Access(this._grants, roleOrInfo)).attributes(['*']);
     }
 
     /**
@@ -226,6 +220,14 @@ class Access {
      *           another access instance to be committed.
      */
     execute(action: string): Access {
+        this._.action = action;
+        return this
+    }
+
+    /**
+     * Alias of `execute`
+     */
+    action(action: string): Access {
         this._.action = action;
         return this
     }

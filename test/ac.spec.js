@@ -301,6 +301,17 @@ describe('Test Suite: Access Control', function () {
         permission = ac.can('politics/editor').execute('publish').with(categoryPoliticsContext).on('article');
         expect(permission.attributes).toEqual(attrs);
         expect(permission.granted).toEqual(true);
+
+        // Simply set all the fields and call commit at the end
+        ac.grant('user')
+            .action('post')
+            .resource('blog')
+            .attributes(attrs)
+            .condition({ Fn: 'EQUALS', args: { logged: true } })
+            .commit();
+        permission = ac.can('user').execute('post').with({ logged: true }).on('blog');
+        expect(permission.attributes).toEqual(attrs);
+        expect(permission.granted).toEqual(true);
     });
 
     it('should grant access with OR condition and check permissions', function () {
@@ -843,7 +854,7 @@ describe('Test Suite: Access Control', function () {
             category: 'tech',
             status: 'draft'
         }).createAny('post').granted).toEqual(false);
-        
+
         expect(ac.can('conditonal/sports-and-politics/editor').context({
             category: 'sports',
             status: 'published'
