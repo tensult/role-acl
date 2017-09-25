@@ -244,13 +244,23 @@ let grantsObject = {
             "create:any": [
                 {
                     attributes: ["*"],
-                    condition: categorySportsCondition
+                    condition: {
+                        Fn: 'EQUALS',
+                        args: {
+                            'category': 'sports'
+                        }
+                    }
                 }
             ],
             "update:any": [
                 {
                     attributes: ["*"],
-                    condition: categorySportsCondition
+                    condition: {
+                        Fn: 'EQUALS',
+                        args: {
+                            'category': 'sports'
+                        }
+                    }
                 }
             ]
         }
@@ -260,13 +270,23 @@ let grantsObject = {
             "create:any": [
                 {
                     attributes: ["*", "!status"],
-                    condition: categorySportsCondition
+                    condition: {
+                        Fn: 'EQUALS',
+                        args: {
+                            'category': 'sports'
+                        }
+                    }
                 }
             ],
             "update:any": [
                 {
                     attributes: ["*", "!status"],
-                    condition: categorySportsCondition
+                    condition: {
+                        Fn: 'EQUALS',
+                        args: {
+                            'category': 'sports'
+                        }
+                    }
                 }
             ]
         }
