@@ -53,7 +53,7 @@ class Access {
         }
 
         if (utils.isInfoFulfilled(this._)) {
-            utils.commitToGrants(grants, this._, true);
+            utils.commitToGrants(grants, this._);
         }
     }
 
@@ -91,7 +91,7 @@ class Access {
      *           Self instance of `Access`.
      */
     commit(): Access {
-        utils.commitToGrants(this._grants, this._, true);
+        utils.commitToGrants(this._grants, this._);
         return this
     }
 
@@ -225,12 +225,12 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action: string, resource?: string | string[], attributes?: string | string[]): Access {
+    private _prepareAndCommit(action: string | string[], resource?: string | string[], attributes?: string | string[]): Access {
         this._.action = action;
         if (resource) this._.resource = resource;
         if (attributes) this._.attributes = attributes;
         this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];
-        utils.commitToGrants(this._grants, this._, false);
+        utils.commitToGrants(this._grants, this._);
         // important: reset attributes for chained methods
         this._.attributes = undefined;
         return this;

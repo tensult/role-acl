@@ -31,7 +31,7 @@ interface IAccessInfo {
      *  for possible values.
      *  @type {String}
      */
-    action?: string;
+    action?: string | string[];
     /**
      *  Defines the condition of the resource(s) for the specified action.
      *  for possible values.

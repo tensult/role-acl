@@ -82,14 +82,12 @@ const utils = {
 
     normalizeAction(info: IQueryInfo | IAccessInfo): IQueryInfo | IAccessInfo {
         // validate and normalize action
-        if (typeof info.action !== 'string') {
-            throw new AccessControlError(`Invalid action: ${info.action}`);
-        }
+
 
         return info;
     },
 
-    normalizeQueryInfo(query: IQueryInfo, all: boolean = false): IQueryInfo {
+    normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
         // clone the object
         query = Object.assign({}, query);
         // validate and normalize role(s)
@@ -104,15 +102,15 @@ const utils = {
         }
         query.resource = query.resource.trim();
 
-        // this part is not necessary if this is invoked from a comitter method
-        // such as `createAny()`. So we'll check if we need to validate all
-        // properties such as `action`.
-        if (all) query = utils.normalizeAction(query) as IQueryInfo;
+        // validate action
+        if (typeof query.action !== 'string' || query.action.trim() === '') {
+            throw new AccessControlError(`Invalid action: ${query.action}`);
+        }
 
         return query;
     },
 
-    normalizeAccessInfo(access: IAccessInfo, all: boolean = false): IAccessInfo {
+    normalizeAccessInfo(access: IAccessInfo): IAccessInfo {
         // clone the object
         access = Object.assign({}, access);
         // validate and normalize role(s)
@@ -127,12 +125,13 @@ const utils = {
             throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.resource)}`);
         }
 
-        access.attributes = !access.attributes ? ['*'] : utils.toStringArray(access.attributes);
+        // validate and normalize resource
+        access.action = utils.toStringArray(access.action);
+        if (!utils.isFilledStringArray(access.action)) {
+            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.action)}`);
+        }
 
-        // this part is not necessary if this is invoked from a comitter method
-        // such as `createAny()`. So we'll check if we need to validate all
-        // properties such as `action`.
-        if (all) access = utils.normalizeAction(access) as IAccessInfo;
+        access.attributes = !access.attributes ? ['*'] : utils.toStringArray(access.attributes);
 
         return access;
     },
@@ -168,26 +167,24 @@ const utils = {
      *  means "all attributes allowed".
      *  @param {Any} grants
      *  @param {IAccessInfo} access
-     *  @param {Boolean} normalizeAll
-     *         Specifies whether to validate and normalize all properties of
-     *         the inner `IAccessInfo` object, including `action`.
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
-    commitToGrants(grants: any, access: IAccessInfo, normalizeAll: boolean = false) {
-        access = utils.normalizeAccessInfo(access, normalizeAll);
+    commitToGrants(grants: any, access: IAccessInfo) {
+        access = utils.normalizeAccessInfo(access);
         // console.log(access);
         // grant.role also accepts an array, so treat it like it.
         (access.role as Array<string>).forEach((role: string) => {
             if (!grants.hasOwnProperty(role)) grants[role] = {};
             let grantItem: any = grants[role];
 
-            let action: string = access.action;
-            (access.resource as Array<string>).forEach((res: string) => {
-                grantItem[res] = grantItem[res] || {};
-                grantItem[res][action] = grantItem[res][action] || [];
-                grantItem[res][action].push({
-                    attributes: access.attributes,
-                    condition: access.condition
+            (access.resource as Array<string>).forEach((resource: string) => {
+                grantItem[resource] = grantItem[resource] || {};
+                (access.action as Array<string>).forEach((action: string) => {
+                    grantItem[resource][action] = grantItem[resource][action] || [];
+                    grantItem[resource][action].push({
+                        attributes: access.attributes,
+                        condition: access.condition
+                    });
                 });
             });
         });
@@ -294,12 +291,12 @@ const utils = {
     },
 
     matchesAllElement(values: any, predicateFn: (elm) => boolean) {
-        values = utils.toArray(values);        
+        values = utils.toArray(values);
         return values.every(predicateFn);
     },
 
     matchesAnyElement(values: any, predicateFn: (elm) => boolean) {
-        values = utils.toArray(values);        
+        values = utils.toArray(values);
         return values.some(predicateFn);
     },
 

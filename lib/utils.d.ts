@@ -12,11 +12,11 @@ declare const utils: {
     eachKey(o: any, callback: (key: string, index?: number) => void): void;
     getFlatRoles(grants: any, roles: string | string[], context?: any): string[];
     normalizeAction(info: IAccessInfo | IQueryInfo): IAccessInfo | IQueryInfo;
-    normalizeQueryInfo(query: IQueryInfo, all?: boolean): IQueryInfo;
-    normalizeAccessInfo(access: IAccessInfo, all?: boolean): IAccessInfo;
+    normalizeQueryInfo(query: IQueryInfo): IQueryInfo;
+    normalizeAccessInfo(access: IAccessInfo): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
-    commitToGrants(grants: any, access: IAccessInfo, normalizeAll?: boolean): void;
+    commitToGrants(grants: any, access: IAccessInfo): void;
     getUnionConditionalAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
     extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void;
