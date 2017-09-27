@@ -30,11 +30,10 @@ declare class Access {
      *         Main grants object.
      *  @param {String|Array<String>|IAccessInfo} roleOrInfo
      *         Either an `IAccessInfo` object, a single or an array of
-     *         roles. If an object is passed, possession and attributes
+     *         roles. If an object is passed and attributes
      *         properties are optional. CAUTION: if attributes is omitted,
      *         and access is not denied, it will default to `["*"]` which means
-     *         "all attributes allowed". If possession is omitted, it will
-     *         default to `"any"`.
+     *         "all attributes allowed".
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
@@ -62,7 +61,7 @@ declare class Access {
      */
     commit(): Access;
     /**
-     *  Sets the resource and possession to `"any"` and commits the
+     *  Sets the resource and commits the
      *  current access instance to the underlying grant model.
      *
      *  @param {String|Array<String>} [resource]
@@ -81,32 +80,6 @@ declare class Access {
      *  @returns {Access}
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
-     */
-    onAny(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the resource and possession to `"own"` and commits the
-     *  current access instance to the underlying grant model.
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If granted before via `.grant()`, this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid
-     *  data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    onOwn(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Alias of `onAny`
      */
     on(resource?: string | string[], attributes?: string | string[]): Access;
     /**
@@ -176,231 +149,13 @@ declare class Access {
      */
     when(condtion: ICondition): Access;
     /**
-     *  Sets the action to `"create"` and possession to `"own"` and commits the
-     *  current access instance to the underlying grant model.
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid
-     *  data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    createOwn(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"create"` and possession to `"any"` and commits the
-     *  current access instance to the underlying grant model.
-     *  @alias Access#create
-     *  @name AccessControl~Access#createAny
-     *  @function
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    createAny(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Alias of `createAny`
-     *  @private
-     */
-    create(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"read"` and possession to `"own"` and commits the
-     *  current access instance to the underlying grant model.
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    readOwn(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"read"` and possession to `"any"` and commits the
-     *  current access instance to the underlying grant model.
-     *  @alias Access#read
-     *  @name AccessControl~Access#readAny
-     *  @function
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    readAny(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Alias of `readAny`
-     *  @private
-     */
-    read(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"update"` and possession to `"own"` and commits the
-     *  current access instance to the underlying grant model.
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    updateOwn(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"update"` and possession to `"any"` and commits the
-     *  current access instance to the underlying grant model.
-     *  @alias Access#update
-     *  @name AccessControl~Access#updateAny
-     *  @function
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    updateAny(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Alias of `updateAny`
-     *  @private
-     */
-    update(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"delete"` and possession to `"own"` and commits the
-     *  current access instance to the underlying grant model.
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Sets the action to `"delete"` and possession to `"any"` and commits the
-     *  current access instance to the underlying grant model.
-     *  @alias Access#delete
-     *  @name AccessControl~Access#deleteAny
-     *  @function
-     *
-     *  @param {String|Array<String>} [resource]
-     *         Defines the target resource this access is granted or denied for.
-     *         This is only optional if the resource is previously defined.
-     *         If not defined and omitted, this will throw.
-     *  @param {String|Array<String>} [attributes]
-     *         Defines the resource attributes for which the access is granted
-     *         for. If access is denied previously by calling `.deny()` this
-     *         will default to an empty array (which means no attributes allowed).
-     *         Otherwise (if granted before via `.grant()`) this will default
-     *         to `["*"]` (which means all attributes allowed.)
-     *
-     *  @throws {AccessControlError}
-     *          If the access instance to be committed has any invalid data.
-     *
-     *  @returns {Access}
-     *           Self instance of `Access` so that you can chain and define
-     *           another access instance to be committed.
-     */
-    deleteAny(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
-     *  Alias of `deleteAny`
-     *  @private
-     */
-    delete(resource?: string | string[], attributes?: string | string[]): Access;
-    /**
      *  @private
      *  @param {String} action     [description]
-     *  @param {String} possession [description]
      *  @param {String|Array<String>} resource   [description]
      *  @param {String|Array<String>} attributes [description]
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action, possession, resource?, attributes?);
+    private _prepareAndCommit(action, resource?, attributes?);
 }
 export { Access };

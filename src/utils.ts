@@ -1,7 +1,6 @@
 // dep modules
 import * as Notation from 'notation';
 // own modules
-import { Action, actions, Possession, possessions } from './enums';
 import { IAccessInfo, IQueryInfo, AccessControlError, ICondition } from './core';
 import { Conditions, conditionEvaluator } from './condtions';
 
@@ -81,31 +80,10 @@ const utils = {
         return arr;
     },
 
-    normalizeActionPossession(info: IQueryInfo | IAccessInfo): IQueryInfo | IAccessInfo {
+    normalizeAction(info: IQueryInfo | IAccessInfo): IQueryInfo | IAccessInfo {
         // validate and normalize action
         if (typeof info.action !== 'string') {
             throw new AccessControlError(`Invalid action: ${info.action}`);
-        }
-
-        
-        let s: string[] = info.action.split(':');
-        /*
-        if (actions.indexOf(s[0].trim().toLowerCase()) < 0) {
-            throw new AccessControlError(`Invalid action: ${s[0]}`);
-        }*/
-        info.action = s[0].trim().toLowerCase();
-
-        // validate and normalize possession
-        let poss: string = info.possession || s[1];
-        if (poss) {
-            if (possessions.indexOf(poss.trim().toLowerCase()) < 0) {
-                throw new AccessControlError(`Invalid action possession: ${poss}`);
-            } else {
-                info.possession = poss.trim().toLowerCase();
-            }
-        } else {
-            // if no possession is set, we'll default to "any".
-            info.possession = Possession.ANY;
         }
 
         return info;
@@ -128,8 +106,8 @@ const utils = {
 
         // this part is not necessary if this is invoked from a comitter method
         // such as `createAny()`. So we'll check if we need to validate all
-        // properties such as `action` and `possession`.
-        if (all) query = utils.normalizeActionPossession(query) as IQueryInfo;
+        // properties such as `action`.
+        if (all) query = utils.normalizeAction(query) as IQueryInfo;
 
         return query;
     },
@@ -153,8 +131,8 @@ const utils = {
 
         // this part is not necessary if this is invoked from a comitter method
         // such as `createAny()`. So we'll check if we need to validate all
-        // properties such as `action` and `possession`.
-        if (all) access = utils.normalizeActionPossession(access) as IAccessInfo;
+        // properties such as `action`.
+        if (all) access = utils.normalizeAction(access) as IAccessInfo;
 
         return access;
     },
@@ -192,7 +170,7 @@ const utils = {
      *  @param {IAccessInfo} access
      *  @param {Boolean} normalizeAll
      *         Specifies whether to validate and normalize all properties of
-     *         the inner `IAccessInfo` object, including `action` and `possession`.
+     *         the inner `IAccessInfo` object, including `action`.
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
     commitToGrants(grants: any, access: IAccessInfo, normalizeAll: boolean = false) {
@@ -203,14 +181,11 @@ const utils = {
             if (!grants.hasOwnProperty(role)) grants[role] = {};
             let grantItem: any = grants[role];
 
-            let ap: string = access.action + ':' + access.possession;
+            let action: string = access.action;
             (access.resource as Array<string>).forEach((res: string) => {
                 grantItem[res] = grantItem[res] || {};
-                // If possession (in action value or as a separate property) is
-                // omitted, it will default to "any". e.g. "create" —>
-                // "create:any"
-                grantItem[res][ap] = grantItem[res][ap] || [];
-                grantItem[res][ap].push({
+                grantItem[res][action] = grantItem[res][action] || [];
+                grantItem[res][action].push({
                     attributes: access.attributes,
                     condition: access.condition
                 });
@@ -247,15 +222,10 @@ const utils = {
             if (grantItem) {
                 let resource = grantItem[query.resource];
                 if (resource) {
-                    // e.g. resource['create:own']
-                    // If action has possession "any", it will also return
-                    // `granted=true` for "own", if "own" is not defined.
-                    const actionAttrs: Array<any> = resource[query.action + ':' + query.possession]
-                        || resource[query.action + ':any'];
+                    const actionAttrs: Array<any> = resource[query.action];
                     if (actionAttrs && actionAttrs.length) {
                         attrsList = attrsList.concat(actionAttrs);
                     }
-                    // console.log(resource, 'for:', action + '.' + possession);
                 }
             }
         });

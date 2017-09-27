@@ -1,5 +1,4 @@
 import { Access, IAccessInfo, ICondition, Query, IQueryInfo, Permission, AccessControlError } from './core';
-import { Action, Possession, actions, possessions } from './enums';
 import utils from './utils';
 
 /**
@@ -15,12 +14,12 @@ import utils from './utils';
  *  <p><pre><code> var grants = {
  *      role1: {
  *          resource1: {
- *              "create:any": [ attrs ],
- *              "read:own": [ attrs ]
+ *              "create": [ attrs ],
+ *              "read": [ attrs ]
  *          },
  *          resource2: {
- *              "create:any": [ attrs ],
- *              "update:own": [ attrs ]
+ *              "create": [ attrs ],
+ *              "update": [ attrs ]
  *          }
  *      },
  *      role2: { ... }
@@ -31,69 +30,29 @@ import utils from './utils';
  *  fetched from a database.
  *
  *  <p><pre><code> var flatList = [
- *      { role: "role1", resource: "resource1", action: "create:any", attributes: [ attrs ] },
- *      { role: "role1", resource: "resource1", action: "read:own", attributes: [ attrs ] },
+ *      { role: "role1", resource: "resource1", action: "create", attributes: [ attrs ] },
+ *      { role: "role1", resource: "resource1", action: "read", attributes: [ attrs ] },
  *      { role: "role2", ... },
  *      ...
  *  ];</code></pre></p>
  *
  *  We turn this list into a hashtable for better performance. We aggregate
- *  the list by roles first, resources second. If possession (in action
- *  value or as a separate property) is omitted, it will default to `"any"`.
- *  e.g. `"create"` —> `"create:any"`
+ *  the list by roles first, resources second.
  *
  *  Below are equivalent:
- *  <p><pre><code> var grants = { role: "role1", resource: "resource1", action: "create:any", attributes: [ attrs ] }
- *  var same = { role: "role1", resource: "resource1", action: "create", possession: "any", attributes: [ attrs ] }</code></pre></p>
+ *  <p><pre><code> var grants = { role: "role1", resource: "resource1", action: "create", attributes: [ attrs ] }
+ *  var same = { role: "role1", resource: "resource1", action: "create", attributes: [ attrs ] }</code></pre></p>
  *
  *  So we can also initialize with this flat list of grants:
  *  <p><pre><code> var ac = new AccessControl(flatList);
  *  console.log(ac.getGrants());</code></pre></p>
  *
- *  @author   Onur Yıldırım (onur@cutepilot.com)
+ *  @author   Dilip Kola (dilip@tensult.com)
  *  @license  MIT
  *
  *  @class
  *  @global
  *
- *  @example
- *  var ac = new AccessControl(grants);
- *
- *  ac.grant('admin').createAny('profile');
- *
- *  // or you can chain methods
- *  ac.grant('admin')
- *      .createAny('profile')
- *      .readAny('profile', ["*", "!password"])
- *      .readAny('video')
- *      .deleteAny('video');
- *
- *  // since these permissions have common resources, there is an alternative way:
- *  ac.grant('admin')
- *      .resource('profile').createAny().readAny(null, ["*", "!password"])
- *      .resource('video').readAny()..deleteAny();
- *
- *  ac.grant('user')
- *      .readOwn('profile', ["uid", "email", "address.*", "account.*", "!account.roles"])
- *      .updateOwn('profile', ["uid", "email", "password", "address.*", "!account.roles"])
- *      .deleteOwn('profile')
- *      .createOwn('video', ["*", "!geo.*"])
- *      .readAny('video')
- *      .updateOwn('video', ["*", "!geo.*"])
- *      .deleteOwn('video');
- *
- *  // now we can check for granted or denied permissions
- *  var permission = ac.can('admin').readAny('profile');
- *  permission.granted // true
- *  permission.attributes // ["*", "!password"]
- *  permission.filter(data) // { uid, email, address, account }
- *  // deny permission
- *  ac.deny('admin').createAny('profile');
- *  ac.can('admin').createAny('profile').granted; // false
- *
- *  // To add a grant but deny access via attributes
- *  ac.grant('admin').createAny('profile', []); // no attributes allowed
- *  ac.can('admin').createAny('profile').granted; // false
  */
 class AccessControl {
 
@@ -121,45 +80,6 @@ class AccessControl {
      *  Gets the internal grants object that stores all current grants.
      *
      *  @return {Object} - Hash-map of grants.
-     *
-     *  @example
-     *  ac.grant('admin')
-     *      .createAny(['profile', 'video'])
-     *      .deleteAny(['profile', 'video'])
-     *      .readAny(['video'])
-     *      .readAny('profile', ['*', '!password'])
-     *      .grant('user')
-     *      .readAny(['profile', 'video'], ['*', '!id', '!password'])
-     *      .createOwn(['profile', 'video'])
-     *      .deleteOwn(['video']);
-     *  // logging underlying grants model
-     *  console.log(ac.getGrants());
-     *  // outputs:
-     *  {
-     *    "admin": {
-     *      "profile": {
-     *        "create:any": ["*"],
-     *        "delete:any": ["*"],
-     *        "read:any": ["*", "!password"]
-     *      },
-     *      "video": {
-     *        "create:any": ["*"],
-     *        "delete:any": ["*"],
-     *        "read:any": ["*"]
-     *      }
-     *    },
-     *    "user": {
-     *      "profile": {
-     *        "read:any": ["*", "!id", "!password"],
-     *        "create:own": ["*"]
-     *      },
-     *      "video": {
-     *        "read:any": ["*", "!id", "!password"],
-     *        "create:own": ["*"],
-     *        "delete:own": ["*"]
-     *      }
-     *    }
-     *  }
      */
     getGrants():any {
         return this._grants;
@@ -262,7 +182,7 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeResources(resources:string|string[], roles?:string|string[]):AccessControl {
-        // _removePermission has a third argument `actionPossession`. if
+        // _removePermission has a third argument `action`. if
         // omitted (like below), removes the parent resource object.
         this._removePermission(resources, roles);
         return this;
@@ -384,7 +304,7 @@ class AccessControl {
      *  var ac = new AccessControl(grants);
      *  var permission = ac.permission({
      *      role: "user",
-     *      action: "update:own",
+     *      action: "update,
      *      resource: "profile"
      *  });
      *  permission.granted; // Boolean
@@ -439,7 +359,6 @@ class AccessControl {
      *      role: 'admin',
      *      resource: 'profile',
      *      action: 'create',
-     *      possession: 'any', // omitting this will default to 'any'
      *      attributes: attributes
      *  });
      *
@@ -496,7 +415,7 @@ class AccessControl {
     /**
      *  @private
      */
-    _removePermission(resources:string|string[], roles?:string|string[], actionPossession?:string) {
+    _removePermission(resources:string|string[], roles?:string|string[], action?:string) {
         resources = utils.toStringArray(resources);
         if (roles) roles = utils.toStringArray(roles);
         this._eachRoleResource((role:string, resource:string, permissions:any) => {
@@ -504,34 +423,14 @@ class AccessControl {
                     // roles is optional. so remove if role is not defined.
                     // if defined, check if the current role is in the list.
                     && (!roles || roles.indexOf(role) >= 0)) {
-                if (actionPossession) {
-                    delete this._grants[role][resource][actionPossession];
+                if (action) {
+                    delete this._grants[role][resource][action];
                 } else {
                     // this is used for AccessControl#removeResources().
                     delete this._grants[role][resource];
                 }
             }
         });
-    }
-
-    // -------------------------------
-    //  PUBLIC STATIC PROPERTIES
-    // -------------------------------
-
-    /**
-     *  Documented separately in enums/Action
-     *  @private
-     */
-    static get Action():any {
-        return Action;
-    }
-
-    /**
-     *  Documented separately in enums/Possession
-     *  @private
-     */
-    static get Possession():any {
-        return Possession;
     }
 
     /**

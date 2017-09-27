@@ -25,15 +25,15 @@ describe('Test Suite: Access Control', function () {
 
     // grant list fetched from DB (to be converted to a valid grants object)
     let grantList = [
-        { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
-        { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
-        { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
-        { role: 'admin', resource: 'video', action: 'delete:any', attributes: ['*'] },
+        { role: 'admin', resource: 'video', action: 'create', attributes: ['*'] },
+        { role: 'admin', resource: 'video', action: 'read', attributes: ['*'] },
+        { role: 'admin', resource: 'video', action: 'update', attributes: ['*'] },
+        { role: 'admin', resource: 'video', action: 'delete', attributes: ['*'] },
 
-        { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
-        { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
-        { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
-        { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
+        { role: 'user', resource: 'video', action: 'create', attributes: ['*'] },
+        { role: 'user', resource: 'video', action: 'read', attributes: ['*'] },
+        { role: 'user', resource: 'video', action: 'update', attributes: ['*'] },
+        { role: 'user', resource: 'video', action: 'delete', attributes: ['*'] }
     ];
 
 
@@ -41,32 +41,32 @@ describe('Test Suite: Access Control', function () {
     let grantsObject = {
         admin: {
             video: {
-                'create:any': [{
+                'create': [{
                     attributes: ['*']
                 }],
-                'read:any': [{
+                'read': [{
                     attributes: ['*']
                 }],
-                'update:any': [{
+                'update': [{
                     attributes: ['*']
                 }],
-                'delete:any': [{
+                'delete': [{
                     attributes: ['*']
                 }]
             }
         },
         user: {
             video: {
-                'create:own': [{
+                'create': [{
                     attributes: ['*']
                 }],
-                'read:own': [{
+                'read': [{
                     attributes: ['*']
                 }],
-                'update:own': [{
+                'update': [{
                     attributes: ['*']
                 }],
-                'delete:own': [{
+                'delete': [{
                     attributes: ['*']
                 }]
             }
@@ -80,21 +80,21 @@ describe('Test Suite: Access Control', function () {
 
     let conditionalGrantList = [
         {
-            role: 'sports/editor', resource: 'article', action: 'create:any', attributes: ['*'],
+            role: 'sports/editor', resource: 'article', action: 'create', attributes: ['*'],
             condition: categorySportsCondition
         },
         {
-            role: 'sports/editor', resource: 'article', action: 'update:any', attributes: ['*'],
-            condition: categorySportsCondition
-
-        },
-        {
-            role: 'sports/writer', resource: 'article', action: 'create:any', attributes: ['*', '!status'],
+            role: 'sports/editor', resource: 'article', action: 'update', attributes: ['*'],
             condition: categorySportsCondition
 
         },
         {
-            role: 'sports/writer', resource: 'article', action: 'update:any', attributes: ['*', '!status'],
+            role: 'sports/writer', resource: 'article', action: 'create', attributes: ['*', '!status'],
+            condition: categorySportsCondition
+
+        },
+        {
+            role: 'sports/writer', resource: 'article', action: 'update', attributes: ['*', '!status'],
             condition: categorySportsCondition
         }
     ];
@@ -103,13 +103,13 @@ describe('Test Suite: Access Control', function () {
         "sports/editor":
         {
             "article": {
-                "create:any": [
+                "create": [
                     {
                         "attributes": ["*"],
                         "condition": categorySportsCondition
                     }
                 ],
-                "update:any": [
+                "update": [
                     {
                         "attributes": ["*"],
                         "condition": categorySportsCondition
@@ -119,13 +119,13 @@ describe('Test Suite: Access Control', function () {
         },
         "sports/writer": {
             "article": {
-                "create:any": [
+                "create": [
                     {
                         "attributes": ["*", "!status"],
                         "condition": categorySportsCondition
                     }
                 ],
-                "update:any": [
+                "update": [
                     {
                         "attributes": ["*", "!status"],
                         "condition": categorySportsCondition
@@ -148,14 +148,14 @@ describe('Test Suite: Access Control', function () {
         let grants = ac.getGrants();
         expect(type(grants)).toEqual('object');
         expect(type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+        expect(grants.admin.video['create']).toEqual(jasmine.any(Array));
         // console.log(grants);
 
         ac = new AccessControl(grantsObject);
         grants = ac.getGrants();
         expect(type(grants)).toEqual('object');
         expect(type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+        expect(grants.admin.video['create']).toEqual(jasmine.any(Array));
     });
 
     it('should construct with conditional grants array output a grants object', function () {
@@ -163,7 +163,7 @@ describe('Test Suite: Access Control', function () {
         let grants = ac.getGrants();
         expect(type(grants)).toEqual('object');
         expect(type(grants['sports/writer'])).toEqual('object');
-        expect(grants['sports/writer'].article['create:any']).toEqual(jasmine.any(Array));
+        expect(grants['sports/writer'].article['create']).toEqual(jasmine.any(Array));
         // console.log(grants);
     });
 
@@ -172,7 +172,7 @@ describe('Test Suite: Access Control', function () {
         let grants = ac.getGrants();
         expect(type(grants)).toEqual('object');
         expect(type(grants['sports/editor'])).toEqual('object');
-        expect(grants['sports/editor'].article['create:any']).toEqual(jasmine.any(Array));
+        expect(grants['sports/editor'].article['create']).toEqual(jasmine.any(Array));
         // console.log(grants);
     });
 
@@ -236,36 +236,23 @@ describe('Test Suite: Access Control', function () {
             condition: undefined
         }];
 
-        ac.grant('user').createAny('photo', attrs);
-        expect(ac.getGrants().user.photo['create:any']).toEqual(conditionalAttrs);
-        expect(ac.can('user').createAny('photo').attributes).toEqual(attrs);
-
-
-        ac.grant('user').createOwn('photo', attrs);
-        // console.log('ac.getGrants()', ac.getGrants());
-        expect(ac.getGrants().user.photo['create:own']).toEqual(conditionalAttrs);
-        expect(ac.can('user').createOwn('photo').attributes).toEqual(attrs);
+        ac.grant('user').execute('create').on('photo', attrs);
+        expect(ac.getGrants().user.photo['create']).toEqual(conditionalAttrs);
+        expect(ac.can('user').execute('create').on('photo').attributes).toEqual(attrs);
 
         // grant multiple roles the same permission for the same resource
-        ac.grant(['user', 'admin']).readAny('photo', attrs);
-        expect(ac.can('user').readAny('photo').granted).toEqual(true);
-        expect(ac.can('admin').readAny('photo').granted).toEqual(true);
+        ac.grant(['user', 'admin']).execute('read').on('photo', attrs);
+        expect(ac.can('user').execute('read').on('photo').granted).toEqual(true);
+        expect(ac.can('admin').execute('read').on('photo').granted).toEqual(true);
 
-        ac.grant('user').updateAny('photo', attrs);
-        expect(ac.getGrants().user.photo['update:any']).toEqual(conditionalAttrs);
-        expect(ac.can('user').updateAny('photo').attributes).toEqual(attrs);
+        ac.grant('user').execute('update').on('photo', attrs);
+        expect(ac.getGrants().user.photo['update']).toEqual(conditionalAttrs);
+        expect(ac.can('user').execute('update').on('photo').attributes).toEqual(attrs);
 
-        ac.grant('user').updateOwn('photo', attrs);
-        expect(ac.getGrants().user.photo['update:own']).toEqual(conditionalAttrs);
-        expect(ac.can('user').updateOwn('photo').attributes).toEqual(attrs);
 
-        ac.grant('user').deleteAny('photo', attrs);
-        expect(ac.getGrants().user.photo['delete:any']).toEqual(conditionalAttrs);
-        expect(ac.can('user').deleteAny('photo').attributes).toEqual(attrs);
-
-        ac.grant('user').deleteOwn('photo', attrs);
-        expect(ac.getGrants().user.photo['delete:own']).toEqual(conditionalAttrs);
-        expect(ac.can('user').deleteOwn('photo').attributes).toEqual(attrs);
+        ac.grant('user').execute('delete').on('photo', attrs);
+        expect(ac.getGrants().user.photo['delete']).toEqual(conditionalAttrs);
+        expect(ac.can('user').execute('delete').on('photo').attributes).toEqual(attrs);
     });
 
     it('should filter object properties', function () {
@@ -282,7 +269,7 @@ describe('Test Suite: Access Control', function () {
         }];
 
         ac.grant('editor').execute('publish').on('article', attrs);
-        expect(ac.getGrants().editor.article['publish:any']).toEqual(conditionalAttrs);
+        expect(ac.getGrants().editor.article['publish']).toEqual(conditionalAttrs);
         let permission = ac.can('editor').execute('publish').on('article');
         expect(permission.attributes).toEqual(attrs);
         expect(permission.granted).toEqual(true);
@@ -329,10 +316,10 @@ describe('Test Suite: Access Control', function () {
                     categorySportsCondition,
                     categoryPoliticsCondition
                 ]
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(false);
 
     });
 
@@ -345,10 +332,10 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     'category': ['sports', 'politics']
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access with equals condition with single and check permissions', function () {
@@ -360,9 +347,9 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     'category': 'sports'
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access with not equals condition with list of values and check permissions', function () {
@@ -374,10 +361,10 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     'category': ['sports', 'politics']
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with not equals condition with single value and check permissions', function () {
@@ -389,9 +376,9 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     'category': 'sports'
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with and condition with list value and check permissions', function () {
@@ -414,10 +401,10 @@ describe('Test Suite: Access Control', function () {
                         }
                     }
                 ]
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with and condition with single value and check permissions', function () {
@@ -432,9 +419,9 @@ describe('Test Suite: Access Control', function () {
                         'category': 'sports'
                     }
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with not condition with list value and check permissions', function () {
@@ -457,10 +444,10 @@ describe('Test Suite: Access Control', function () {
                         }
                     }
                 ]
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with not condition with single value and check permissions', function () {
@@ -475,9 +462,9 @@ describe('Test Suite: Access Control', function () {
                         'category': 'sports'
                     }
                 }
-            }).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(false);
-        expect(ac.can('user').context({ category: 'tech' }).createAny('article').granted).toEqual(true);
+            }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
     it('should grant access with list contains condition with single value and check permissions', function () {
@@ -489,9 +476,9 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     tags: 'sports'
                 }
-            }).createAny('article');
-        expect(ac.can('user').context({ tags: ['sports'] }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: ['politics'] }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context({ tags: ['sports'] }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['politics'] }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access with starts with condition with single value and check permissions', function () {
@@ -503,9 +490,9 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     tags: 'sports'
                 }
-            }).createAny('article');
-        expect(ac.can('user').context({ tags: 'sports' }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: 'politics' }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context({ tags: 'sports' }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'politics' }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access with starts with condition with list value and check permissions', function () {
@@ -517,10 +504,10 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     tags: ['sports', 'politics']
                 }
-            }).createAny('article');
-        expect(ac.can('user').context({ tags: 'sports' }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: 'politics' }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: 'tech' }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context({ tags: 'sports' }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'politics' }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: 'tech' }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access with list contains condition with multiple value and check permissions', function () {
@@ -532,10 +519,10 @@ describe('Test Suite: Access Control', function () {
                 args: {
                     tags: ['sports', 'politics']
                 }
-            }).createAny('article');
-        expect(ac.can('user').context({ tags: ['sports'] }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: ['politics'] }).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context({ tags: ['tech'] }).createAny('article').granted).toEqual(false);
+            }).execute('create').on('article');
+        expect(ac.can('user').context({ tags: ['sports'] }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['politics'] }).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ tags: ['tech'] }).execute('create').on('article').granted).toEqual(false);
     });
 
     it('should grant access to attribute based on conditions', function () {
@@ -543,12 +530,12 @@ describe('Test Suite: Access Control', function () {
         const sportsAttrs = ['sportsField'];
         const politicsAttrs = ['politicsField'];
 
-        ac.grant('user').condition(categorySportsCondition).createAny('article', sportsAttrs);
-        ac.grant('user').condition(categoryPoliticsCondition).attributes(politicsAttrs).createAny('article');
-        expect(ac.can('user').context(categorySportsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context(categorySportsContext).createAny('article').attributes).toEqual(sportsAttrs);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').granted).toEqual(true);
-        expect(ac.can('user').context(categoryPoliticsContext).createAny('article').attributes).toEqual(politicsAttrs);
+        ac.grant('user').condition(categorySportsCondition).execute('create').on('article', sportsAttrs);
+        ac.grant('user').condition(categoryPoliticsCondition).attributes(politicsAttrs).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').attributes).toEqual(sportsAttrs);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').attributes).toEqual(politicsAttrs);
 
     });
 
@@ -557,12 +544,12 @@ describe('Test Suite: Access Control', function () {
         ac.setGrants(conditionalGrantList);
         const editorAttrs = ['*'];
         const writerAttrs = ['*', '!status'];
-        expect(ac.can('sports/editor').context(categorySportsContext).createAny('article').attributes).toEqual(editorAttrs);
-        expect(ac.can('sports/editor').context(categoryPoliticsContext).updateAny('article').granted).toEqual(false);
-        expect(ac.can('sports/writer').context(categorySportsContext).createAny('article').attributes).toEqual(writerAttrs);
-        expect(ac.can('sports/writer').context(categoryPoliticsContext).updateAny('article').granted).toEqual(false);
+        expect(ac.can('sports/editor').context(categorySportsContext).execute('create').on('article').attributes).toEqual(editorAttrs);
+        expect(ac.can('sports/editor').context(categoryPoliticsContext).execute('update').on('article').granted).toEqual(false);
+        expect(ac.can('sports/writer').context(categorySportsContext).execute('create').on('article').attributes).toEqual(writerAttrs);
+        expect(ac.can('sports/writer').context(categoryPoliticsContext).execute('update').on('article').granted).toEqual(false);
         // should fail when context is not passed
-        expect(ac.can('sports/writer').createAny('article').granted).toEqual(false);
+        expect(ac.can('sports/writer').execute('create').on('article').granted).toEqual(false);
     });
 
     it('should chain grant methods and check permissions', function () {
@@ -570,15 +557,15 @@ describe('Test Suite: Access Control', function () {
             attrs = ['*'];
 
         ac.grant('superadmin')
-            .createAny('profile', attrs)
-            .readAny('profile', attrs)
-            .createAny('video', []) // no attributes allowed
-            .createAny('photo'); // all attributes allowed
+            .execute('create').on('profile', attrs)
+            .execute('read').on('profile', attrs)
+            .execute('create').on('video', []) // no attributes allowed
+            .execute('create').on('photo'); // all attributes allowed
 
-        expect(ac.can('superadmin').createAny('profile').granted).toEqual(true);
-        expect(ac.can('superadmin').readAny('profile').granted).toEqual(true);
-        expect(ac.can('superadmin').createAny('video').granted).toEqual(false);
-        expect(ac.can('superadmin').createAny('photo').granted).toEqual(true);
+        expect(ac.can('superadmin').execute('create').on('profile').granted).toEqual(true);
+        expect(ac.can('superadmin').execute('read').on('profile').granted).toEqual(true);
+        expect(ac.can('superadmin').execute('create').on('video').granted).toEqual(false);
+        expect(ac.can('superadmin').execute('create').on('photo').granted).toEqual(true);
     });
 
     it('should grant access via object and check permissions', function () {
@@ -588,39 +575,38 @@ describe('Test Suite: Access Control', function () {
         let o1 = {
             role: 'moderator',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'] // grant only
         };
         let o2 = {
             role: 'moderator',
             resource: 'news',
             action: 'read', // separate action
-            possession: 'own', // separate possession
             attributes: ['*'] // grant only
         };
         let o3 = {
             role: 'moderator',
             resource: 'book',
-            // no action/possession set
+            // no action set
             attributes: ['*'] // grant only
         };
 
         ac.grant(o1).grant(o2);
-        ac.grant(o3).updateAny();
+        ac.grant(o3).execute('update').on();
 
-        expect(ac.can('moderator').createAny('post').granted).toEqual(true);
-        expect(ac.can('moderator').readOwn('news').granted).toEqual(true);
-        expect(ac.can('moderator').updateAny('book').granted).toEqual(true);
+        expect(ac.can('moderator').execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('moderator').execute('read').on('news').granted).toEqual(true);
+        expect(ac.can('moderator').execute('update').on('book').granted).toEqual(true);
 
 
-        // should overwrite already defined action/possession in o1 object
-        ac.grant(o1).readOwn();
-        expect(ac.can('moderator').readOwn('post').granted).toEqual(true);
+        // should overwrite already defined action in o1 object
+        ac.grant(o1).execute('read').on();
+        expect(ac.can('moderator').execute('read').on('post').granted).toEqual(true);
 
         // non-set action (update:own)
-        expect(ac.can('moderator').updateOwn('news').granted).toEqual(false);
+        expect(ac.can('moderator').execute('update').on('news').granted).toEqual(false);
         // non-existent resource
-        expect(ac.can('moderator').createAny('foo').granted).toEqual(false);
+        expect(ac.can('moderator').execute('create').on('foo').granted).toEqual(false);
     });
 
     it('should grant conditional access via object and check permissions', function () {
@@ -630,7 +616,7 @@ describe('Test Suite: Access Control', function () {
         let o1 = {
             role: 'moderator',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'], // grant only
             condition: categorySportsCondition
         };
@@ -638,96 +624,94 @@ describe('Test Suite: Access Control', function () {
             role: 'moderator',
             resource: 'news',
             action: 'read', // separate action
-            possession: 'own', // separate possession
             attributes: ['*'], // grant only,
             condition: categorySportsCondition
         };
         let o3 = {
             role: 'moderator',
             resource: 'book',
-            // no action/possession set
+            // no action set
             attributes: ['*'] // grant only
         };
 
         ac.grant(o1).grant(o2);
-        ac.grant(o3).updateAny();
+        ac.grant(o3).execute('update').on();
 
-        expect(ac.can('moderator').context(categorySportsContext).createAny('post').granted).toEqual(true);
-        expect(ac.can('moderator').context(categorySportsContext).readOwn('news').granted).toEqual(true);
-        expect(ac.can('moderator').context(categorySportsContext).updateAny('book').granted).toEqual(true);
+        expect(ac.can('moderator').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('moderator').context(categorySportsContext).execute('read').on('news').granted).toEqual(true);
+        expect(ac.can('moderator').context(categorySportsContext).execute('update').on('book').granted).toEqual(true);
 
 
-        // should overwrite already defined action/possession in o1 object
-        ac.grant(o1).readOwn();
-        expect(ac.can('moderator').context(categorySportsContext).readOwn('post').granted).toEqual(true);
+        // should overwrite already defined action in o1 object
+        ac.grant(o1).execute('read').on();
+        expect(ac.can('moderator').context(categorySportsContext).execute('read').on('post').granted).toEqual(true);
 
         // non-set action (update:own)
-        expect(ac.can('moderator').context(categorySportsContext).updateOwn('news').granted).toEqual(false);
+        expect(ac.can('moderator').context(categorySportsContext).execute('update').on('news').granted).toEqual(false);
         // non-existent resource
-        expect(ac.can('moderator').context(categorySportsContext).createAny('foo').granted).toEqual(false);
+        expect(ac.can('moderator').context(categorySportsContext).execute('create').on('foo').granted).toEqual(false);
     });
 
     it('should grant access (variation, chained)', function () {
         let ac = this.ac;
         ac.setGrants(grantsObject);
 
-        expect(ac.can('admin').createAny('video').granted).toEqual(true);
+        expect(ac.can('admin').execute('create').on('video').granted).toEqual(true);
 
-        ac.grant('foo').createOwn('bar');
-        expect(ac.can('foo').createAny('bar').granted).toEqual(false);
-        expect(ac.can('foo').createOwn('bar').granted).toEqual(true);
+        ac.grant('foo').execute('create').on('bar');
+        expect(ac.can('foo').execute('create').on('bar').granted).toEqual(true);
 
-        ac.grant('foo').create('baz', []); // no attributes, actually denied instead of granted
-        expect(ac.can('foo').create('baz').granted).toEqual(false);
+        ac.grant('foo').execute('create').on('baz', []); // no attributes, actually denied instead of granted
+        expect(ac.can('foo').execute('create').on('baz').granted).toEqual(false);
 
         ac.grant('qux')
-            .createOwn('resource1')
-            .updateOwn('resource2')
-            .readAny('resource1')
-            .deleteAny('resource1', []);
-        expect(ac.can('qux').createOwn('resource1').granted).toEqual(true);
-        expect(ac.can('qux').updateOwn('resource2').granted).toEqual(true);
-        expect(ac.can('qux').readAny('resource1').granted).toEqual(true);
-        expect(ac.can('qux').deleteAny('resource1').granted).toEqual(false);
+            .execute('create').on('resource1')
+            .execute('update').on('resource2')
+            .execute('read').on('resource1')
+            .execute('delete').on('resource1', []);
+        expect(ac.can('qux').execute('create').on('resource1').granted).toEqual(true);
+        expect(ac.can('qux').execute('update').on('resource2').granted).toEqual(true);
+        expect(ac.can('qux').execute('read').on('resource1').granted).toEqual(true);
+        expect(ac.can('qux').execute('delete').on('resource1').granted).toEqual(false);
 
-        ac.grant('editor').resource('file1').updateAny();
-        ac.grant().role('editor').updateAny('file2');
-        ac.grant().role('editor').resource('file3').updateAny();
-        expect(ac.can('editor').updateAny('file1').granted).toEqual(true);
-        expect(ac.can('editor').updateAny('file2').granted).toEqual(true);
-        expect(ac.can('editor').updateAny('file3').granted).toEqual(true);
+        ac.grant('editor').resource('file1').execute('update').on();
+        ac.grant().role('editor').execute('update').on('file2');
+        ac.grant().role('editor').resource('file3').execute('update').on();
+        expect(ac.can('editor').execute('update').on('file1').granted).toEqual(true);
+        expect(ac.can('editor').execute('update').on('file2').granted).toEqual(true);
+        expect(ac.can('editor').execute('update').on('file3').granted).toEqual(true);
 
         ac.grant('editor')
-            .resource('fileX').readAny().createOwn()
-            .resource('fileY').updateOwn().deleteOwn();
-        expect(ac.can('editor').readAny('fileX').granted).toEqual(true);
-        expect(ac.can('editor').createOwn('fileX').granted).toEqual(true);
-        expect(ac.can('editor').updateOwn('fileY').granted).toEqual(true);
-        expect(ac.can('editor').deleteOwn('fileY').granted).toEqual(true);
+            .resource('fileX').execute('read').on().execute('create').on()
+            .resource('fileY').execute('update').on().execute('delete').on();
+        expect(ac.can('editor').execute('read').on('fileX').granted).toEqual(true);
+        expect(ac.can('editor').execute('create').on('fileX').granted).toEqual(true);
+        expect(ac.can('editor').execute('update').on('fileY').granted).toEqual(true);
+        expect(ac.can('editor').execute('delete').on('fileY').granted).toEqual(true);
 
     });
 
     it('should switch-chain grant roles', function () {
         let ac = this.ac;
         ac.grant('r1')
-            .createOwn('a')
+            .execute('create').on('a')
             .grant('r2')
-            .createOwn('b')
-            .readAny('b')
+            .execute('create').on('b')
+            .execute('read').on('b')
             .grant('r1')
-            .updateAny('c')
+            .execute('update').on('c')
 
-        expect(ac.can('r1').createOwn('a').granted).toEqual(true);
-        expect(ac.can('r1').updateAny('c').granted).toEqual(true);
-        expect(ac.can('r2').createOwn('b').granted).toEqual(true);
-        expect(ac.can('r2').readAny('b').granted).toEqual(true);
+        expect(ac.can('r1').execute('create').on('a').granted).toEqual(true);
+        expect(ac.can('r1').execute('update').on('c').granted).toEqual(true);
+        expect(ac.can('r2').execute('create').on('b').granted).toEqual(true);
+        expect(ac.can('r2').execute('read').on('b').granted).toEqual(true);
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
     it('should grant comma/semi-colon separated roles', function () {
         let ac = this.ac;
         // also supporting comma/semi-colon separated roles
-        ac.grant('role2; role3, editor; viewer, agent').createOwn('book');
+        ac.grant('role2; role3, editor; viewer, agent').execute('create').on('book');
         expect(ac.hasRole('role3')).toEqual(true);
         expect(ac.hasRole('editor')).toEqual(true);
         expect(ac.hasRole('agent')).toEqual(true);
@@ -736,38 +720,37 @@ describe('Test Suite: Access Control', function () {
     it('permission should also return queried role(s) and resource', function () {
         let ac = this.ac;
         // also supporting comma/semi-colon separated roles
-        ac.grant('foo, bar').createOwn('baz');
-        expect(ac.can('bar').createAny('baz').granted).toEqual(false);
-        expect(ac.can('bar').createOwn('baz').granted).toEqual(true);
+        ac.grant('foo, bar').execute('create').on('baz');
+        expect(ac.can('bar').execute('create').on('baz').granted).toEqual(true);
         // returned permission should provide queried role(s) as array
-        expect(ac.can('foo').create('baz').roles).toContain('foo');
+        expect(ac.can('foo').execute('create').on('baz').roles).toContain('foo');
         // returned permission should provide queried resource
-        expect(ac.can('foo').create('baz').resource).toEqual('baz');
-        // create is createAny. but above only returns the queried value, not the result.
+        expect(ac.can('foo').execute('create').on('baz').resource).toEqual('baz');
+        // create is execute('create').on. but above only returns the queried value, not the result.
     });
 
     it('should extend / remove roles', function () {
         let ac = this.ac;
 
-        ac.grant('admin').createOwn('book');
+        ac.grant('admin').execute('create').on('book');
         ac.extendRole('onur', 'admin');
         expect(ac.getGrants().onur.$extend.length).toEqual(1);
         expect(ac.getGrants().onur.$extend[0].role).toEqual('admin');
 
-        ac.grant('role2, role3, editor, viewer, agent').createOwn('book');
+        ac.grant('role2, role3, editor, viewer, agent').execute('create').on('book');
 
         ac.extendRole('onur', ['role2', 'role3']);
         expect(ac.getGrants().onur.$extend.map((elm) => { return elm.role })).toEqual(['admin', 'role2', 'role3']);
 
         ac.grant('admin').extend('editor');
         expect(ac.getGrants().admin.$extend.map((elm) => { return elm.role })).toEqual(['editor']);
-        ac.grant('admin').extend(['viewer', 'editor', 'agent']).readAny('video');
+        ac.grant('admin').extend(['viewer', 'editor', 'agent']).execute('read').on('video');
         let extendedRoles = ac.getGrants().admin.$extend.map((elm) => { return elm.role });
         expect(extendedRoles).toContain('editor');
         expect(extendedRoles).toContain('agent');
         expect(extendedRoles).toContain('viewer');
 
-        ac.grant(['editor', 'agent']).extend(['role2', 'role3']).updateOwn('photo');
+        ac.grant(['editor', 'agent']).extend(['role2', 'role3']).execute('update').on('photo');
         expect(ac.getGrants().editor.$extend.map((elm) => { return elm.role })).toEqual(['role2', 'role3']);
 
         ac.removeRoles(['editor', 'agent']);
@@ -787,22 +770,22 @@ describe('Test Suite: Access Control', function () {
         let sportsEditorGrant = {
             role: 'sports/editor',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'], // grant only
             condition: categorySportsCondition
         };
         let politicsEditorGrant = {
             role: 'politics/editor',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'], // grant only
             condition: categoryPoliticsCondition
         };
         ac.grant(sportsEditorGrant);
         ac.grant(politicsEditorGrant);
         ac.extendRole('editor', ['sports/editor', 'politics/editor']);
-        expect(ac.can('editor').context(categorySportsContext).createAny('post').granted).toEqual(true);
-        expect(ac.can('editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(true);
+        expect(ac.can('editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(true);
     });
 
     it('should extend roles with conditions', function () {
@@ -810,19 +793,19 @@ describe('Test Suite: Access Control', function () {
         let editorGrant = {
             role: 'editor',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
         ac.extendRole('sports/editor', 'editor', categorySportsCondition);
         ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
-        expect(ac.can('editor').createAny('post').granted).toEqual(true);
-        expect(ac.can('editor').context(categorySportsContext).createAny('post').granted).toEqual(true);
-        expect(ac.can('editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(true);
+        expect(ac.can('editor').execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(true);
 
-        expect(ac.can('sports/editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(false);
-        expect(ac.can('sports/editor').context(categorySportsContext).createAny('post').granted).toEqual(true);
+        expect(ac.can('sports/editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(false);
+        expect(ac.can('sports/editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
 
     });
 
@@ -831,7 +814,7 @@ describe('Test Suite: Access Control', function () {
         let editorGrant = {
             role: 'editor',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
@@ -841,8 +824,8 @@ describe('Test Suite: Access Control', function () {
 
         // second level of extension
         ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
-        expect(ac.can('sports-and-politics/editor').context(categorySportsContext).createAny('post').granted).toEqual(true);
-        expect(ac.can('sports-and-politics/editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(true);
+        expect(ac.can('sports-and-politics/editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
+        expect(ac.can('sports-and-politics/editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(true);
 
         // third level of extension
         ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
@@ -853,17 +836,17 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('conditonal/sports-and-politics/editor').context({
             category: 'sports',
             status: 'draft'
-        }).createAny('post').granted).toEqual(true);
+        }).execute('create').on('post').granted).toEqual(true);
 
         expect(ac.can('conditonal/sports-and-politics/editor').context({
             category: 'tech',
             status: 'draft'
-        }).createAny('post').granted).toEqual(false);
+        }).execute('create').on('post').granted).toEqual(false);
 
         expect(ac.can('conditonal/sports-and-politics/editor').context({
             category: 'sports',
             status: 'published'
-        }).createAny('post').granted).toEqual(false);
+        }).execute('create').on('post').granted).toEqual(false);
     });
 
     it('should remove roles when conditions used', function () {
@@ -871,7 +854,7 @@ describe('Test Suite: Access Control', function () {
         let editorGrant = {
             role: 'editor',
             resource: 'post',
-            action: 'create:any', // action:possession
+            action: 'create', // action
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
@@ -879,8 +862,8 @@ describe('Test Suite: Access Control', function () {
         ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         ac.removeRoles('editor');
-        expect(ac.can('sports/editor').context(categoryPoliticsContext).createAny('post').granted).toEqual(false);
-        expect(ac.can('sports/editor').context(categorySportsContext).createAny('post').granted).toEqual(false);
+        expect(ac.can('sports/editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(false);
+        expect(ac.can('sports/editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(false);
     });
 
     it('should throw if grant objects are invalid', function () {
@@ -890,7 +873,7 @@ describe('Test Suite: Access Control', function () {
         o = {
             role: '', // invalid role, should be non-empty string or array
             resource: 'post',
-            action: 'create:any',
+            action: 'create',
             attributes: ['*'] // grant only
         };
         expect(() => ac.grant(o)).toThrow();
@@ -898,7 +881,7 @@ describe('Test Suite: Access Control', function () {
         o = {
             role: 'moderator',
             resource: null, // invalid resource, should be non-empty string
-            action: 'create:any',
+            action: 'create',
             attributes: ['*'] // grant only
         };
         expect(() => ac.grant(o)).toThrow();
@@ -912,31 +895,20 @@ describe('Test Suite: Access Control', function () {
         expect(() => ac.grant(o)).toThrow();
 
         o = {
-            role: 'admin',
-            resource: 'post',
-            action: 'create:all', // invalid possession, should be any|own or omitted
-            attributes: ['*'] // grant only
-        };
-        expect(() => ac.grant(o)).toThrow();
-
-        o = {
             role: 'admin2',
             resource: 'post',
-            action: 'create', // possession omitted, will be set to any
+            action: 'create',
             attributes: ['*'] // grant only
         };
         expect(() => ac.grant(o)).not.toThrow();
-        expect(ac.can('admin2').createAny('post').granted).toEqual(true);
-        // possession "any" will also return granted=true for "own"
-        expect(ac.can('admin2').createOwn('post').granted).toEqual(true);
-
+        expect(ac.can('admin2').execute('create').on('post').granted).toEqual(true);
     });
 
     it('should throw `AccessControlError`', function () {
         let ac = this.ac;
-        throwsAccessControlError(() => ac.grant().createOwn());
+        throwsAccessControlError(() => ac.grant().execute('create').on());
         ac.setGrants(grantsObject);
-        throwsAccessControlError(() => ac.can('invalid-role').createOwn('video'), 'Role not found');
+        throwsAccessControlError(() => ac.can('invalid-role').execute('create').on('video'), 'Role not found');
     });
 
     it('should filter granted attributes', function () {
@@ -960,8 +932,8 @@ describe('Test Suite: Access Control', function () {
                     value: 'hidden'
                 }
             };
-        ac.grant('user').createOwn('company', attrs);
-        let permission = ac.can('user').createOwn('company');
+        ac.grant('user').execute('create').on('company', attrs);
+        let permission = ac.can('user').execute('create').on('company');
         expect(permission.granted).toEqual(true);
         let filtered = permission.filter(data);
         expect(filtered.name).toEqual(jasmine.any(String));
@@ -976,33 +948,33 @@ describe('Test Suite: Access Control', function () {
 
     it('Check with multiple roles changes grant list (issue #2)', function () {
         let ac = this.ac;
-        ac.grant('admin').updateAny('video')
-            .grant(['user', 'admin']).updateOwn('video');
+        ac.grant('admin').execute('update').on('video')
+            .grant(['user', 'admin']).execute('update').on('video');
 
         // Admin can update any video
-        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+        expect(ac.can(['admin']).execute('update').on('video').granted).toEqual(true);
 
         // Admin can update any or own video
-        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
-        expect(ac.can(['admin']).updateOwn('video').granted).toEqual(true);
+        expect(ac.can(['admin']).execute('update').on('video').granted).toEqual(true);
+        expect(ac.can(['admin']).execute('update').on('video').granted).toEqual(true);
     });
 
     it('should grant multiple roles and multiple resources', function () {
         let ac = this.ac;
 
-        ac.grant('admin, user').createAny('profile, video');
-        expect(ac.can('admin').createAny('profile').granted).toEqual(true);
-        expect(ac.can('admin').createAny('video').granted).toEqual(true);
-        expect(ac.can('user').createAny('profile').granted).toEqual(true);
-        expect(ac.can('user').createAny('video').granted).toEqual(true);
+        ac.grant('admin, user').execute('create').on('profile, video');
+        expect(ac.can('admin').execute('create').on('profile').granted).toEqual(true);
+        expect(ac.can('admin').execute('create').on('video').granted).toEqual(true);
+        expect(ac.can('user').execute('create').on('profile').granted).toEqual(true);
+        expect(ac.can('user').execute('create').on('video').granted).toEqual(true);
 
-        ac.grant('admin, user').createAny('profile, video', '*,!id');
-        expect(ac.can('admin').createAny('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('admin').createAny('video').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').createAny('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').createAny('video').attributes).toEqual(['*', '!id']);
+        ac.grant('admin, user').execute('create').on('profile, video', '*,!id');
+        expect(ac.can('admin').execute('create').on('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('admin').execute('create').on('video').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').execute('create').on('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').execute('create').on('video').attributes).toEqual(['*', '!id']);
 
-        expect(ac.can('user').createAny('non-existent').granted).toEqual(false);
+        expect(ac.can('user').execute('create').on('non-existent').granted).toEqual(false);
 
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });

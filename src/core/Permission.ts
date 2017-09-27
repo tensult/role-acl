@@ -27,8 +27,7 @@ import utils from '../utils';
  *  <p><pre><code> var permission = ac.permission({
  *      role: 'user',
  *      resource: 'video',
- *      action: 'create',
- *      possession: 'any'
+ *      action: 'create'
  *  });
  *  console.log(permission.granted); // boolean</code></pre></p>
  *  </li>

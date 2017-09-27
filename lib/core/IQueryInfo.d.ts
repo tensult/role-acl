@@ -25,13 +25,6 @@ interface IQueryInfo {
      */
     action?: string;
     /**
-     *  Defines the possession of the resource for the specified action.
-     *  See {@link ?api=ac#AccessControl.Possession|`AccessControl.Possession` enumeration}
-     *  for possible values.
-     *  @type {String}
-     */
-    possession?: string;
-    /**
      * Context for evaluating the condition
      * @type {Object}
      */

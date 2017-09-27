@@ -6,12 +6,12 @@ Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the ba
 
 With the idea of merging the best features of the two (see this [NIST paper][nist-paper]); this library implements RBAC basics and also focuses on *resource*, *action* attributes and conditions.
 
-This library is an extension of [AccessControl][onury-accesscontrol]. But I removed support for deny statements from orginal implementation.
+This library is an extension of [AccessControl][onury-accesscontrol]. But I removed support for possession and deny statements from orginal implementation.
 
 ### Core Features
 
 - Chainable, friendly API.  
-e.g. `ac.can(role).createOwn(resource)`
+e.g. `ac.can(role).execute('create').on(resource)`
 - Role hierarchical inheritance.
 - Define grants at once (e.g. from database result) or one by one.
 - Grant permissions by attributes defined by glob notation (with nested object support).
@@ -37,19 +37,19 @@ Define roles and grants one by one.
 ```js
 const ac = new AccessControl();
 ac.grant('user')                    // define new or modify existing role. also takes an array.
-    .createOwn('video')             // equivalent to .createOwn('video', ['*'])
-    .deleteOwn('video')
-    .readAny('video')
+    .execute('create').on('video')             // equivalent to .execute('create').on('video', ['*'])
+    .execute('delete').on('video')
+    .execute('read').on('video')
   .grant('admin')                   // switch to another role without breaking the chain
     .extend('user')                 // inherit role capabilities. also takes an array
-    .updateAny('video', ['title'])  // explicitly defined attributes
-    .deleteAny('video');
+    .execute('update').on('video', ['title'])  // explicitly defined attributes
+    .execute('delete').on('video');
 
-const permission = ac.can('user').createOwn('video');
+const permission = ac.can('user').execute('create').on('video');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('admin').updateAny('video');
+permission = ac.can('admin').execute('update').on('video');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['title']
 ```
@@ -65,13 +65,13 @@ ac.grant('user').condition(
         args: {
             'category': 'sports'
         }
-    }).createAny('article');
+    }).execute('create').on('article');
 
-let permission = ac.can('user').context({ category: 'sports' }).createAny('article');
+let permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('user').context({ category: 'tech' }).createAny('article');
+permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```
@@ -84,7 +84,7 @@ Check role permissions for the requested resource and action, if granted; respon
 const ac = new AccessControl(grants);
 // ...
 router.get('/videos/:title', function (req, res, next) {
-    const permission = ac.can(req.user.role).readAny('video');
+    const permission = ac.can(req.user.role).execute('read').on('video');
     if (permission.granted) {
         Video.find(req.params.title, function (err, data) {
             if (err || !data) return res.status(404).end();
@@ -114,42 +114,6 @@ ac.grant(['admin', 'superadmin']).extend('moderator');
 ```
 
 ### Actions and Action-Attributes
-
-[CRUD][crud] operations are the actions you can perform on a resource. There are two action-attributes which define the **possession** of the resource: *own* and *any*.
-
-For example, an `admin` role can `create`, `read`, `update` or `delete` (CRUD) **any** `account` resource. But a `user` role might only `read` or `update` its **own** `account` resource.
-
-<table>
-    <thead>
-        <tr>
-            <th>Action</th>
-            <th>Possession</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan="2">
-            <b>C</b>reate<br />
-            <b>R</b>ead<br />
-            <b>U</b>pdate<br />
-            <b>D</b>elete<br />
-            </td>
-            <td>Own</td>
-            <td>The C|R|U|D action is (or not) to be performed on own resource(s) of the current subject.</td>
-        </tr>
-        <tr>
-            <td>Any</td>
-            <td>The C|R|U|D action is (or not) to be performed on any resource(s); including own.</td>
-        </tr>   
-    </tbody>
-</table>
-
-```js
-ac.grant('role').readOwn('resource');
-```
-
-### Custom Actions
-Along with CRUD actions we can define custom actions.
 
 ```js
 ac.grant('editor').execute('publish').on('article');
@@ -187,20 +151,20 @@ This is possible by resource attributes. You can use Glob notation to define all
 For example, we have a `video` resource that has the following attributes: `id`, `title` and `runtime`.
 All attributes of *any* `video` resource can be read by an `admin` role:
 ```js
-ac.grant('admin').readAny('video', ['*']);
+ac.grant('admin').execute('read').on('video', ['*']);
 // equivalent to:
-// ac.grant('admin').readAny('video');
+// ac.grant('admin').execute('read').on('video');
 ```
 But the `id` attribute should not be read by a `user` role.  
 ```js
-ac.grant('user').readOwn('video', ['*', '!id']);
+ac.grant('user').execute('read').on('video', ['*', '!id']);
 // equivalent to:
-// ac.grant('user').readOwn('video', ['title', 'runtime']);
+// ac.grant('user').execute('read').on('video', ['title', 'runtime']);
 ```
 
 You can also use nested objects (attributes).
 ```js
-ac.grant('user').readOwn('account', ['*', '!record.id']);
+ac.grant('user').execute('read').on('account', ['*', '!record.id']);
 ```
 
 ### Checking Permissions and Filtering Attributes
@@ -208,7 +172,7 @@ ac.grant('user').readOwn('account', ['*', '!record.id']);
 You can call `.can(<role>).<action>(<resource>)` on an `AccessControl` instance to check for granted permissions for a specific resource and action.
 
 ```js
-const permission = ac.can('user').readOwn('account');
+const permission = ac.can('user').execute('read').on('account');
 permission.granted;       // true
 permission.attributes;    // ['*', '!record.id']
 permission.filter(data);  // filtered data (without record.id)
@@ -225,10 +189,10 @@ It accepts either an `Object`:
 let grantsObject = {
     admin: {
         video: {
-            'create:any': ['*'],
-            'read:any': ['*'],
-            'update:any': ['*'],
-            'delete:any': ['*']
+            'create': ['*'],
+            'read': ['*'],
+            'update': ['*'],
+            'delete': ['*']
         }
     },
     user: {
@@ -299,21 +263,21 @@ const ac = new AccessControl(grantsObject);
 ```js
 // grant list fetched from DB (to be converted to a valid grants object, internally)
 let grantList = [
-    { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'delete:any', attributes: ['*'] },
+    { role: 'admin', resource: 'video', action: 'create', attributes: ['*'] },
+    { role: 'admin', resource: 'video', action: 'read', attributes: ['*'] },
+    { role: 'admin', resource: 'video', action: 'update', attributes: ['*'] },
+    { role: 'admin', resource: 'video', action: 'delete', attributes: ['*'] },
 
     { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
+    { role: 'user', resource: 'video', action: 'read', attributes: ['*'] },
     { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
     { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] },
 
-    { role: 'sports/editor', resource: 'article', action: 'create:any', attributes: ['*'],
+    { role: 'sports/editor', resource: 'article', action: 'create', attributes: ['*'],
       condition: { "Fn": "EQUALS", "args": { "category": "sports" } }
     },
     {
-        role: 'sports/editor', resource: 'article', action: 'update:any', attributes: ['*'],
+        role: 'sports/editor', resource: 'article', action: 'update', attributes: ['*'],
         condition: { "Fn": "EQUALS", "args": { "category": "sports" } }
     }
 ];
@@ -332,7 +296,7 @@ const ac = new AccessControl();
 const editorGrant = {
     role: 'editor',
     resource: 'post',
-    action: 'create:any', // action:possession
+    action: 'create', // action
     attributes: ['*'] // grant only
 };
 ac.grant(editorGrant);
@@ -340,17 +304,17 @@ ac.grant(editorGrant);
 ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}});
 ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}});
 
-let permission = ac.can('sports/editor').context({category: 'sports'}).createAny('post');
+let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('sports/editor').context({category: 'politics'}).createAny('post');
+permission = ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
 // second level of extension (extending without condition)
 ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
-permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).createAny('post');
+permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
@@ -359,11 +323,11 @@ ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/edit
     Fn: 'EQUALS',
     args: { status: 'draft' }
 });
-permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).createAny('post');
+permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'published'}).createAny('post');
+permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```

@@ -11,7 +11,7 @@ declare const utils: {
     subtractArray(arrA: string[], arrB: string[]): string[];
     eachKey(o: any, callback: (key: string, index?: number) => void): void;
     getFlatRoles(grants: any, roles: string | string[], context?: any): string[];
-    normalizeActionPossession(info: IAccessInfo | IQueryInfo): IAccessInfo | IQueryInfo;
+    normalizeAction(info: IAccessInfo | IQueryInfo): IAccessInfo | IQueryInfo;
     normalizeQueryInfo(query: IQueryInfo, all?: boolean): IQueryInfo;
     normalizeAccessInfo(access: IAccessInfo, all?: boolean): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;

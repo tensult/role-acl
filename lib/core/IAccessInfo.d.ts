@@ -33,13 +33,6 @@ interface IAccessInfo {
      */
     action?: string;
     /**
-     *  Defines the possession of the resource(s) for the specified action.
-     *  See {@link ?api=ac#AccessControl.Possession|`AccessControl.Possession` enumeration}
-     *  for possible values.
-     *  @type {String}
-     */
-    possession?: string;
-    /**
      *  Defines the condition of the resource(s) for the specified action.
      *  for possible values.
      *  @type {ICondition}
