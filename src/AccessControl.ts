@@ -13,14 +13,23 @@ import utils from './utils';
  *
  *  <p><pre><code> var grants = {
  *      role1: {
- *          resource1: {
- *              "create": [ attrs ],
- *              "read": [ attrs ]
- *          },
- *          resource2: {
- *              "create": [ attrs ],
- *              "update": [ attrs ]
- *          }
+ *          grants: [
+ *              {
+ *                  resource: 'resource1',
+ *                  action: 'create'
+ *                  attributes: ['*']
+ *              },
+ *              {
+ *                  resource: 'resource1',
+ *                  action: 'read'
+ *                  attributes: ['*']
+ *              },
+ *              {
+ *                  resource: 'resource2',
+ *                  action: 'create'
+ *                  attributes: ['*']
+ *              }
+ *          ]
  *      },
  *      role2: { ... }
  *  };
