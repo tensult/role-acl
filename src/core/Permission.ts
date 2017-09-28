@@ -63,7 +63,7 @@ class Permission {
         return conditionalAttributes.filter((conditionalAttributeSet) => {
             return conditionEvaluator(conditionalAttributeSet.condition, this._.context);
         }).map((conditionalAttributeSet) => {
-            return conditionalAttributeSet.attributes || [];
+            return conditionalAttributeSet.attributes || ['*'];
         }).reduce(Notation.Glob.union, []);
     }
 
