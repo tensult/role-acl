@@ -168,27 +168,6 @@ class AccessControl {
     }
 
     /**
-     *  Removes all the given resources for all roles, at once.
-     *  Pass the `roles` argument to remove access to resources for those
-     *  roles only.
-     *  @chainable
-     *
-     *  @param {String|Array<String>} resources - A single or array of resources to
-     *      be removed.
-     *  @param {String|Array<String>} [roles] - A single or array of roles to
-     *      be removed. If omitted, permissions for all roles to all given
-     *      resources will be removed.
-     *
-     *  @returns {AccessControl} - `AccessControl` instance for chaining.
-     */
-    removeResources(resources:string|string[], roles?:string|string[]):AccessControl {
-        // _removePermission has a third argument `action`. if
-        // omitted (like below), removes the parent resource object.
-        this._removePermission(resources, roles);
-        return this;
-    }
-
-    /**
      *  Gets all the unique roles that have at least one access information.
      *
      *  @returns {Array<String>}
@@ -202,21 +181,6 @@ class AccessControl {
     }
 
     /**
-     *  Gets all the unique resources that are granted access for at
-     *  least one role.
-     *
-     *  @returns {Array<String>}
-     */
-    getResources():string[] {
-        // using an object for unique list
-        let resources:any = {};
-        this._eachRoleResource((role:string, resource:string, permissions:any) => {
-            resources[resource] = null;
-        });
-        return Object.keys(resources);
-    }
-
-    /**
      *  Checks whether any permissions are granted to the given role.
      *
      *  @param {String} role - Role to be checked.
@@ -225,21 +189,6 @@ class AccessControl {
      */
     hasRole(role:string):boolean {
         return this._grants.hasOwnProperty(role);
-    }
-
-    /**
-     *  Checks whether any permissions are granted for the given resource.
-     *
-     *  @param {String} resource - Resource to be checked.
-     *
-     *  @returns {Boolean}
-     */
-    hasResource(resource:string):boolean {
-        if (typeof resource !== 'string' || resource === '') {
-            return false;
-        }
-        let resources = this.getResources();
-        return resources.indexOf(resource) >= 0;
     }
 
     /**
@@ -396,41 +345,6 @@ class AccessControl {
      */
     private _eachRole(callback:(role:string) => void) {
         utils.eachKey(this._grants, (role:string) => callback(role));
-    }
-
-    /**
-     *  @private
-     */
-    private _eachRoleResource(callback:(role:string, resource:string, resourceDefinition:any) => void) {
-        let resources, resourceDefinition;
-        this._eachRole((role:string) => {
-            resources = this._grants[role];
-            utils.eachKey(resources, (resource:string) => {
-                resourceDefinition = role[resource];
-                callback(role, resource, resourceDefinition);
-            });
-        });
-    }
-
-    /**
-     *  @private
-     */
-    _removePermission(resources:string|string[], roles?:string|string[], action?:string) {
-        resources = utils.toStringArray(resources);
-        if (roles) roles = utils.toStringArray(roles);
-        this._eachRoleResource((role:string, resource:string, permissions:any) => {
-            if (resources.indexOf(resource) >= 0
-                    // roles is optional. so remove if role is not defined.
-                    // if defined, check if the current role is in the list.
-                    && (!roles || roles.indexOf(role) >= 0)) {
-                if (action) {
-                    delete this._grants[role][resource][action];
-                } else {
-                    // this is used for AccessControl#removeResources().
-                    delete this._grants[role][resource];
-                }
-            }
-        });
     }
 
     /**

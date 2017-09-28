@@ -121,21 +121,6 @@ declare class AccessControl {
      */
     removeRoles(roles: string | string[]): AccessControl;
     /**
-     *  Removes all the given resources for all roles, at once.
-     *  Pass the `roles` argument to remove access to resources for those
-     *  roles only.
-     *  @chainable
-     *
-     *  @param {String|Array<String>} resources - A single or array of resources to
-     *      be removed.
-     *  @param {String|Array<String>} [roles] - A single or array of roles to
-     *      be removed. If omitted, permissions for all roles to all given
-     *      resources will be removed.
-     *
-     *  @returns {AccessControl} - `AccessControl` instance for chaining.
-     */
-    removeResources(resources: string | string[], roles?: string | string[]): AccessControl;
-    /**
      *  Gets all the unique roles that have at least one access information.
      *
      *  @returns {Array<String>}
@@ -146,13 +131,6 @@ declare class AccessControl {
      */
     getRoles(): string[];
     /**
-     *  Gets all the unique resources that are granted access for at
-     *  least one role.
-     *
-     *  @returns {Array<String>}
-     */
-    getResources(): string[];
-    /**
      *  Checks whether any permissions are granted to the given role.
      *
      *  @param {String} role - Role to be checked.
@@ -160,14 +138,6 @@ declare class AccessControl {
      *  @returns {Boolean}
      */
     hasRole(role: string): boolean;
-    /**
-     *  Checks whether any permissions are granted for the given resource.
-     *
-     *  @param {String} resource - Resource to be checked.
-     *
-     *  @returns {Boolean}
-     */
-    hasResource(resource: string): boolean;
     /**
      *  Gets an instance of `Query` object. This is used to check whether
      *  the defined access is allowed for the given role(s) and resource.
@@ -299,14 +269,6 @@ declare class AccessControl {
      *  @private
      */
     private _eachRole(callback);
-    /**
-     *  @private
-     */
-    private _eachRoleResource(callback);
-    /**
-     *  @private
-     */
-    _removePermission(resources: string | string[], roles?: string | string[], action?: string): void;
     /**
      *  Documented separately in AccessControlError
      *  @private

@@ -1,5 +1,6 @@
 // dep modules
 import * as Notation from 'notation';
+import * as MicroMatch from 'micromatch';
 // own modules
 import { IAccessInfo, IQueryInfo, AccessControlError, ICondition } from './core';
 import { Conditions, conditionEvaluator } from './condtions';
@@ -15,14 +16,14 @@ const utils = {
     },
 
     toStringArray(value: any): string[] {
-        if (Array.isArray(value)) return value;
+        if (Array.isArray(value)) return value.slice();
         if (typeof value === 'string') return value.trim().split(/\s*[;,]\s*/);
         // throw new Error('Cannot convert value to array!');
         return null;
     },
 
     toArray(value: any): any[] {
-        if (Array.isArray(value)) return value;
+        if (Array.isArray(value)) return value.slice();
         return [value];
     },
 
@@ -43,7 +44,7 @@ const utils = {
     },
 
     uniqConcat(arrA: string[], arrB: string[]): string[] {
-        let arr: string[] = arrA.concat();
+        let arr: string[] = arrA.slice();
         arrB.forEach((b: string) => {
             if (arr.indexOf(b) < 0) arr.push(b);
         });
@@ -51,7 +52,7 @@ const utils = {
     },
 
     subtractArray(arrA: string[], arrB: string[]): string[] {
-        return arrA.concat().filter(a => arrB.indexOf(a) === -1);
+        return arrA.slice().filter(a => arrB.indexOf(a) === -1);
     },
 
     eachKey(o: any, callback: (key: string, index?: number) => void) {
@@ -64,7 +65,7 @@ const utils = {
     getFlatRoles(grants: any, roles: string | string[], context?: any): string[] {
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        let arr: string[] = roles.concat();
+        let arr: string[] = roles.slice();
         roles.forEach((roleName: string) => {
             let role: any = grants[roleName];
             if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
@@ -78,13 +79,6 @@ const utils = {
             }
         });
         return arr;
-    },
-
-    normalizeAction(info: IQueryInfo | IAccessInfo): IQueryInfo | IAccessInfo {
-        // validate and normalize action
-
-
-        return info;
     },
 
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
@@ -170,22 +164,15 @@ const utils = {
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
     commitToGrants(grants: any, access: IAccessInfo) {
-        access = utils.normalizeAccessInfo(access);
-        // console.log(access);
-        // grant.role also accepts an array, so treat it like it.
+        access = utils.normalizeAccessInfo(access);  
         (access.role as Array<string>).forEach((role: string) => {
-            if (!grants.hasOwnProperty(role)) grants[role] = {};
-            let grantItem: any = grants[role];
-
-            (access.resource as Array<string>).forEach((resource: string) => {
-                grantItem[resource] = grantItem[resource] || {};
-                (access.action as Array<string>).forEach((action: string) => {
-                    grantItem[resource][action] = grantItem[resource][action] || [];
-                    grantItem[resource][action].push({
-                        attributes: access.attributes,
-                        condition: access.condition
-                    });
-                });
+            grants[role] = grants[role] || {};
+            grants[role].grants = grants[role].grants || []
+            grants[role].grants.push({
+                resource: access.resource,
+                action: access.action,
+                attributes: access.attributes,
+                condition: access.condition                
             });
         });
     },
@@ -208,25 +195,22 @@ const utils = {
         // throws if has any invalid property value
         query = utils.normalizeQueryInfo(query);
 
-        let attrsList: Array<any> = [];
 
         // get roles and extended roles in a flat array
         let roles: string[] = utils.getFlatRoles(grants, query.role, query.context);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
-        roles.forEach((role: string, index: number) => {
-            let grantItem = grants[role];
-            if (grantItem) {
-                let resource = grantItem[query.resource];
-                if (resource) {
-                    const actionAttrs: Array<any> = resource[query.action];
-                    if (actionAttrs && actionAttrs.length) {
-                        attrsList = attrsList.concat(actionAttrs);
-                    }
-                }
-            }
+        return roles.filter((role) => {
+            return grants[role] && grants[role].grants;
+        }).map((role) => {
+            return grants[role].grants;
+        }).reduce((allGrants, roleGrants) => {
+            return allGrants.concat(roleGrants);
+        }, []).filter((grant) => {
+            return MicroMatch.some(query.resource, grant.resource) && MicroMatch.some(query.action, grant.action);
+        }).map((grant) => {
+            return {attributes: grant.attributes.slice(), condition: grant.condition};
         });
-        return attrsList;
     },
 
     /**

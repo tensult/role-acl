@@ -14,6 +14,7 @@ This library is an extension of [AccessControl][onury-accesscontrol]. But I remo
 e.g. `ac.can(role).execute('create').on(resource)`
 - Role hierarchical inheritance.
 - Define grants at once (e.g. from database result) or one by one.
+- Grant permissions by resources and actions define by glob notation.
 - Grant permissions by attributes defined by glob notation (with nested object support).
 - Ability to filter data (model) instance by allowed attributes.
 - Ability to control access on "own" or "any" resources.
@@ -75,6 +76,45 @@ permission = ac.can('user').context({ category: 'tech' }).execute('create').on('
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```
+### Wildcard (glob notation) Resource and Actions Examples
+```js
+ac.grant({
+    role: 'politics/editor',
+    action: '*',
+    resource: 'article',
+    condition: {Fn: 'EQUALS', args: {category: 'politics'}},
+    attributes: ['*']
+});
+ac.grant({
+    role: 'politics/writer',
+    action: ['*', '!publish'],
+    resource: 'article',
+    condition: {Fn: 'EQUALS', args: {category: 'politics'}},
+    attributes: ['*']
+});
+
+ac.grant({
+    role: 'admin',
+    action: '*',
+    resource: '*',
+    condition: {Fn: 'EQUALS', args: {category: 'politics'}},
+    attributes: ['*']
+});
+permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article');
+console(permission.attributes); // -> ['*']
+console(permission.granted); // -> true
+
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('article');
+console(permission.attributes); // -> ['*']
+console(permission.granted); // -> true
+
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('blog');
+console(permission.attributes); // -> ['*']
+console(permission.granted); // -> true
+
+permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('article');
+console(permission.granted); // -> false
+```
 
 ### Express.js Example
 
@@ -127,19 +167,8 @@ console(permission.attributes); // —> ['*'] (all attributes)
 console(permission.granted); // -> true
 
 permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article');
-console(permission.attributes).toEqual([]);
-console(permission.granted).toEqual(false);
-
-ac.grant({
-    role: 'politics/editor',
-    action: 'publish',
-    resource: 'article',
-    condition: {Fn: 'EQUALS', args: {category: 'politics'}},
-    attributes: attrs
-});
-permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article');
-console(permission.attributes).toEqual(attrs);
-console(permission.granted).toEqual(true);
+console(permission.attributes); // -> []
+console(permission.granted); // -> false
 ```
 
 ### Resources and Resource-Attributes
@@ -188,72 +217,57 @@ It accepts either an `Object`:
 // This is actually how the grants are maintained internally.
 let grantsObject = {
     admin: {
-        video: {
-            'create': ['*'],
-            'read': ['*'],
-            'update': ['*'],
-            'delete': ['*']
-        }
+        grants: [
+            {
+                resource: 'video', action: '*', attributes: ['*']
+            }
+        ]
     },
     user: {
-        video: {
-            'create:own': ['*'],
-            'read:own': ['*'],
-            'update:own': ['*'],
-            'delete:own': ['*']
-        }
+        grants: [
+            {
+                resource: 'video', action: 'create', attributes: ['*']
+            },
+            {
+                resource: 'video', action: 'read', attributes: ['*']
+            },
+            {
+                resource: 'video', action: 'update', attributes: ['*']
+            },
+            {
+                resource: 'video', action: 'delete', attributes: ['*']
+            },
+        ]
     },
     "sports/editor": {
-        article: {
-            "create:any": [
-                {
-                    attributes: ["*"],
-                    condition: {
-                        Fn: 'EQUALS',
-                        args: {
-                            'category': 'sports'
-                        }
+        grants: [
+            {
+                resource: 'article',
+                action: '*',
+                attributes: ["*"],
+                condition: {
+                    Fn: 'EQUALS',
+                    args: {
+                        'category': 'sports'
                     }
                 }
-            ],
-            "update:any": [
-                {
-                    attributes: ["*"],
-                    condition: {
-                        Fn: 'EQUALS',
-                        args: {
-                            'category': 'sports'
-                        }
-                    }
-                }
-            ]
-        }
+            }   
+        ] 
     },
     "sports/writer": {
-        article: {
-            "create:any": [
-                {
-                    attributes: ["*", "!status"],
-                    condition: {
-                        Fn: 'EQUALS',
-                        args: {
-                            'category': 'sports'
-                        }
+        grants: [
+            {
+                resource: 'article',
+                action: ['create', 'update'],
+                attributes: ["*", "!status"],
+                condition: {
+                    Fn: 'EQUALS',
+                    args: {
+                        'category': 'sports'
                     }
                 }
-            ],
-            "update:any": [
-                {
-                    attributes: ["*", "!status"],
-                    condition: {
-                        Fn: 'EQUALS',
-                        args: {
-                            'category': 'sports'
-                        }
-                    }
-                }
-            ]
-        }
+            }   
+        ] 
     }
 };
 
@@ -268,11 +282,12 @@ let grantList = [
     { role: 'admin', resource: 'video', action: 'update', attributes: ['*'] },
     { role: 'admin', resource: 'video', action: 'delete', attributes: ['*'] },
 
-    { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
+    { role: 'user', resource: 'video', action: 'create', attributes: ['*'] },
     { role: 'user', resource: 'video', action: 'read', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] },
-
+    { role: 'user', resource: 'video', action: 'update', attributes: ['*'] },
+    { role: 'user', resource: 'video', action: 'delete', attributes: ['*'] },
+    { role: 'user', resource: 'photo', action: '*', attributes: ['*'] },
+    { role: 'user', resource: 'article', action: ['*', '!delete'], attributes: ['*'] },
     { role: 'sports/editor', resource: 'article', action: 'create', attributes: ['*'],
       condition: { "Fn": "EQUALS", "args": { "category": "sports" } }
     },

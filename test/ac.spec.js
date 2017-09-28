@@ -40,36 +40,36 @@ describe('Test Suite: Access Control', function () {
     // valid grants object
     let grantsObject = {
         admin: {
-            video: {
-                'create': [{
-                    attributes: ['*']
-                }],
-                'read': [{
-                    attributes: ['*']
-                }],
-                'update': [{
-                    attributes: ['*']
-                }],
-                'delete': [{
-                    attributes: ['*']
-                }]
-            }
+            grants: [
+                {
+                    resource: 'video', action: 'create', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'read', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'update', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'delete', attributes: ['*']
+                }
+            ]
         },
         user: {
-            video: {
-                'create': [{
-                    attributes: ['*']
-                }],
-                'read': [{
-                    attributes: ['*']
-                }],
-                'update': [{
-                    attributes: ['*']
-                }],
-                'delete': [{
-                    attributes: ['*']
-                }]
-            }
+            grants: [
+                {
+                    resource: 'video', action: 'create', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'read', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'update', attributes: ['*']
+                },
+                {
+                    resource: 'video', action: 'delete', attributes: ['*']
+                }
+            ]
         }
     };
 
@@ -102,36 +102,26 @@ describe('Test Suite: Access Control', function () {
     let conditionalGrantObject = {
         "sports/editor":
         {
-            "article": {
-                "create": [
-                    {
-                        "attributes": ["*"],
-                        "condition": categorySportsCondition
-                    }
-                ],
-                "update": [
-                    {
-                        "attributes": ["*"],
-                        "condition": categorySportsCondition
-                    }
-                ]
-            }
+            grants: [
+                {
+                    resource: 'article', action: 'create', attributes: ['*'],
+                    condition: categorySportsCondition
+                },
+                {
+                    resource: 'article', action: 'update', attributes: ['*'],
+                    condition: categorySportsCondition
+                }
+            ]
         },
         "sports/writer": {
-            "article": {
-                "create": [
-                    {
-                        "attributes": ["*", "!status"],
-                        "condition": categorySportsCondition
-                    }
-                ],
-                "update": [
-                    {
-                        "attributes": ["*", "!status"],
-                        "condition": categorySportsCondition
-                    }
-                ]
-            }
+            grants: [{
+                resource: 'article', action: 'create', attributes: ['*', '!status'],
+                condition: categorySportsCondition
+            },
+            {
+                resource: 'article', action: 'update', attributes: ['*', '!status'],
+                condition: categorySportsCondition
+            }]
         }
     }
 
@@ -143,39 +133,6 @@ describe('Test Suite: Access Control', function () {
     //  TESTS
     //----------------------------
 
-    it('should construct with grants array or object, output a grants object', function () {
-        let ac = new AccessControl(grantList);
-        let grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create']).toEqual(jasmine.any(Array));
-        // console.log(grants);
-
-        ac = new AccessControl(grantsObject);
-        grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create']).toEqual(jasmine.any(Array));
-    });
-
-    it('should construct with conditional grants array output a grants object', function () {
-        let ac = new AccessControl(conditionalGrantList);
-        let grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants['sports/writer'])).toEqual('object');
-        expect(grants['sports/writer'].article['create']).toEqual(jasmine.any(Array));
-        // console.log(grants);
-    });
-
-    it('should construct with conditional grants object output a grants object', function () {
-        let ac = new AccessControl(conditionalGrantObject);
-        let grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants['sports/editor'])).toEqual('object');
-        expect(grants['sports/editor'].article['create']).toEqual(jasmine.any(Array));
-        // console.log(grants);
-    });
-
     it('should add grants from flat list (db), check/remove roles and resources', function () {
         let ac = this.ac;
         ac.setGrants(grantList);
@@ -184,22 +141,15 @@ describe('Test Suite: Access Control', function () {
         // console.log('roles', ac.getRoles());
 
         expect(ac.getRoles().length).toEqual(2);
-        expect(ac.getResources().length).toEqual(1);
         expect(ac.hasRole('admin')).toEqual(true);
         expect(ac.hasRole('user')).toEqual(true);
         expect(ac.hasRole('moderator')).toEqual(false);
-        expect(ac.hasResource('video')).toEqual(true);
-        expect(ac.hasResource('photo')).toEqual(false);
         // removeRoles should also accept a string
         ac.removeRoles('admin');
         expect(ac.hasRole('admin')).toEqual(false);
         // no role named moderator but this should work
         ac.removeRoles(['user', 'moderator']);
         expect(ac.getRoles().length).toEqual(0);
-        // removeRoles should accept a string or array
-        ac.removeResources(['video']);
-        expect(ac.getResources().length).toEqual(0);
-        expect(ac.hasResource('video')).toEqual(false);
     });
 
     it('should add conditional grants from flat list (db), check/remove roles and resources', function () {
@@ -210,22 +160,14 @@ describe('Test Suite: Access Control', function () {
         // console.log('roles', ac.getRoles());
 
         expect(ac.getRoles().length).toEqual(2);
-        expect(ac.getResources().length).toEqual(1);
         expect(ac.hasRole('sports/editor')).toEqual(true);
         expect(ac.hasRole('sports/writer')).toEqual(true);
         expect(ac.hasRole('sports/moderator')).toEqual(false);
-        expect(ac.hasResource('article')).toEqual(true);
-        expect(ac.hasResource('category')).toEqual(false);
-        // removeRoles should also accept a string
         ac.removeRoles('sports/editor');
         expect(ac.hasRole('sports/editor')).toEqual(false);
         // no role named moderator but this should work
         ac.removeRoles(['sports/writer', 'moderator']);
         expect(ac.getRoles().length).toEqual(0);
-        // removeRoles should accept a string or array
-        ac.removeResources(['article']);
-        expect(ac.getResources().length).toEqual(0);
-        expect(ac.hasResource('article')).toEqual(false);
     });
 
     it('should grant access and check permissions', function () {
@@ -237,7 +179,6 @@ describe('Test Suite: Access Control', function () {
         }];
 
         ac.grant('user').execute('create').on('photo', attrs);
-        expect(ac.getGrants().user.photo['create']).toEqual(conditionalAttrs);
         expect(ac.can('user').execute('create').on('photo').attributes).toEqual(attrs);
 
         // grant multiple roles the same permission for the same resource
@@ -246,13 +187,56 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('admin').execute('read').on('photo').granted).toEqual(true);
 
         ac.grant('user').execute('update').on('photo', attrs);
-        expect(ac.getGrants().user.photo['update']).toEqual(conditionalAttrs);
         expect(ac.can('user').execute('update').on('photo').attributes).toEqual(attrs);
 
 
         ac.grant('user').execute('delete').on('photo', attrs);
-        expect(ac.getGrants().user.photo['delete']).toEqual(conditionalAttrs);
         expect(ac.can('user').execute('delete').on('photo').attributes).toEqual(attrs);
+    });
+
+    it('should grant access and check permissions for wilded card resources', function () {
+        const ac = this.ac;
+        const attrs = ['*', '!size'];
+        const conditionalAttrs = [{
+            attributes: attrs,
+            condition: undefined
+        }];
+
+        ac.grant('user1').execute('create').on('!photo', attrs);
+        expect(ac.can('user1').execute('create').on('photo').granted).toEqual(false);
+        expect(ac.can('user1').execute('create').on('video').granted).toEqual(true);
+        ac.grant('user2').execute('create').on(['photo', 'video'], attrs);
+        expect(ac.can('user2').execute('create').on('photo').granted).toEqual(true);
+        expect(ac.can('user2').execute('create').on('video').granted).toEqual(true);
+        ac.grant('user3').execute('create').on(['!(photo|video)'], attrs);
+        expect(ac.can('user3').execute('create').on('photo').granted).toEqual(false);
+        expect(ac.can('user3').execute('create').on('video').granted).toEqual(false);
+    });
+
+    it('should grant access and check permissions for wilded card actions', function () {
+        const ac = this.ac;
+        const attrs = ['*', '!size'];
+        const conditionalAttrs = [{
+            attributes: attrs,
+            condition: undefined
+        }];
+
+        ac.grant('user1').execute('!create').on('photo', attrs);
+        expect(ac.can('user1').execute('create').on('photo').granted).toEqual(false);
+        expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);
+
+        ac.grant('user1').execute(['*', '!create']).on('photo', attrs);
+        expect(ac.can('user1').execute('create').on('photo').granted).toEqual(false);
+        expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);
+        expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);        
+
+        ac.grant('user2').execute(['create', 'update']).on(['photo'], attrs);
+        expect(ac.can('user2').execute('update').on('photo').granted).toEqual(true);
+        expect(ac.can('user2').execute('create').on('photo').granted).toEqual(true);
+
+        ac.grant('user3').execute(['*', '!(create|update)']).on(['photo'], attrs);
+        expect(ac.can('user3').execute('update').on('photo').granted).toEqual(false);
+        expect(ac.can('user3').execute('create').on('photo').granted).toEqual(false);
     });
 
     it('should filter object properties', function () {
@@ -269,7 +253,6 @@ describe('Test Suite: Access Control', function () {
         }];
 
         ac.grant('editor').execute('publish').on('article', attrs);
-        expect(ac.getGrants().editor.article['publish']).toEqual(conditionalAttrs);
         let permission = ac.can('editor').execute('publish').on('article');
         expect(permission.attributes).toEqual(attrs);
         expect(permission.granted).toEqual(true);

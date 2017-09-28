@@ -229,7 +229,6 @@ class Access {
         this._.action = action;
         if (resource) this._.resource = resource;
         if (attributes) this._.attributes = attributes;
-        this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];
         utils.commitToGrants(this._grants, this._);
         // important: reset attributes for chained methods
         this._.attributes = undefined;

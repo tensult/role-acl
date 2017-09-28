@@ -65,6 +65,7 @@
     "typescript": "^2.4.2"
   },
   "dependencies": {
-    "notation": "^1.0.0"
+    "micromatch": "^3.1.0",
+    "notation": "^1.1.0"
   }
 }
