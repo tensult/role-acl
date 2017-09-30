@@ -42,16 +42,16 @@ describe('Test Suite: Access Control', function () {
         admin: {
             grants: [
                 {
-                    resource: 'video', action: 'create', attributes: ['*']
+                    resource: 'video', action: 'create'
                 },
                 {
-                    resource: 'video', action: 'read', attributes: ['*']
+                    resource: 'video', action: 'read'
                 },
                 {
-                    resource: 'video', action: 'update', attributes: ['*']
+                    resource: 'video', action: 'update'
                 },
                 {
-                    resource: 'video', action: 'delete', attributes: ['*']
+                    resource: 'video', action: 'delete'
                 }
             ]
         },

@@ -108,7 +108,7 @@ class AccessControl {
         this._grants = {};
         let type:string = utils.type(grantsObject);
         if (type === 'object') {
-            this._grants = grantsObject;
+            this._grants = utils.normalizeGrantsObject(grantsObject);
         } else if (type === 'array') {
             grantsObject.forEach((item:any) => utils.commitToGrants(this._grants, item));
         }

@@ -1,5 +1,6 @@
 import { IAccessInfo, IQueryInfo, ICondition } from './core';
 declare const utils: {
+    clone(o: any): any;
     type(o: any): string;
     hasDefined(o: any, propName: string): boolean;
     toStringArray(value: any): string[];
@@ -11,6 +12,7 @@ declare const utils: {
     subtractArray(arrA: string[], arrB: string[]): string[];
     eachKey(o: any, callback: (key: string, index?: number) => void): void;
     getFlatRoles(grants: any, roles: string | string[], context?: any): string[];
+    normalizeGrantsObject(grants: any): any;
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo;
     normalizeAccessInfo(access: IAccessInfo): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;

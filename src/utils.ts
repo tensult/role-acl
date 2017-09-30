@@ -7,6 +7,10 @@ import { Conditions, conditionEvaluator } from './condtions';
 
 const utils = {
 
+    clone(o: any): any {
+        return JSON.parse(JSON.stringify(o));
+    },
+
     type(o: any): string {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
     },
@@ -79,6 +83,19 @@ const utils = {
             }
         });
         return arr;
+    },
+
+    normalizeGrantsObject(grants: any): any {
+        const grantsCopy = utils.clone(grants);
+        for (let role in grantsCopy) {
+            if(!grantsCopy[role].grants) {
+                continue;
+            }
+            grantsCopy[role].grants.forEach((grant) => {
+                grant.attributes = grant.attributes || ['*'];
+            });
+        }
+        return grantsCopy;
     },
 
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
@@ -164,7 +181,7 @@ const utils = {
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
     commitToGrants(grants: any, access: IAccessInfo) {
-        access = utils.normalizeAccessInfo(access);  
+        access = utils.normalizeAccessInfo(access);
         (access.role as Array<string>).forEach((role: string) => {
             grants[role] = grants[role] || {};
             grants[role].grants = grants[role].grants || []
@@ -172,7 +189,7 @@ const utils = {
                 resource: access.resource,
                 action: access.action,
                 attributes: access.attributes,
-                condition: access.condition                
+                condition: access.condition
             });
         });
     },
@@ -209,7 +226,7 @@ const utils = {
         }, []).filter((grant) => {
             return MicroMatch.some(query.resource, grant.resource) && MicroMatch.some(query.action, grant.action);
         }).map((grant) => {
-            return {attributes: grant.attributes.slice(), condition: grant.condition};
+            return { attributes: grant.attributes.slice(), condition: grant.condition };
         });
     },
 
