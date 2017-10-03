@@ -79,7 +79,7 @@ const utils = {
                 }).map((roleCondition: any) => {
                     return roleCondition.role;
                 })
-                arr = utils.uniqConcat(arr, utils.getFlatRoles(grants, rolesMetCondition, context));
+                arr = utils.uniqConcat(arr, utils.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
             }
         });
         return arr;
@@ -211,7 +211,6 @@ const utils = {
         }
         // throws if has any invalid property value
         query = utils.normalizeQueryInfo(query);
-
 
         // get roles and extended roles in a flat array
         let roles: string[] = utils.getFlatRoles(grants, query.role, query.context, query.skipConditions);
