@@ -44,7 +44,6 @@ declare class Permission {
      *         An `IQueryInfo` arbitrary object.
      */
     constructor(grants: any, query: IQueryInfo);
-    private computePermittedAttributes(conditionalAttributes);
     /**
      *  Specifies the roles for which the permission is queried for.
      *  Even if the permission is queried for a single role, this will still

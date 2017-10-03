@@ -1,15 +1,15 @@
 import { IQueryInfo, Permission } from '../core';
 import utils from '../utils';
 
- /**
-  *  Represents the inner `Query` class that helps build an access information
-  *  for querying and checking permissions, from the underlying grants model.
-  *  You can get a first instance of this class by calling
-  *  `AccessControl#can(<role>)` method.
-  *  @class
-  *  @inner
-  *  @memberof AccessControl
-  */
+/**
+ *  Represents the inner `Query` class that helps build an access information
+ *  for querying and checking permissions, from the underlying grants model.
+ *  You can get a first instance of this class by calling
+ *  `AccessControl#can(<role>)` method.
+ *  @class
+ *  @inner
+ *  @memberof AccessControl
+ */
 class Query {
 
     /**
@@ -17,14 +17,14 @@ class Query {
      *  @protected
      *  @type {IQueryInfo}
      */
-    protected _:IQueryInfo = {};
+    protected _: IQueryInfo = {};
 
     /**
      *  Main grants object.
      *  @protected
      *  @type {Any}
      */
-    protected _grants:any;
+    protected _grants: any;
 
     /**
      *  Initializes a new instance of `Query`.
@@ -37,7 +37,7 @@ class Query {
      *         Either a single or array of roles or an
      *         {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` arbitrary object}.
      */
-    constructor(grants:any, role?:string|string[]|IQueryInfo) {
+    constructor(grants: any, role?: string | string[] | IQueryInfo) {
         this._grants = grants;
         // if this is a (permission) object, we directly build attributes from
         // grants.
@@ -46,7 +46,7 @@ class Query {
         } else {
             // if this is just role(s); a string or array; we start building
             // the grant object for this.
-            this._.role = <string|string[]>role;
+            this._.role = <string | string[]>role;
         }
     }
 
@@ -61,7 +61,7 @@ class Query {
      *  @returns {Query}
      *           Self instance of `Query`.
      */
-    role(role:string|string[]):Query {
+    role(role: string | string[]): Query {
         this._.role = role;
         return this;
     }
@@ -73,7 +73,7 @@ class Query {
      *  @returns {Query}
      *           Self instance of `Query`.
      */
-    resource(resource:string):Query {
+    resource(resource: string): Query {
         this._.resource = resource;
         return this;
     }
@@ -94,8 +94,8 @@ class Query {
      *           An object that defines whether the permission is granted; and
      *           the resource attributes that the permission is granted for.
      */
-    on(resource:string):Permission {
-        return this._getPermission(this._.action, resource);        
+    on(resource: string, skipConditions?: boolean): Permission {
+        return this._getPermission(this._.action, resource, skipConditions);
     }
 
     /**
@@ -105,15 +105,27 @@ class Query {
      *  @returns {Query}
      *           Self instance of `Query`.
      */
-    context(context:any):Query {
+    context(context: any): Query {
         this._.context = context;
+        return this;
+    }
+
+    /**
+     * A chainer method that sets the skipConditions for this `Query` instance.
+     * @param {Boolean} value
+     *          Indicates if conditions to skipped while querying
+     * @returns {Query}
+     *           Self instance of `Query`.
+     */
+    skipConditions(value: boolean): Query {
+        this._.skipConditions = value;
         return this;
     }
 
     /**
      *  Alias of `context`
      */
-    with(context:any):Query {
+    with(context: any): Query {
         return this.context(context);
     }
 
@@ -138,9 +150,12 @@ class Query {
      *  @param {String} [resource]
      *  @returns {Permission}
      */
-    private _getPermission(action:string, resource?:string):Permission {
+    private _getPermission(action: string, resource?: string, skipConditions?: boolean): Permission {
         this._.action = action;
         if (resource) this._.resource = resource;
+        if (skipConditions !== undefined) {
+            this._.skipConditions = skipConditions;
+        }
         return new Permission(this._grants, this._);
     }
 }

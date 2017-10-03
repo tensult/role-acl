@@ -65,7 +65,7 @@ declare class Query {
      *           An object that defines whether the permission is granted; and
      *           the resource attributes that the permission is granted for.
      */
-    on(resource: string): Permission;
+    on(resource: string, skipConditions?: boolean): Permission;
     /**
      *  A chainer method that sets the context for this `Query` instance.
      *  @param {String} context
@@ -74,6 +74,14 @@ declare class Query {
      *           Self instance of `Query`.
      */
     context(context: any): Query;
+    /**
+     * A chainer method that sets the skipConditions for this `Query` instance.
+     * @param {Boolean} value
+     *          Indicates if conditions to skipped while querying
+     * @returns {Query}
+     *           Self instance of `Query`.
+     */
+    skipConditions(value: boolean): Query;
     /**
      *  Alias of `context`
      */
@@ -91,6 +99,6 @@ declare class Query {
      *  @param {String} [resource]
      *  @returns {Permission}
      */
-    private _getPermission(action, resource?);
+    private _getPermission(action, resource?, skipConditions?);
 }
 export { Query };

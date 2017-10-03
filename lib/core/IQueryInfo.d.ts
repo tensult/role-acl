@@ -25,6 +25,10 @@ interface IQueryInfo {
      */
     action?: string;
     /**
+     *  Indicates if conditions to be skipped while querying.
+     */
+    skipConditions?: boolean;
+    /**
      * Context for evaluating the condition
      * @type {Object}
      */

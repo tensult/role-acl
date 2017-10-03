@@ -55,16 +55,7 @@ class Permission {
         this._.role = query.role;
         this._.resource = query.resource;
         this._.context = query.context;
-        const conditionalAttributes = utils.getUnionConditionalAttrsOfRoles(grants, query);
-        this._.attributes = this.computePermittedAttributes(conditionalAttributes);
-    }
-
-    private computePermittedAttributes(conditionalAttributes) {
-        return conditionalAttributes.filter((conditionalAttributeSet) => {
-            return conditionEvaluator(conditionalAttributeSet.condition, this._.context);
-        }).map((conditionalAttributeSet) => {
-            return conditionalAttributeSet.attributes || ['*'];
-        }).reduce(Notation.Glob.union, []);
+        this._.attributes = utils.getUnionAttrsOfRoles(grants, query);
     }
 
     /**

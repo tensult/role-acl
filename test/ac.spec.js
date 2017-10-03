@@ -228,7 +228,7 @@ describe('Test Suite: Access Control', function () {
         ac.grant('user1').execute(['*', '!create']).on('photo', attrs);
         expect(ac.can('user1').execute('create').on('photo').granted).toEqual(false);
         expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);
-        expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);        
+        expect(ac.can('user1').execute('update').on('photo').granted).toEqual(true);
 
         ac.grant('user2').execute(['create', 'update']).on(['photo'], attrs);
         expect(ac.can('user2').execute('update').on('photo').granted).toEqual(true);
@@ -633,6 +633,22 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('moderator').context(categorySportsContext).execute('update').on('news').granted).toEqual(false);
         // non-existent resource
         expect(ac.can('moderator').context(categorySportsContext).execute('create').on('foo').granted).toEqual(false);
+    });
+
+    it('should skip conditions when skipConditions is used', function () {
+        let ac = this.ac;
+        ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
+        expect(ac.permission({
+            role: 'user', action: 'create', resource: 'article', context: categorySportsContext
+        }).granted).toEqual(true);
+        expect(ac.can('user').execute('create').with(categorySportsContext).on('article').granted).toEqual(true);
+        expect(ac.can('user').execute('create').on('article', true).granted).toEqual(true); // conditions skipped
+        expect(ac.can('user').execute('create').on('article', false).granted).toEqual(false); // context not set
+        expect(ac.can('user').execute('create').on('article').granted).toEqual(false); // context not set     
+        expect(ac.permission({ role: 'user', action: 'create', resource: 'article' }).granted).toEqual(false); // context not set 
+        // context not set and conditions skipped  
+        expect(ac.permission({ role: 'user', action: 'create', resource: 'article', skipConditions: true }).granted).toEqual(true);
+
     });
 
     it('should grant access (variation, chained)', function () {

@@ -11,14 +11,14 @@ declare const utils: {
     uniqConcat(arrA: string[], arrB: string[]): string[];
     subtractArray(arrA: string[], arrB: string[]): string[];
     eachKey(o: any, callback: (key: string, index?: number) => void): void;
-    getFlatRoles(grants: any, roles: string | string[], context?: any): string[];
+    getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): string[];
     normalizeGrantsObject(grants: any): any;
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo;
     normalizeAccessInfo(access: IAccessInfo): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
     commitToGrants(grants: any, access: IAccessInfo): void;
-    getUnionConditionalAttrsOfRoles(grants: any, query: IQueryInfo): string[];
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
     extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void;
     matchesAllElement(values: any, predicateFn: (elm: any) => boolean): any;

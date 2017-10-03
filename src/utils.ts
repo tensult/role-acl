@@ -66,7 +66,7 @@ const utils = {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    getFlatRoles(grants: any, roles: string | string[], context?: any): string[] {
+    getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): string[] {
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.slice();
@@ -75,7 +75,7 @@ const utils = {
             if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
             if (Array.isArray(role.$extend)) {
                 const rolesMetCondition = role.$extend.filter((roleCondition: any) => {
-                    return conditionEvaluator(roleCondition.condition, context);
+                    return skipConditions || conditionEvaluator(roleCondition.condition, context);
                 }).map((roleCondition: any) => {
                     return roleCondition.role;
                 })
@@ -205,7 +205,7 @@ const utils = {
      *
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
-    getUnionConditionalAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -214,7 +214,7 @@ const utils = {
 
 
         // get roles and extended roles in a flat array
-        let roles: string[] = utils.getFlatRoles(grants, query.role, query.context);
+        let roles: string[] = utils.getFlatRoles(grants, query.role, query.context, query.skipConditions);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
         return roles.filter((role) => {
@@ -224,10 +224,12 @@ const utils = {
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
         }, []).filter((grant) => {
-            return MicroMatch.some(query.resource, grant.resource) && MicroMatch.some(query.action, grant.action);
+            return MicroMatch.some(query.resource, grant.resource)
+             && MicroMatch.some(query.action, grant.action)
+             && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
         }).map((grant) => {
-            return { attributes: grant.attributes.slice(), condition: grant.condition };
-        });
+            return grant.attributes.slice();
+        }).reduce(Notation.Glob.union, []);
     },
 
     /**

@@ -21,8 +21,6 @@ export class ListContainsCondition implements IConditionFunction {
             return Array.isArray(context[key]) &&
                 utils.matchesAnyElement(args[key], (elm) => { return context[key].includes(elm); })
         });
-
-
     }
 }
 
