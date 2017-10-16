@@ -148,6 +148,10 @@ declare class AccessControl {
      */
     hasRole(role: string): boolean;
     /**
+     * Get allowedResources
+     */
+    allowedResources(role: string | string[]): string[];
+    /**
      *  Gets an instance of `Query` object. This is used to check whether
      *  the defined access is allowed for the given role(s) and resource.
      *  This object provides chainable methods to define and query the access

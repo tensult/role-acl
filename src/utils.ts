@@ -231,6 +231,26 @@ const utils = {
         }).reduce(Notation.Glob.union, []);
     },
 
+    getUnionResourcesOfRoles(grants: any, role: string | string[]): string[] {
+        if (!grants) {
+            throw new AccessControlError('Grants are not set.');
+        }
+
+        // get roles and extended roles in a flat array
+        const roles: string[] = utils.getFlatRoles(grants, role, undefined, true);
+        // iterate through roles and add permission attributes (array) of
+        // each role to attrsList (array).
+        return roles.filter((role) => {
+            return grants[role] && grants[role].grants;
+        }).map((role) => {
+            return grants[role].grants;
+        }).reduce((allGrants, roleGrants) => {
+            return allGrants.concat(roleGrants);
+        }, []).map((grant) => {
+            return grant.resource;
+        }).reduce(Notation.Glob.union, []);
+    },
+
     /**
      *  Checks the given grants model and gets an array of non-existent roles
      *  from the given roles.

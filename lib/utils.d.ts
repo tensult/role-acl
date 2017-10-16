@@ -19,6 +19,7 @@ declare const utils: {
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
     commitToGrants(grants: any, access: IAccessInfo): void;
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
+    getUnionResourcesOfRoles(grants: any, role: string | string[]): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
     extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void;
     matchesAllElement(values: any, predicateFn: (elm: any) => boolean): any;

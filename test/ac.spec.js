@@ -651,6 +651,21 @@ describe('Test Suite: Access Control', function () {
 
     });
 
+    it('should return allowed resources for given roles', function () {
+        let ac = this.ac;
+        ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
+        ac.grant('user').execute('*').on('image');
+        ac.extendRole('admin', 'user');
+        ac.grant('admin').execute('*').on('category');
+        ac.extendRole('owner', 'admin');
+        ac.grant('owner').execute('*').on('video');
+        
+        expect(ac.allowedResources('user').sort()).toEqual(['article', 'image']);
+        expect(ac.allowedResources('admin').sort()).toEqual(['article', 'category', 'image']);
+        expect(ac.allowedResources('owner').sort()).toEqual(['article', 'category', 'image', 'video']);
+        
+    });
+
     it('should grant access (variation, chained)', function () {
         let ac = this.ac;
         ac.setGrants(grantsObject);
