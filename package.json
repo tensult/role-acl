@@ -1,6 +1,6 @@
 {
   "name": "role-acl",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Role, Attribute and Condition based Access Control for Node.js",
   "main": "./index.js",
   "directories": {
