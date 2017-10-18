@@ -20,6 +20,9 @@ declare const utils: {
     commitToGrants(grants: any, access: IAccessInfo): void;
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     getUnionResourcesOfRoles(grants: any, role: string | string[]): string[];
+    areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): boolean;
+    areExtendingRolesAllowing(roleConditions: any[], allowingRoles: any, query: IQueryInfo): boolean;
+    getAllowingRoles(grants: any, query: IQueryInfo): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
     extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void;
     matchesAllElement(values: any, predicateFn: (elm: any) => boolean): any;

@@ -88,12 +88,13 @@ const utils = {
     normalizeGrantsObject(grants: any): any {
         const grantsCopy = utils.clone(grants);
         for (let role in grantsCopy) {
-            if(!grantsCopy[role].grants) {
+            if (!grantsCopy[role].grants) {
                 continue;
             }
             grantsCopy[role].grants.forEach((grant) => {
                 grant.attributes = grant.attributes || ['*'];
             });
+            grantsCopy[role].score = 1;
         }
         return grantsCopy;
     },
@@ -183,7 +184,7 @@ const utils = {
     commitToGrants(grants: any, access: IAccessInfo) {
         access = utils.normalizeAccessInfo(access);
         (access.role as Array<string>).forEach((role: string) => {
-            grants[role] = grants[role] || {};
+            grants[role] = grants[role] || { score: 1 };
             grants[role].grants = grants[role].grants || []
             grants[role].grants.push({
                 resource: access.resource,
@@ -224,8 +225,8 @@ const utils = {
             return allGrants.concat(roleGrants);
         }, []).filter((grant) => {
             return MicroMatch.some(query.resource, grant.resource)
-             && MicroMatch.some(query.action, grant.action)
-             && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
+                && MicroMatch.some(query.action, grant.action)
+                && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
         }).map((grant) => {
             return grant.attributes.slice();
         }).reduce(Notation.Glob.union, []);
@@ -251,6 +252,45 @@ const utils = {
         }).reduce(Notation.Glob.union, []);
     },
 
+    areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
+        if(!grants) {
+            return false;
+        }
+        return grants.some((grant) => {
+            return MicroMatch.some(query.resource, grant.resource)
+                && MicroMatch.some(query.action, grant.action)
+                && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
+        });
+    },
+
+    areExtendingRolesAllowing(roleConditions: any[], allowingRoles: any, query: IQueryInfo) {
+        if(!roleConditions) {
+            return false;
+        }
+        return roleConditions.some((roleCondition) => {
+            return allowingRoles[roleCondition.role] &&
+                (query.skipConditions || conditionEvaluator(roleCondition.condition, query.context));
+        });
+    },
+
+    getAllowingRoles(grants: any, query: IQueryInfo) {
+        if (!grants) {
+            throw new AccessControlError('Grants are not set.');
+        }
+        const roles = Object.keys(grants);
+        const allowingRoles = {};
+        roles.sort((role1, role2) => {
+            return grants[role1].score - grants[role2].score
+        }).reduce((allowingRoles, role) => {
+            allowingRoles[role] = utils.areGrantsAllowing(grants[role].grants, query) || 
+            utils.areExtendingRolesAllowing(grants[role].$extend, allowingRoles, query);
+            return allowingRoles;
+        }, allowingRoles);
+
+        return Object.keys(allowingRoles).filter((role) => {
+            return allowingRoles[role];
+        });
+    },
     /**
      *  Checks the given grants model and gets an array of non-existent roles
      *  from the given roles.
@@ -297,11 +337,16 @@ const utils = {
         }
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+        const allExtendingRoles = utils.getFlatRoles(grants, arrExtRoles, null, true);
+        const extensionScore = allExtendingRoles.reduce((total, role) => {
+            return total + grants[role].score;
+        }, 0)
         roles.forEach((role: string) => {
-            if (arrExtRoles.indexOf(role) >= 0) {
+            if (allExtendingRoles.indexOf(role) >= 0) {
                 throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
             }
-            grants[role] = grants[role] || {};
+            grants[role] = grants[role] || { score: 1 };
+            grants[role].score += extensionScore;
             grants[role].$extend = grants[role].$extend || [];
             grants[role].$extend = grants[role].$extend.concat(arrExtRoles.map((extRole) => {
                 return {

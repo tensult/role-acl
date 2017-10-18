@@ -161,17 +161,23 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeRoles(roles:string|string[]):AccessControl {
-        let rolesToRemove:string[] = utils.toStringArray(roles);
-        rolesToRemove.forEach((role:string) => {
-            delete this._grants[role];
-        });
-        // also remove these roles from $extend list of each remaining role.
+        let rolesToRemove:string[] = utils.toStringArray(roles).sort();
+        // Remove these roles from $extend list of each remaining role.
         this._each((role:string, roleItem:any) => {
             if (Array.isArray(roleItem.$extend)) {
+                // Adjust scores
+                roleItem.$extend.forEach((roleCondition) => {
+                    if(rolesToRemove.indexOf(roleCondition.role) !== -1) {
+                        roleItem.score -= this._grants[role].score;
+                    }
+                });
                 roleItem.$extend = roleItem.$extend.filter((roleCondition) => {
                     return rolesToRemove.indexOf(roleCondition.role) === -1;
                 })
             }
+        });
+        rolesToRemove.forEach((role:string) => {
+            delete this._grants[role];
         });
         return this;
     }
@@ -201,7 +207,20 @@ class AccessControl {
     }
 
     /**
+     * Get roles which allow this permission
+     * @param {IQueryInfo} - permission query object we want to check
+     * 
+     * @returns {String[]} - roles 
+     */
+    allowingRoles(query: IQueryInfo) {
+        return utils.getAllowingRoles(this._grants, query);
+    }
+
+    /**
      * Get allowedResources
+    *  @param {String | String[]} role - Role to be checked.
+     *
+     *  @returns {String[]} - resources
      */
     allowedResources(role: string | string[]) {
         return utils.getUnionResourcesOfRoles(this._grants, role);

@@ -148,7 +148,17 @@ declare class AccessControl {
      */
     hasRole(role: string): boolean;
     /**
+     * Get roles which allow this permission
+     * @param {IQueryInfo} - permission query object we want to check
+     *
+     * @returns {String[]} - roles
+     */
+    allowingRoles(query: IQueryInfo): string[];
+    /**
      * Get allowedResources
+    *  @param {String | String[]} role - Role to be checked.
+     *
+     *  @returns {String[]} - resources
      */
     allowedResources(role: string | string[]): string[];
     /**

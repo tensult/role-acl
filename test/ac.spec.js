@@ -666,6 +666,35 @@ describe('Test Suite: Access Control', function () {
         
     });
 
+    it('should return allowing roles for given permission', function () {
+        let ac = this.ac;
+        ac.setGrants(conditionalGrantObject);
+        ac.grant('user').condition(categorySportsCondition).execute('create').on('blog');
+        ac.grant('user').execute('*').on('image');
+        ac.extendRole('sports/editor', 'user');        
+        ac.extendRole('admin', 'user');
+        ac.grant('admin').execute('*').on('category');
+        ac.extendRole('owner', 'admin');
+        ac.grant('owner').execute('*').on('video');
+        ac.grant('owner').execute('*').on('role');        
+        
+        expect(ac.allowingRoles({resource: "image", action: "create"}).sort()).toEqual(['admin', 'owner', 'sports/editor', 'user']);
+        expect(ac.allowingRoles({resource: "video", action: "create"}).sort()).toEqual(['owner']);
+        expect(ac.allowingRoles({resource: "category", action: "create"}).sort()).toEqual(['admin', 'owner']);
+        expect(ac.allowingRoles({resource: "blog", action: "create"})).toEqual([]);   
+        expect(ac.allowingRoles({resource: "blog", action: "create", context: categoryPoliticsContext})).toEqual([]);           
+        expect(ac.allowingRoles({resource: "blog", 
+            action: "create", 
+            context: categorySportsContext
+        }).sort()).toEqual(['admin', 'owner', 'sports/editor', 'user']);        
+        expect(ac.allowingRoles({
+            resource: "article", 
+            action: "create", 
+            context: categorySportsContext
+        }).sort()).toEqual(['sports/editor', 'sports/writer']);           
+        
+    });
+
     it('should grant access (variation, chained)', function () {
         let ac = this.ac;
         ac.setGrants(grantsObject);
@@ -777,6 +806,15 @@ describe('Test Suite: Access Control', function () {
         expect(() => ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3'])).toThrow();
 
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
+    });
+
+    it('should throw error while trying extend own role', function() {
+        let ac = this.ac;
+        ac.grant('user').execute('create').when(categorySportsCondition).on('book');
+        ac.extendRole('editor', "user");
+        ac.grant('editor').execute('delete').on('book');
+        expect(() => ac.extendRole('user', "editor")).toThrow();
+        expect(() => ac.extendRole('user', "user")).toThrow(); 
     });
 
     it('should extend roles when conditions used', function () {
