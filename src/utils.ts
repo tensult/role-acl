@@ -92,7 +92,7 @@ const utils = {
             grantsCopy[role].grants.forEach((grant) => {
                 grant.attributes = grant.attributes || ['*'];
             });
-            grantsCopy[role].score = 1;
+            grantsCopy[role].score = grantsCopy[role].score || 1;
         }
         return grantsCopy;
     },
