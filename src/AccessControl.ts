@@ -164,16 +164,14 @@ class AccessControl {
         let rolesToRemove:string[] = utils.toStringArray(roles).sort();
         // Remove these roles from $extend list of each remaining role.
         this._each((role:string, roleItem:any) => {
-            if (Array.isArray(roleItem.$extend)) {
-                // Adjust scores
-                roleItem.$extend.forEach((roleCondition) => {
-                    if(rolesToRemove.indexOf(roleCondition.role) !== -1) {
-                        roleItem.score -= this._grants[role].score;
+            if (roleItem.$extend) {
+                // Adjust scores and remove
+                rolesToRemove.forEach((role) => {
+                    if(roleItem.$extend[role]) {
+                        roleItem.score -= this._grants[role].score; 
+                        delete roleItem.$extend[role];                       
                     }
                 });
-                roleItem.$extend = roleItem.$extend.filter((roleCondition) => {
-                    return rolesToRemove.indexOf(roleCondition.role) === -1;
-                })
             }
         });
         rolesToRemove.forEach((role:string) => {

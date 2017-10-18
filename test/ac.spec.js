@@ -691,8 +691,14 @@ describe('Test Suite: Access Control', function () {
             resource: "article", 
             action: "create", 
             context: categorySportsContext
-        }).sort()).toEqual(['sports/editor', 'sports/writer']);           
+        }).sort()).toEqual(['sports/editor', 'sports/writer']);
         
+        // should adjust permissions when role is removed
+        ac.removeRoles('user');
+        expect(ac.allowingRoles({resource: "blog", 
+            action: "create", 
+            context: categorySportsContext
+        }).sort()).toEqual([]);         
     });
 
     it('should grant access (variation, chained)', function () {
@@ -777,31 +783,26 @@ describe('Test Suite: Access Control', function () {
 
         ac.grant('admin').execute('create').on('book');
         ac.extendRole('onur', 'admin');
-        expect(ac.getGrants().onur.$extend.length).toEqual(1);
-        expect(ac.getGrants().onur.$extend[0].role).toEqual('admin');
+        expect(ac.getGrants().onur.$extend['admin']).toEqual({condition: undefined});
 
         ac.grant('role2, role3, editor, viewer, agent').execute('create').on('book');
 
         ac.extendRole('onur', ['role2', 'role3']);
-        expect(ac.getGrants().onur.$extend.map((elm) => { return elm.role })).toEqual(['admin', 'role2', 'role3']);
+        expect(Object.keys(ac.getGrants().onur.$extend).sort()).toEqual(['admin', 'role2', 'role3']);
 
         ac.grant('admin').extend('editor');
-        expect(ac.getGrants().admin.$extend.map((elm) => { return elm.role })).toEqual(['editor']);
+        expect(Object.keys(ac.getGrants().admin.$extend)).toEqual(['editor']);
         ac.grant('admin').extend(['viewer', 'editor', 'agent']).execute('read').on('video');
-        let extendedRoles = ac.getGrants().admin.$extend.map((elm) => { return elm.role });
-        expect(extendedRoles).toContain('editor');
-        expect(extendedRoles).toContain('agent');
-        expect(extendedRoles).toContain('viewer');
-
+        expect(Object.keys(ac.getGrants().admin.$extend).sort()).toEqual(['agent', 'editor', 'viewer']);
         ac.grant(['editor', 'agent']).extend(['role2', 'role3']).execute('update').on('photo');
-        expect(ac.getGrants().editor.$extend.map((elm) => { return elm.role })).toEqual(['role2', 'role3']);
+        expect(Object.keys(ac.getGrants().editor.$extend).sort()).toEqual(['role2', 'role3']);
 
         ac.removeRoles(['editor', 'agent']);
         expect(ac.getGrants().editor).toBeUndefined();
         expect(ac.getGrants().agent).toBeUndefined();
-        expect(ac.getGrants().admin.$extend.map((elm) => { return elm.role })).not.toContain('editor');
-        expect(ac.getGrants().admin.$extend.map((elm) => { return elm.role })).not.toContain('agent');
-
+        expect(ac.getGrants().admin.$extend['editor']).toBeUndefined();
+        expect(ac.getGrants().admin.$extend['agent']).toBeUndefined();
+        
         expect(() => ac.grant('roleX').extend('roleX')).toThrow();
         expect(() => ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3'])).toThrow();
 

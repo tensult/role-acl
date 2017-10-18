@@ -3,7 +3,7 @@ import * as Notation from 'notation';
 import * as MicroMatch from 'micromatch';
 // own modules
 import { IAccessInfo, IQueryInfo, AccessControlError, ICondition } from './core';
-import { Conditions, conditionEvaluator } from './condtions';
+import { conditionEvaluator } from './condtions';
 
 const utils = {
 
@@ -71,14 +71,12 @@ const utils = {
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.slice();
         roles.forEach((roleName: string) => {
-            let role: any = grants[roleName];
-            if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
-            if (Array.isArray(role.$extend)) {
-                const rolesMetCondition = role.$extend.filter((roleCondition: any) => {
-                    return skipConditions || conditionEvaluator(roleCondition.condition, context);
-                }).map((roleCondition: any) => {
-                    return roleCondition.role;
-                })
+            let roleItem: any = grants[roleName];
+            if (!roleItem) throw new AccessControlError(`Role not found: "${roleName}"`);
+            if (roleItem.$extend) {
+                const rolesMetCondition = Object.keys(roleItem.$extend).filter((role) => {
+                    return skipConditions || conditionEvaluator(roleItem.$extend[role].condition, context);
+                });
                 arr = utils.uniqConcat(arr, utils.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
             }
         });
@@ -263,13 +261,13 @@ const utils = {
         });
     },
 
-    areExtendingRolesAllowing(roleConditions: any[], allowingRoles: any, query: IQueryInfo) {
-        if(!roleConditions) {
+    areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo) {
+        if(!roleExtensionObject) {
             return false;
         }
-        return roleConditions.some((roleCondition) => {
-            return allowingRoles[roleCondition.role] &&
-                (query.skipConditions || conditionEvaluator(roleCondition.condition, query.context));
+        return Object.keys(roleExtensionObject).some((role) => {
+            return allowingRoles[role] &&
+                (query.skipConditions || conditionEvaluator(roleExtensionObject[role].condition, query.context));
         });
     },
 
@@ -347,13 +345,11 @@ const utils = {
             }
             grants[role] = grants[role] || { score: 1 };
             grants[role].score += extensionScore;
-            grants[role].$extend = grants[role].$extend || [];
-            grants[role].$extend = grants[role].$extend.concat(arrExtRoles.map((extRole) => {
-                return {
-                    role: extRole,
-                    condition
-                }
-            }));
+            grants[role].$extend = grants[role].$extend || {};
+            arrExtRoles.forEach((extRole) => {
+                grants[role].$extend[extRole] = grants[role].$extend[extRole] || {};
+                grants[role].$extend[extRole].condition = condition
+            });
         });
     },
 
