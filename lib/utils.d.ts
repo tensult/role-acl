@@ -19,6 +19,7 @@ declare const utils: {
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
     commitToGrants(grants: any, access: IAccessInfo): void;
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
+    getUnionGrantsOfRoles(grants: any, role: string | string[]): IAccessInfo[];
     getUnionResourcesOfRoles(grants: any, role: string | string[]): string[];
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): boolean;
     areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo): boolean;

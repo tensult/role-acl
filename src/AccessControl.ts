@@ -68,7 +68,7 @@ class AccessControl {
     /**
      *  @private
      */
-    private _grants:any;
+    private _grants: any;
 
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
@@ -77,7 +77,7 @@ class AccessControl {
      *  @param {Object|Array} grants - A list containing the access grant
      *      definitions. See the structure of this object in the examples.
      */
-    constructor(grants:any = {}) {
+    constructor(grants: any = {}) {
         this.setGrants(grants);
     }
 
@@ -90,7 +90,7 @@ class AccessControl {
      *
      *  @return {Object} - Hash-map of grants.
      */
-    getGrants():any {
+    getGrants(): any {
         return this._grants;
     }
 
@@ -104,13 +104,13 @@ class AccessControl {
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
-    setGrants(grantsObject:any):AccessControl {
+    setGrants(grantsObject: any): AccessControl {
         this._grants = {};
-        let type:string = utils.type(grantsObject);
+        let type: string = utils.type(grantsObject);
         if (type === 'object') {
             this._grants = utils.normalizeGrantsObject(grantsObject);
         } else if (type === 'array') {
-            grantsObject.forEach((item:any) => utils.commitToGrants(this._grants, item));
+            grantsObject.forEach((item: any) => utils.commitToGrants(this._grants, item));
         }
         return this;
     }
@@ -121,7 +121,7 @@ class AccessControl {
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
-    reset():AccessControl {
+    reset(): AccessControl {
         this._grants = {};
         return this;
     }
@@ -146,7 +146,7 @@ class AccessControl {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    extendRole(roles:string|string[], extenderRoles:string|string[], condition?: ICondition):AccessControl {
+    extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl {
         utils.extendRole(this._grants, roles, extenderRoles, condition);
         return this;
     }
@@ -160,21 +160,21 @@ class AccessControl {
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
-    removeRoles(roles:string|string[]):AccessControl {
-        let rolesToRemove:string[] = utils.toStringArray(roles).sort();
+    removeRoles(roles: string | string[]): AccessControl {
+        let rolesToRemove: string[] = utils.toStringArray(roles).sort();
         // Remove these roles from $extend list of each remaining role.
-        this._each((role:string, roleItem:any) => {
+        this._each((role: string, roleItem: any) => {
             if (roleItem.$extend) {
                 // Adjust scores and remove
                 rolesToRemove.forEach((role) => {
-                    if(roleItem.$extend[role]) {
-                        roleItem.score -= this._grants[role].score; 
-                        delete roleItem.$extend[role];                       
+                    if (roleItem.$extend[role]) {
+                        roleItem.score -= this._grants[role].score;
+                        delete roleItem.$extend[role];
                     }
                 });
             }
         });
-        rolesToRemove.forEach((role:string) => {
+        rolesToRemove.forEach((role: string) => {
             delete this._grants[role];
         });
         return this;
@@ -189,7 +189,7 @@ class AccessControl {
      *  ac.grant('admin, user').createAny('video').grant('user').readOwn('profile');
      *  console.log(ac.getRoles()); // ["admin", "user"]
      */
-    getRoles():string[] {
+    getRoles(): string[] {
         return Object.keys(this._grants);
     }
 
@@ -200,10 +200,19 @@ class AccessControl {
      *
      *  @returns {Boolean}
      */
-    hasRole(role:string):boolean {
+    hasRole(role: string): boolean {
         return this._grants.hasOwnProperty(role);
     }
 
+    /**
+    *  Get allowed grants
+    *  @param {String | String[]} role - Role to be checked.
+    *
+    *  @returns {IAccessInfo[]} - grants
+    */
+    allowedGrants(role: string | string[]) {
+        return utils.getUnionGrantsOfRoles(this._grants, role);
+    }
     /**
      * Get roles which allow this permission
      * @param {IQueryInfo} - permission query object we want to check
@@ -216,7 +225,7 @@ class AccessControl {
 
     /**
      * Get allowedResources
-    *  @param {String | String[]} role - Role to be checked.
+     *  @param {String | String[]} role - Role to be checked.
      *
      *  @returns {String[]} - resources
      */
@@ -255,7 +264,7 @@ class AccessControl {
      *  ac.can(['admin', 'user']).createOwn('profile');
      *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
      */
-    can(role:string|string[]|IQueryInfo):Query {
+    can(role: string | string[] | IQueryInfo): Query {
         return new Query(this._grants, role);
     }
 
@@ -263,7 +272,7 @@ class AccessControl {
      *  Alias of `can()`.
      *  @private
      */
-    access(role:string|string[]|IQueryInfo):Query {
+    access(role: string | string[] | IQueryInfo): Query {
         return this.can(role);
     }
 
@@ -293,9 +302,9 @@ class AccessControl {
      *  permission.attributes; // Array e.g. [ 'username', 'password', 'company.*']
      *  permission.filter(object); // { username, password, company: { name, address, ... } }
      */
-     permission(queryInfo:IQueryInfo):Permission {
-         return new Permission(this._grants, queryInfo);
-     }
+    permission(queryInfo: IQueryInfo): Permission {
+        return new Permission(this._grants, queryInfo);
+    }
 
     /**
      *  Gets an instance of `Grant` (inner) object. This is used to grant access
@@ -350,7 +359,7 @@ class AccessControl {
      *  // Note: when attributes is omitted, it will default to `['*']`
      *  // which means all attributes (of the resource) are allowed.
      */
-    grant(role:string|string[]|IAccessInfo):Access {
+    grant(role: string | string[] | IAccessInfo): Access {
         return new Access(this._grants, role);
     }
 
@@ -358,7 +367,7 @@ class AccessControl {
      *  Alias of `grant()`.
      *  @private
      */
-    allow(role:string|string[]|IAccessInfo):Access {
+    allow(role: string | string[] | IAccessInfo): Access {
         return this.grant(role);
     }
 
@@ -369,22 +378,22 @@ class AccessControl {
     /**
      *  @private
      */
-    private _each(callback:(role:string, roleDefinition:any) => void) {
-        utils.eachKey(this._grants, (role:string) => callback(role, this._grants[role]));
+    private _each(callback: (role: string, roleDefinition: any) => void) {
+        utils.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
     }
 
     /**
      *  @private
      */
-    private _eachRole(callback:(role:string) => void) {
-        utils.eachKey(this._grants, (role:string) => callback(role));
+    private _eachRole(callback: (role: string) => void) {
+        utils.eachKey(this._grants, (role: string) => callback(role));
     }
 
     /**
      *  Documented separately in AccessControlError
      *  @private
      */
-    static get Error():any {
+    static get Error(): any {
         return AccessControlError;
     }
 
@@ -430,7 +439,7 @@ class AccessControl {
      *  filtered = AccessControl.filter(assets); // or AccessControl.filter(assets, "");
      *  console.log(assets); // {}
      */
-    static filter(data:any, attributes:string[]):any {
+    static filter(data: any, attributes: string[]): any {
         return utils.filterAll(data, attributes);
     }
 
@@ -445,7 +454,7 @@ class AccessControl {
      *
      *  @returns {Boolean}
      */
-    static isACError(object:any):boolean {
+    static isACError(object: any): boolean {
         return object instanceof AccessControlError;
     }
 
@@ -453,7 +462,7 @@ class AccessControl {
      *  Alias of `isACError`
      *  @private
      */
-    static isAccessControlError(object:any):boolean {
+    static isAccessControlError(object: any): boolean {
         return AccessControl.isACError(object);
     }
 }

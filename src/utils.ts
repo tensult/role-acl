@@ -230,11 +230,11 @@ const utils = {
         }).reduce(Notation.Glob.union, []);
     },
 
-    getUnionResourcesOfRoles(grants: any, role: string | string[]): string[] {
+    getUnionGrantsOfRoles(grants: any, role: string | string[]): IAccessInfo[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
-
+        
         // get roles and extended roles in a flat array
         const roles: string[] = utils.getFlatRoles(grants, role, undefined, true);
         // iterate through roles and add permission attributes (array) of
@@ -245,8 +245,13 @@ const utils = {
             return grants[role].grants;
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
-        }, []).map((grant) => {
-            return grant.resource;
+        }, []);
+    },
+
+    getUnionResourcesOfRoles(grants: any, role: string | string[]): string[] {
+        return utils.getUnionGrantsOfRoles(grants, role)
+        .map((grant) => {
+            return utils.toStringArray(grant.resource);
         }).reduce(Notation.Glob.union, []);
     },
 

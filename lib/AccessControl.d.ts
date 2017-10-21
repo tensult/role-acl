@@ -148,6 +148,13 @@ declare class AccessControl {
      */
     hasRole(role: string): boolean;
     /**
+    *  Get allowed grants
+    *  @param {String | String[]} role - Role to be checked.
+    *
+    *  @returns {IAccessInfo[]} - grants
+    */
+    allowedGrants(role: string | string[]): IAccessInfo[];
+    /**
      * Get roles which allow this permission
      * @param {IQueryInfo} - permission query object we want to check
      *
@@ -156,7 +163,7 @@ declare class AccessControl {
     allowingRoles(query: IQueryInfo): string[];
     /**
      * Get allowedResources
-    *  @param {String | String[]} role - Role to be checked.
+     *  @param {String | String[]} role - Role to be checked.
      *
      *  @returns {String[]} - resources
      */
