@@ -207,10 +207,11 @@ class AccessControl {
     /**
     *  Get allowed grants when conditions are skipped
     *  @param {String | String[]} role - Role to be checked.
-    *
+    *  @param {Object} - context to be applied.
+
     *  @returns {IAccessInfo[]} - grants
     */
-    allowedGrants(role: string | string[]) {
+    allowedGrants(role: string | string[], context?: any) {
         return utils.getUnionGrantsOfRoles(this._grants, role);
     }
     /**
@@ -228,21 +229,23 @@ class AccessControl {
      * Get allowed actions of resource when conditions are skipped
      *  @param {String | String[]} role - Role to be checked.
      *  @param {String} - resource to be checked.
+     *  @param {Object} - context to be applied.
      * 
      *  @returns {String[]} - actions
      */
-    allowedActions(role: string | string[], resource: string) {
-        return utils.getUnionActionsOfRoles(this._grants, role, resource);
+    allowedActions(role: string | string[], resource: string, context?: any) {
+        return utils.getUnionActionsOfRoles(this._grants, role, resource, context);
     }
 
     /**
      * Get allowed resources when conditions are skipped
      *  @param {String | String[]} role - Role to be checked.
+     *  @param {Object} - context to be applied.
      *
      *  @returns {String[]} - resources
      */
-    allowedResources(role: string | string[]) {
-        return utils.getUnionResourcesOfRoles(this._grants, role);
+    allowedResources(role: string | string[], context?: any) {
+        return utils.getUnionResourcesOfRoles(this._grants, role, context);
     }
 
     /**

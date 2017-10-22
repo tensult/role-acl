@@ -230,13 +230,13 @@ const utils = {
         }).reduce(Notation.Glob.union, []);
     },
 
-    getUnionGrantsOfRoles(grants: any, role: string | string[]): IAccessInfo[] {
+    getUnionGrantsOfRoles(grants: any, role: string | string[], context?: any): IAccessInfo[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
-        
+
         // get roles and extended roles in a flat array
-        const roles: string[] = utils.getFlatRoles(grants, role, undefined, true);
+        const roles: string[] = utils.getFlatRoles(grants, role, context, !context);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
         return roles.filter((role) => {
@@ -248,24 +248,27 @@ const utils = {
         }, []);
     },
 
-    getUnionResourcesOfRoles(grants: any, role: string | string[]): string[] {
-        return utils.getUnionGrantsOfRoles(grants, role)
-        .map((grant) => {
-            return utils.toStringArray(grant.resource);
-        }).reduce(Notation.Glob.union, []);
+    getUnionResourcesOfRoles(grants: any, role: string | string[], context?: any): string[] {
+        return utils.getUnionGrantsOfRoles(grants, role, context)
+            .filter((grant) => {
+                return !context || conditionEvaluator(grant.condition, context);
+            }).map((grant) => {
+                return utils.toStringArray(grant.resource);
+            }).reduce(Notation.Glob.union, []);
     },
 
-    getUnionActionsOfRoles(grants: any, role: string | string[], resource: string): string[] {
+    getUnionActionsOfRoles(grants: any, role: string | string[], resource: string, context?: any): string[] {
         return utils.getUnionGrantsOfRoles(grants, role)
-        .filter((grant) => {
-            return MicroMatch.some(resource, grant.resource)
-        }).map((grant) => {
-            return utils.toStringArray(grant.action);
-        }).reduce(Notation.Glob.union, []);
+            .filter((grant) => {
+                return (!context ||conditionEvaluator(grant.condition, context)) &&
+                        MicroMatch.some(resource, grant.resource)
+            }).map((grant) => {
+                return utils.toStringArray(grant.action);
+            }).reduce(Notation.Glob.union, []);
     },
 
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
-        if(!grants) {
+        if (!grants) {
             return false;
         }
         return grants.some((grant) => {
@@ -276,7 +279,7 @@ const utils = {
     },
 
     areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo) {
-        if(!roleExtensionObject) {
+        if (!roleExtensionObject) {
             return false;
         }
         return Object.keys(roleExtensionObject).some((role) => {
@@ -294,8 +297,8 @@ const utils = {
         roles.sort((role1, role2) => {
             return grants[role1].score - grants[role2].score
         }).reduce((allowingRoles, role) => {
-            allowingRoles[role] = utils.areGrantsAllowing(grants[role].grants, query) || 
-            utils.areExtendingRolesAllowing(grants[role].$extend, allowingRoles, query);
+            allowingRoles[role] = utils.areGrantsAllowing(grants[role].grants, query) ||
+                utils.areExtendingRolesAllowing(grants[role].$extend, allowingRoles, query);
             return allowingRoles;
         }, allowingRoles);
 

@@ -661,6 +661,8 @@ describe('Test Suite: Access Control', function () {
         ac.grant('owner').execute('*').on('video');
         
         expect(ac.allowedResources('user').sort()).toEqual(['article', 'image']);
+        expect(ac.allowedResources('user', categorySportsContext).sort()).toEqual(['article', 'image']);        
+        expect(ac.allowedResources('user', categoryPoliticsContext).sort()).toEqual(['image']);
         expect(ac.allowedResources('admin').sort()).toEqual(['article', 'category', 'image']);
         expect(ac.allowedResources('owner').sort()).toEqual(['article', 'category', 'image', 'video']);
         expect(ac.allowedResources(['admin', 'owner']).sort()).toEqual(['article', 'category', 'image', 'video']);
@@ -678,6 +680,8 @@ describe('Test Suite: Access Control', function () {
         ac.grant('owner').execute('*').on('video');
         
         expect(ac.allowedActions('user', 'article').sort()).toEqual(['create']);
+        expect(ac.allowedActions('user', 'article', categorySportsContext).sort()).toEqual(['create']);        
+        expect(ac.allowedActions('user', 'article', categoryPoliticsContext)).toEqual([]);        
         expect(ac.allowedActions(['admin', 'user'], 'article').sort()).toEqual(['create', 'delete']);
 
         expect(ac.allowedActions('admin', 'category').sort()).toEqual(['*']);

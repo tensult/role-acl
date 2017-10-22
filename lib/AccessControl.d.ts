@@ -150,10 +150,11 @@ declare class AccessControl {
     /**
     *  Get allowed grants when conditions are skipped
     *  @param {String | String[]} role - Role to be checked.
-    *
+    *  @param {Object} - context to be applied.
+
     *  @returns {IAccessInfo[]} - grants
     */
-    allowedGrants(role: string | string[]): IAccessInfo[];
+    allowedGrants(role: string | string[], context?: any): IAccessInfo[];
     /**
      * Get roles which allow this permission
      * @param {IQueryInfo} - permission query object we want to check
@@ -165,17 +166,19 @@ declare class AccessControl {
      * Get allowed actions of resource when conditions are skipped
      *  @param {String | String[]} role - Role to be checked.
      *  @param {String} - resource to be checked.
+     *  @param {Object} - context to be applied.
      *
      *  @returns {String[]} - actions
      */
-    allowedActions(role: string | string[], resource: string): string[];
+    allowedActions(role: string | string[], resource: string, context?: any): string[];
     /**
      * Get allowed resources when conditions are skipped
      *  @param {String | String[]} role - Role to be checked.
+     *  @param {Object} - context to be applied.
      *
      *  @returns {String[]} - resources
      */
-    allowedResources(role: string | string[]): string[];
+    allowedResources(role: string | string[], context?: any): string[];
     /**
      *  Gets an instance of `Query` object. This is used to check whether
      *  the defined access is allowed for the given role(s) and resource.
