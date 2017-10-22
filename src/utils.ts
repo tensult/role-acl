@@ -255,6 +255,15 @@ const utils = {
         }).reduce(Notation.Glob.union, []);
     },
 
+    getUnionActionsOfRoles(grants: any, role: string | string[], resource: string): string[] {
+        return utils.getUnionGrantsOfRoles(grants, role)
+        .filter((grant) => {
+            return MicroMatch.some(resource, grant.resource)
+        }).map((grant) => {
+            return utils.toStringArray(grant.action);
+        }).reduce(Notation.Glob.union, []);
+    },
+
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
         if(!grants) {
             return false;

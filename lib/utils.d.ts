@@ -21,6 +21,7 @@ declare const utils: {
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     getUnionGrantsOfRoles(grants: any, role: string | string[]): IAccessInfo[];
     getUnionResourcesOfRoles(grants: any, role: string | string[]): string[];
+    getUnionActionsOfRoles(grants: any, role: string | string[], resource: string): string[];
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): boolean;
     areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo): boolean;
     getAllowingRoles(grants: any, query: IQueryInfo): string[];

@@ -148,7 +148,7 @@ declare class AccessControl {
      */
     hasRole(role: string): boolean;
     /**
-    *  Get allowed grants
+    *  Get allowed grants when conditions are skipped
     *  @param {String | String[]} role - Role to be checked.
     *
     *  @returns {IAccessInfo[]} - grants
@@ -162,7 +162,15 @@ declare class AccessControl {
      */
     allowingRoles(query: IQueryInfo): string[];
     /**
-     * Get allowedResources
+     * Get allowed actions of resource when conditions are skipped
+     *  @param {String | String[]} role - Role to be checked.
+     *  @param {String} - resource to be checked.
+     *
+     *  @returns {String[]} - actions
+     */
+    allowedActions(role: string | string[], resource: string): string[];
+    /**
+     * Get allowed resources when conditions are skipped
      *  @param {String | String[]} role - Role to be checked.
      *
      *  @returns {String[]} - resources

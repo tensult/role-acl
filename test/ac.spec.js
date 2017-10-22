@@ -663,6 +663,25 @@ describe('Test Suite: Access Control', function () {
         expect(ac.allowedResources('user').sort()).toEqual(['article', 'image']);
         expect(ac.allowedResources('admin').sort()).toEqual(['article', 'category', 'image']);
         expect(ac.allowedResources('owner').sort()).toEqual(['article', 'category', 'image', 'video']);
+        expect(ac.allowedResources(['admin', 'owner']).sort()).toEqual(['article', 'category', 'image', 'video']);
+        
+    });
+
+    it('should return allowed actions for given roles and resource', function () {
+        let ac = this.ac;
+        ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
+        ac.grant('user').execute('*').on('image');
+        ac.extendRole('admin', 'user');
+        ac.grant('admin').execute('delete').on('article');        
+        ac.grant('admin').execute('*').on('category');
+        ac.extendRole('owner', 'admin');
+        ac.grant('owner').execute('*').on('video');
+        
+        expect(ac.allowedActions('user', 'article').sort()).toEqual(['create']);
+        expect(ac.allowedActions(['admin', 'user'], 'article').sort()).toEqual(['create', 'delete']);
+
+        expect(ac.allowedActions('admin', 'category').sort()).toEqual(['*']);
+        expect(ac.allowedActions('owner', 'video').sort()).toEqual(['*']);
         
     });
 
