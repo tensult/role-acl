@@ -370,7 +370,7 @@ console.log(ac.allowedActions(['admin', 'user'], 'article').sort()); // -> ['cre
 console.log(ac.allowedActions('admin', 'category').sort()); // -> ['*']
 console.log(ac.allowedActions('owner', 'video').sort()); // -> ['*']
 ```
-**NOTE:**  allowedResources and allowedActions skips the conditions when context is not passed
+**NOTE:**  allowedResources and allowedActions skip the conditions when context is not passed
 
 ### Read more
 [More Examples][tests]
