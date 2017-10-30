@@ -211,8 +211,8 @@ class AccessControl {
 
     *  @returns {IAccessInfo[]} - grants
     */
-    allowedGrants(role: string | string[], context?: any) {
-        return utils.getUnionGrantsOfRoles(this._grants, role);
+    allowedGrants(query: IQueryInfo) {
+        return utils.getUnionGrantsOfRoles(this._grants, query);
     }
     /**
      * Get roles which allow this permission
@@ -227,25 +227,22 @@ class AccessControl {
 
     /**
      * Get allowed actions of resource when conditions are skipped
-     *  @param {String | String[]} role - Role to be checked.
-     *  @param {String} - resource to be checked.
-     *  @param {Object} - context to be applied.
+     * @param {IQueryInfo} - permission query object we want to check
      * 
      *  @returns {String[]} - actions
      */
-    allowedActions(role: string | string[], resource: string, context?: any) {
-        return utils.getUnionActionsOfRoles(this._grants, role, resource, context);
+    allowedActions(query: IQueryInfo) {
+        return utils.getUnionActionsOfRoles(this._grants, query);
     }
 
     /**
      * Get allowed resources when conditions are skipped
-     *  @param {String | String[]} role - Role to be checked.
-     *  @param {Object} - context to be applied.
+     * @param {IQueryInfo} - permission query object we want to check
      *
      *  @returns {String[]} - resources
      */
-    allowedResources(role: string | string[], context?: any) {
-        return utils.getUnionResourcesOfRoles(this._grants, role, context);
+    allowedResources(query: IQueryInfo) {
+        return utils.getUnionResourcesOfRoles(this._grants, query);
     }
 
     /**

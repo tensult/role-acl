@@ -660,12 +660,12 @@ describe('Test Suite: Access Control', function () {
         ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
         
-        expect(ac.allowedResources('user').sort()).toEqual(['article', 'image']);
-        expect(ac.allowedResources('user', categorySportsContext).sort()).toEqual(['article', 'image']);        
-        expect(ac.allowedResources('user', categoryPoliticsContext).sort()).toEqual(['image']);
-        expect(ac.allowedResources('admin').sort()).toEqual(['article', 'category', 'image']);
-        expect(ac.allowedResources('owner').sort()).toEqual(['article', 'category', 'image', 'video']);
-        expect(ac.allowedResources(['admin', 'owner']).sort()).toEqual(['article', 'category', 'image', 'video']);
+        expect(ac.allowedResources({role: 'user'}).sort()).toEqual(['article', 'image']);
+        expect(ac.allowedResources({ role: 'user', context: categorySportsContext}).sort()).toEqual(['article', 'image']);        
+        expect(ac.allowedResources({ role:'user', context:categoryPoliticsContext}).sort()).toEqual(['image']);
+        expect(ac.allowedResources({role: 'admin'}).sort()).toEqual(['article', 'category', 'image']);
+        expect(ac.allowedResources({role: 'owner'}).sort()).toEqual(['article', 'category', 'image', 'video']);
+        expect(ac.allowedResources({role: ['admin', 'owner']}).sort()).toEqual(['article', 'category', 'image', 'video']);
         
     });
 
@@ -679,13 +679,13 @@ describe('Test Suite: Access Control', function () {
         ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
         
-        expect(ac.allowedActions('user', 'article').sort()).toEqual(['create']);
-        expect(ac.allowedActions('user', 'article', categorySportsContext).sort()).toEqual(['create']);        
-        expect(ac.allowedActions('user', 'article', categoryPoliticsContext)).toEqual([]);        
-        expect(ac.allowedActions(['admin', 'user'], 'article').sort()).toEqual(['create', 'delete']);
+        expect(ac.allowedActions({role: 'user', resource: 'article'}).sort()).toEqual(['create']);
+        expect(ac.allowedActions({role: 'user', resource: 'article', context: categorySportsContext}).sort()).toEqual(['create']);        
+        expect(ac.allowedActions({role: 'user', resource:'article', context:  categoryPoliticsContext})).toEqual([]);        
+        expect(ac.allowedActions({role:['admin', 'user'], resource:'article'}).sort()).toEqual(['create', 'delete']);
 
-        expect(ac.allowedActions('admin', 'category').sort()).toEqual(['*']);
-        expect(ac.allowedActions('owner', 'video').sort()).toEqual(['*']);
+        expect(ac.allowedActions({role:'admin', resource:'category'}).sort()).toEqual(['*']);
+        expect(ac.allowedActions({role:'owner', resource:'video'}).sort()).toEqual(['*']);
         
     });
 

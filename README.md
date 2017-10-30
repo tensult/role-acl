@@ -350,7 +350,7 @@ console.log(permission.attributes); // —> []
 ### Allowed Resources and actions
 ```js
 const ac = new AccessControl();
-ac.grant('user').execute('create').on('article');
+ac.grant('user').condition({Fn: 'EQUALS', args: {category: 'sports'}}).execute('create').on('article');
 ac.grant('user').execute('*').on('image');
 ac.extendRole('admin', 'user');
 ac.grant('admin').execute('delete').on('article');        
@@ -358,17 +358,17 @@ ac.grant('admin').execute('*').on('category');
 ac.extendRole('owner', 'admin');
 ac.grant('owner').execute('*').on('video');
 
-console.log(ac.allowedResources('user').sort()); // -> ['article', 'image']
-console.log(ac.allowedResources('user', {category: 'politics'}).sort()); // -> ['image']       
-console.log(ac.allowedResources('admin').sort()); // -> ['article', 'category', 'image']
-console.log(ac.allowedResources('owner').sort()); // -> ['article', 'category', 'image', 'video']
-console.log(ac.allowedResources(['admin', 'owner']).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(ac.allowedResources({role: 'user'}).sort()); // -> ['article', 'image']
+console.log(ac.allowedResources({role: 'user', context: {category: 'politics'}}).sort()); // -> ['image']       
+console.log(ac.allowedResources({role: 'admin'}).sort()); // -> ['article', 'category', 'image']
+console.log(ac.allowedResources({role: 'owner'}).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(ac.allowedResources({role: ['admin', 'owner']}).sort()); // -> ['article', 'category', 'image', 'video']
 
-console.log(ac.allowedActions('user', 'article').sort()); // -> ['create']
-console.log(ac.allowedActions('user', 'article', {category: 'politics'})); // -> []        
-console.log(ac.allowedActions(['admin', 'user'], 'article').sort()); // -> ['create', 'delete']
-console.log(ac.allowedActions('admin', 'category').sort()); // -> ['*']
-console.log(ac.allowedActions('owner', 'video').sort()); // -> ['*']
+console.log(ac.allowedActions({role: 'user', resource: 'article'}).sort()); // -> ['create']
+console.log(ac.allowedActions({role: 'user', resource: 'article', context: {category: 'politics'}})); // -> []        
+console.log(ac.allowedActions({role: ['admin', 'user'], resource: 'article'}).sort()); // -> ['create', 'delete']
+console.log(ac.allowedActions({role: 'admin', resource: 'category'}).sort()); // -> ['*']
+console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // -> ['*']
 ```
 **NOTE:**  allowedResources and allowedActions skip the conditions when context is not passed
 

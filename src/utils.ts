@@ -107,14 +107,18 @@ const utils = {
         }
 
         // validate resource
-        if (typeof query.resource !== 'string' || query.resource.trim() === '') {
-            throw new AccessControlError(`Invalid resource: "${query.resource}"`);
+        if (query.resource) {
+            if (typeof query.resource !== 'string' || query.resource.trim() === '') {
+                throw new AccessControlError(`Invalid resource: "${query.resource}"`);
+            }
+            query.resource = query.resource.trim();
         }
-        query.resource = query.resource.trim();
 
         // validate action
-        if (typeof query.action !== 'string' || query.action.trim() === '') {
-            throw new AccessControlError(`Invalid action: ${query.action}`);
+        if (query.action) {
+            if (typeof query.action !== 'string' || query.action.trim() === '') {
+                throw new AccessControlError(`Invalid action: ${query.action}`);
+            }
         }
 
         return query;
@@ -193,6 +197,48 @@ const utils = {
         });
     },
 
+    getUnionGrantsOfRoles(grants: any, query: IQueryInfo): any[] {
+        if (!grants) {
+            throw new AccessControlError('Grants are not set.');
+        }
+
+        // throws if has any invalid property value
+        query = utils.normalizeQueryInfo(query);
+
+        // get roles and extended roles in a flat array
+        const roles: string[] = utils.getFlatRoles(grants, query.role, query.context, query.skipConditions);
+        // iterate through roles and add permission attributes (array) of
+        // each role to attrsList (array).
+        return roles.filter((role) => {
+            return grants[role] && grants[role].grants;
+        }).map((role) => {
+            return grants[role].grants;
+        }).reduce((allGrants, roleGrants) => {
+            return allGrants.concat(roleGrants);
+        }, []);
+    },
+
+    getUnionResourcesOfRoles(grants: any, query: IQueryInfo): string[] {
+        query.skipConditions = query.skipConditions || !query.context;
+        return utils.getUnionGrantsOfRoles(grants, query)
+            .filter((grant) => {
+                return query.skipConditions || conditionEvaluator(grant.condition, query.context);
+            }).map((grant) => {
+                return utils.toStringArray(grant.resource);
+            }).reduce(Notation.Glob.union, []);
+    },
+
+    getUnionActionsOfRoles(grants: any, query: IQueryInfo): string[] {
+        query.skipConditions = query.skipConditions || !query.context;
+        return utils.getUnionGrantsOfRoles(grants, query)
+            .filter((grant) => {
+                return (query.skipConditions || conditionEvaluator(grant.condition, query.context)) &&
+                    MicroMatch.some(query.resource, grant.resource)
+            }).map((grant) => {
+                return utils.toStringArray(grant.action);
+            }).reduce(Notation.Glob.union, []);
+    },
+
     /**
      *  When more than one role is passed, we union the permitted attributes
      *  for all given roles; so we can check whether "at least one of these
@@ -205,66 +251,13 @@ const utils = {
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
-        if (!grants) {
-            throw new AccessControlError('Grants are not set.');
-        }
-        // throws if has any invalid property value
-        query = utils.normalizeQueryInfo(query);
-
-        // get roles and extended roles in a flat array
-        let roles: string[] = utils.getFlatRoles(grants, query.role, query.context, query.skipConditions);
-        // iterate through roles and add permission attributes (array) of
-        // each role to attrsList (array).
-        return roles.filter((role) => {
-            return grants[role] && grants[role].grants;
-        }).map((role) => {
-            return grants[role].grants;
-        }).reduce((allGrants, roleGrants) => {
-            return allGrants.concat(roleGrants);
-        }, []).filter((grant) => {
+        return utils.getUnionGrantsOfRoles(grants, query).filter((grant) => {
             return MicroMatch.some(query.resource, grant.resource)
                 && MicroMatch.some(query.action, grant.action)
                 && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
         }).map((grant) => {
             return grant.attributes.slice();
         }).reduce(Notation.Glob.union, []);
-    },
-
-    getUnionGrantsOfRoles(grants: any, role: string | string[], context?: any): IAccessInfo[] {
-        if (!grants) {
-            throw new AccessControlError('Grants are not set.');
-        }
-
-        // get roles and extended roles in a flat array
-        const roles: string[] = utils.getFlatRoles(grants, role, context, !context);
-        // iterate through roles and add permission attributes (array) of
-        // each role to attrsList (array).
-        return roles.filter((role) => {
-            return grants[role] && grants[role].grants;
-        }).map((role) => {
-            return grants[role].grants;
-        }).reduce((allGrants, roleGrants) => {
-            return allGrants.concat(roleGrants);
-        }, []);
-    },
-
-    getUnionResourcesOfRoles(grants: any, role: string | string[], context?: any): string[] {
-        return utils.getUnionGrantsOfRoles(grants, role, context)
-            .filter((grant) => {
-                return !context || conditionEvaluator(grant.condition, context);
-            }).map((grant) => {
-                return utils.toStringArray(grant.resource);
-            }).reduce(Notation.Glob.union, []);
-    },
-
-    getUnionActionsOfRoles(grants: any, role: string | string[], resource: string, context?: any): string[] {
-        return utils.getUnionGrantsOfRoles(grants, role)
-            .filter((grant) => {
-                return (!context ||conditionEvaluator(grant.condition, context)) &&
-                        MicroMatch.some(resource, grant.resource)
-            }).map((grant) => {
-                return utils.toStringArray(grant.action);
-            }).reduce(Notation.Glob.union, []);
     },
 
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
