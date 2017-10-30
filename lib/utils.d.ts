@@ -18,15 +18,16 @@ declare const utils: {
     resetAttributes(access: IAccessInfo): IAccessInfo;
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
     commitToGrants(grants: any, access: IAccessInfo): void;
+    getUnionAttrsOfGrants(grants: any[], query: IQueryInfo): string[];
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): any;
     getUnionGrantsOfRoles(grants: any, query: IQueryInfo): any[];
     getUnionResourcesOfRoles(grants: any, query: IQueryInfo): string[];
     getUnionActionsOfRoles(grants: any, query: IQueryInfo): string[];
-    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): boolean;
     areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo): boolean;
     getAllowingRoles(grants: any, query: IQueryInfo): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
-    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void;
+    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition, attributes?: string | string[]): void;
     matchesAllElement(values: any, predicateFn: (elm: any) => boolean): any;
     matchesAnyElement(values: any, predicateFn: (elm: any) => boolean): any;
     filter(object: any, attributes: string[]): any;

@@ -27,6 +27,9 @@ const utils = {
     },
 
     toArray(value: any): any[] {
+        if(!value) {
+            return [];
+        }
         if (Array.isArray(value)) return value.slice();
         return [value];
     },
@@ -197,6 +200,68 @@ const utils = {
         });
     },
 
+    getUnionAttrsOfGrants(grants: any[], query: IQueryInfo): string[] {
+        const allowedAttributes = grants.filter((grant) => {
+            return query.skipConditions || conditionEvaluator(grant.condition, query.context) &&
+                MicroMatch.some(query.resource, grant.resource)
+                && MicroMatch.some(query.action, grant.action);
+        }).map((grant) => {
+            return grant.attributes.slice();
+        }).reduce((allAttributes, attributes) => {
+            allAttributes = allAttributes.concat(attributes);
+            return allAttributes;
+        }, []);
+        return Notation.Glob.normalize(allowedAttributes);
+    },
+
+    /**
+     *  When more than one role is passed, we union the permitted attributes
+     *  for all given roles; so we can check whether "at least one of these
+     *  roles" have the permission to execute this action.
+     *  e.g. `can(['admin', 'user']).createAny('video')`
+     *
+     *  @param {Any} grants
+     *  @param {IQueryInfo} query
+     *
+     *  @returns {Array<String>} - Array of union'ed attributes.
+     */
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): any {
+        if (!grants) {
+            throw new AccessControlError('Grants are not set.');
+        }
+
+        // throws if has any invalid property value
+        query = utils.normalizeQueryInfo(query);
+        // get roles and extended roles in a flat array
+        const roles: string[] = utils.getFlatRoles(grants, query.role, query.context, query.skipConditions);
+        let allowedAttributes = [];
+        const allowedRoles = {};
+
+        roles.sort((role1, role2) => {
+            return grants[role1].score - grants[role2].score
+        }).forEach((role) => {
+            if (grants[role].grants) {
+                const roleAllowedAttributes = utils.getUnionAttrsOfGrants(grants[role].grants, query);
+                if (roleAllowedAttributes.length) {
+                    allowedRoles[role] = true;
+                }
+                allowedAttributes = allowedAttributes.concat(roleAllowedAttributes);                
+            }
+
+            if (grants[role].$extend) {
+                Object.keys(grants[role].$extend).forEach((extendedRole) => {
+                    if (allowedRoles[extendedRole]) {
+                        allowedRoles[role] = true;
+                        if (grants[role].$extend[extendedRole].attributes) {
+                            allowedAttributes = allowedAttributes.concat(grants[role].$extend[extendedRole].attributes);                            
+                        }
+                    }
+                });
+            }
+        });
+        return Notation.Glob.normalize(allowedAttributes);
+    },
+
     getUnionGrantsOfRoles(grants: any, query: IQueryInfo): any[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
@@ -215,15 +280,15 @@ const utils = {
             return grants[role].grants;
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
-        }, []);
+        }, []).filter((grant) => {
+            return query.skipConditions || conditionEvaluator(grant.condition, query.context);
+        });
     },
 
     getUnionResourcesOfRoles(grants: any, query: IQueryInfo): string[] {
         query.skipConditions = query.skipConditions || !query.context;
         return utils.getUnionGrantsOfRoles(grants, query)
-            .filter((grant) => {
-                return query.skipConditions || conditionEvaluator(grant.condition, query.context);
-            }).map((grant) => {
+            .map((grant) => {
                 return utils.toStringArray(grant.resource);
             }).reduce(Notation.Glob.union, []);
     },
@@ -232,8 +297,7 @@ const utils = {
         query.skipConditions = query.skipConditions || !query.context;
         return utils.getUnionGrantsOfRoles(grants, query)
             .filter((grant) => {
-                return (query.skipConditions || conditionEvaluator(grant.condition, query.context)) &&
-                    MicroMatch.some(query.resource, grant.resource)
+                return MicroMatch.some(query.resource, grant.resource)
             }).map((grant) => {
                 return utils.toStringArray(grant.action);
             }).reduce(Notation.Glob.union, []);
@@ -249,17 +313,16 @@ const utils = {
      *  @param {IQueryInfo} query
      *
      *  @returns {Array<String>} - Array of union'ed attributes.
-     */
+ 
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         return utils.getUnionGrantsOfRoles(grants, query).filter((grant) => {
             return MicroMatch.some(query.resource, grant.resource)
-                && MicroMatch.some(query.action, grant.action)
-                && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
+                && MicroMatch.some(query.action, grant.action);
         }).map((grant) => {
             return grant.attributes.slice();
         }).reduce(Notation.Glob.union, []);
     },
-
+    */
     areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
         if (!grants) {
             return false;
@@ -336,7 +399,7 @@ const utils = {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
+    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition, attributes?: string | string[]) {
         let arrExtRoles: string[] = utils.toStringArray(extenderRoles);
         if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles: string[] = utils.getNonExistentRoles(grants, arrExtRoles);
@@ -358,7 +421,8 @@ const utils = {
             grants[role].$extend = grants[role].$extend || {};
             arrExtRoles.forEach((extRole) => {
                 grants[role].$extend[extRole] = grants[role].$extend[extRole] || {};
-                grants[role].$extend[extRole].condition = condition
+                grants[role].$extend[extRole].condition = condition;
+                grants[role].$extend[extRole].attributes = utils.toArray(attributes);
             });
         });
     },

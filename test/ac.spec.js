@@ -806,7 +806,7 @@ describe('Test Suite: Access Control', function () {
 
         ac.grant('admin').execute('create').on('book');
         ac.extendRole('onur', 'admin');
-        expect(ac.getGrants().onur.$extend['admin']).toEqual({condition: undefined});
+        expect(ac.getGrants().onur.$extend['admin']).toEqual({condition: undefined, attributes: []});
 
         ac.grant('role2, role3, editor, viewer, agent').execute('create').on('book');
 
@@ -864,7 +864,7 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(true);
     });
 
-    it('should extend roles with conditions', function () {
+    it('should extend roles with conditions and attributes', function () {
         let ac = this.ac;
         let editorGrant = {
             role: 'editor',
@@ -874,7 +874,7 @@ describe('Test Suite: Access Control', function () {
         };
         ac.grant(editorGrant);
         ac.extendRole('sports/editor', 'editor', categorySportsCondition);
-        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition, ['!sports:*']);
 
         expect(ac.can('editor').execute('create').on('post').granted).toEqual(true);
         expect(ac.can('editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
@@ -882,6 +882,8 @@ describe('Test Suite: Access Control', function () {
 
         expect(ac.can('sports/editor').context(categoryPoliticsContext).execute('create').on('post').granted).toEqual(false);
         expect(ac.can('sports/editor').context(categorySportsContext).execute('create').on('post').granted).toEqual(true);
+        
+        expect(ac.can('politics/editor').context(categoryPoliticsContext).execute('create').on('post').attributes.sort()).toEqual(['!sports:*', '*']);        
 
     });
 
@@ -1045,10 +1047,11 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').execute('create').on('video').granted).toEqual(true);
 
         ac.grant('admin, user').execute('create').on('profile, video', '*,!id');
-        expect(ac.can('admin').execute('create').on('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('admin').execute('create').on('video').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').execute('create').on('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').execute('create').on('video').attributes).toEqual(['*', '!id']);
+        
+        expect(ac.can('admin').execute('create').on('profile').attributes.sort()).toEqual(['!id', '*']);
+        expect(ac.can('admin').execute('create').on('video').attributes.sort()).toEqual(['!id', '*']);
+        expect(ac.can('user').execute('create').on('profile').attributes.sort()).toEqual(['!id', '*']);
+        expect(ac.can('user').execute('create').on('video').attributes.sort()).toEqual(['!id', '*']);
 
         expect(ac.can('user').execute('create').on('non-existent').granted).toEqual(false);
 
