@@ -215,15 +215,15 @@ const utils = {
             return grants[role].grants;
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
-        }, []);
+        }, []).filter((grant) => {
+            return query.skipConditions || conditionEvaluator(grant.condition, query.context);
+        });
     },
 
     getUnionResourcesOfRoles(grants: any, query: IQueryInfo): string[] {
         query.skipConditions = query.skipConditions || !query.context;
         return utils.getUnionGrantsOfRoles(grants, query)
-            .filter((grant) => {
-                return query.skipConditions || conditionEvaluator(grant.condition, query.context);
-            }).map((grant) => {
+            .map((grant) => {
                 return utils.toStringArray(grant.resource);
             }).reduce(Notation.Glob.union, []);
     },
@@ -232,8 +232,7 @@ const utils = {
         query.skipConditions = query.skipConditions || !query.context;
         return utils.getUnionGrantsOfRoles(grants, query)
             .filter((grant) => {
-                return (query.skipConditions || conditionEvaluator(grant.condition, query.context)) &&
-                    MicroMatch.some(query.resource, grant.resource)
+                return MicroMatch.some(query.resource, grant.resource)
             }).map((grant) => {
                 return utils.toStringArray(grant.action);
             }).reduce(Notation.Glob.union, []);
@@ -253,8 +252,7 @@ const utils = {
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         return utils.getUnionGrantsOfRoles(grants, query).filter((grant) => {
             return MicroMatch.some(query.resource, grant.resource)
-                && MicroMatch.some(query.action, grant.action)
-                && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
+                && MicroMatch.some(query.action, grant.action);
         }).map((grant) => {
             return grant.attributes.slice();
         }).reduce(Notation.Glob.union, []);

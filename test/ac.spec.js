@@ -1045,10 +1045,10 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').execute('create').on('video').granted).toEqual(true);
 
         ac.grant('admin, user').execute('create').on('profile, video', '*,!id');
-        expect(ac.can('admin').execute('create').on('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('admin').execute('create').on('video').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').execute('create').on('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').execute('create').on('video').attributes).toEqual(['*', '!id']);
+        expect(ac.can('admin').execute('create').on('profile').attributes).toEqual(['*']);
+        expect(ac.can('admin').execute('create').on('video').attributes).toEqual(['*']);
+        expect(ac.can('user').execute('create').on('profile').attributes).toEqual(['*']);
+        expect(ac.can('user').execute('create').on('video').attributes).toEqual(['*']);
 
         expect(ac.can('user').execute('create').on('non-existent').granted).toEqual(false);
 
