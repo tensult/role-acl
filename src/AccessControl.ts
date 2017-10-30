@@ -146,11 +146,8 @@ class AccessControl {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    extendRole(roles: string | string[], 
-        extenderRoles: string | string[], 
-        condition?: ICondition, 
-        attributes?: string | string[]): AccessControl {
-        utils.extendRole(this._grants, roles, extenderRoles, condition, attributes);
+    extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl {
+        utils.extendRole(this._grants, roles, extenderRoles, condition);
         return this;
     }
 

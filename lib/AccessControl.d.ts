@@ -118,7 +118,7 @@ declare class AccessControl {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition, attributes?: string | string[]): AccessControl;
+    extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl;
     /**
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
