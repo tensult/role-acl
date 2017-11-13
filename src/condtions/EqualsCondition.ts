@@ -2,6 +2,12 @@ import { IConditionFunction } from "./IConditionFunction";
 import {AccessControlError} from '../core';
 import utils from '../utils';
 
+/**
+ * Equals condition
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
+
 export class EqualsCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

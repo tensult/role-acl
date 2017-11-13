@@ -2,6 +2,11 @@ import { IConditionFunction } from "./IConditionFunction";
 import {AccessControlError} from '../core';
 import utils from '../utils';
 
+/**
+ * Not equals condition
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
 export class NotEqualsCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

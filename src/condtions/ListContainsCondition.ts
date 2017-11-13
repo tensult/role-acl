@@ -1,7 +1,11 @@
 import { IConditionFunction } from "./IConditionFunction";
 import { AccessControlError } from '../core';
 import utils from '../utils';
-
+/**
+ * List contains condition 
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
 export class ListContainsCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

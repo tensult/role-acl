@@ -3,6 +3,12 @@ import { conditionEvaluator } from "./index";
 import { AccessControlError, ICondition } from '../core';
 import utils from '../utils';
 
+/**
+ * Not condition
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
+
 export class NotCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

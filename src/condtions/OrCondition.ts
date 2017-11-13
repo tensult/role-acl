@@ -3,6 +3,11 @@ import { conditionEvaluator } from "./index";
 import {AccessControlError, ICondition} from '../core';
 import utils from '../utils';
 
+/**
+ * Or condition
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
 export class OrCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

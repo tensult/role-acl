@@ -2,6 +2,11 @@ import { IConditionFunction } from "./IConditionFunction";
 import { AccessControlError } from '../core';
 import utils from '../utils';
 
+/**
+ * Starts with condition
+ * 
+ *  @author Dilip Kola <dilip@tensult.com>
+ */
 export class StartsWithCondition implements IConditionFunction {
 
     evaluate(args?: any, context?: any) {

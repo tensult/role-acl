@@ -375,14 +375,17 @@ console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // ->
 ### Read more
 [More Examples][tests]
 
-## License
+## Licenses
 
-[MIT][license].
+* [role-acl][this]: [MIT][license].
+* [AccessControl][onury-accesscontrol]: [MIT][onury-accesscontrol-license].
 
 [rbac]:https://en.wikipedia.org/wiki/Role-based_access_control
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
 [nist-paper]:http://csrc.nist.gov/groups/SNS/rbac/documents/kuhn-coyne-weil-10.pdf
+[this]:https://github.com/tensult/role-acl
 [onury-accesscontrol]: https://github.com/onury/accesscontrol
 [license]:https://github.com/tensult/role-acl/blob/master/LICENSE
+[onury-accesscontrol-license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
 [tests]:https://github.com/tensult/role-acl/blob/master/test/ac.spec.js

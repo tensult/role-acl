@@ -54,7 +54,7 @@ import { Access, IAccessInfo, ICondition, Query, IQueryInfo, Permission } from '
  *  <p><pre><code> var ac = new AccessControl(flatList);
  *  console.log(ac.getGrants());</code></pre></p>
  *
- *  @author   Dilip Kola (dilip@tensult.com)
+ *  @author   Onur Yıldırım <onur@cutepilot.com>
  *  @license  MIT
  *
  *  @class
