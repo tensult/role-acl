@@ -2,7 +2,7 @@
 import * as Notation from 'notation';
 // own modules
 import { IQueryInfo } from '../core';
-import { conditionEvaluator } from '../condtions';
+import { conditionEvaluator } from '../conditions';
 import utils from '../utils';
 
 /**

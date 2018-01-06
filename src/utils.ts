@@ -1,12 +1,16 @@
 // dep modules
 import * as Notation from 'notation';
-import * as MicroMatch from 'micromatch';
+import * as Matcher from 'matcher';
 // own modules
 import { IAccessInfo, IQueryInfo, AccessControlError, ICondition } from './core';
-import { conditionEvaluator } from './condtions';
+import { conditionEvaluator } from './conditions';
 
 const utils = {
-
+    anyMatch(strings: string | string[], patterns: string | string[]) {
+        const stringArray = utils.toStringArray(strings);
+        const patternArray = utils.toStringArray(patterns);
+        return Matcher(stringArray, patternArray).length !== 0;
+    },
     clone(o: any): any {
         return JSON.parse(JSON.stringify(o));
     },
@@ -232,7 +236,7 @@ const utils = {
         query.skipConditions = query.skipConditions || !query.context;
         return utils.getUnionGrantsOfRoles(grants, query)
             .filter((grant) => {
-                return MicroMatch.some(query.resource, grant.resource)
+                return utils.anyMatch(query.resource, grant.resource)
             }).map((grant) => {
                 return utils.toStringArray(grant.action);
             }).reduce(Notation.Glob.union, []);
@@ -251,8 +255,8 @@ const utils = {
      */
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         return utils.getUnionGrantsOfRoles(grants, query).filter((grant) => {
-            return MicroMatch.some(query.resource, grant.resource)
-                && MicroMatch.some(query.action, grant.action);
+            return utils.anyMatch(query.resource, grant.resource)
+                && utils.anyMatch(query.action, grant.action);
         }).map((grant) => {
             return grant.attributes.slice();
         }).reduce(Notation.Glob.union, []);
@@ -263,8 +267,8 @@ const utils = {
             return false;
         }
         return grants.some((grant) => {
-            return MicroMatch.some(query.resource, grant.resource)
-                && MicroMatch.some(query.action, grant.action)
+            return utils.anyMatch(query.resource, grant.resource)
+                && utils.anyMatch(query.action, grant.action)
                 && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
         });
     },

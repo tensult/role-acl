@@ -194,7 +194,7 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').execute('delete').on('photo').attributes).toEqual(attrs);
     });
 
-    it('should grant access and check permissions for wilded card resources', function () {
+    it('should grant access and check permissions for wildcard resources', function () {
         const ac = this.ac;
         const attrs = ['*', '!size'];
         const conditionalAttrs = [{
@@ -208,12 +208,12 @@ describe('Test Suite: Access Control', function () {
         ac.grant('user2').execute('create').on(['photo', 'video'], attrs);
         expect(ac.can('user2').execute('create').on('photo').granted).toEqual(true);
         expect(ac.can('user2').execute('create').on('video').granted).toEqual(true);
-        ac.grant('user3').execute('create').on(['!(photo|video)'], attrs);
+        ac.grant('user3').execute('create').on(['!photo'], attrs);
         expect(ac.can('user3').execute('create').on('photo').granted).toEqual(false);
-        expect(ac.can('user3').execute('create').on('video').granted).toEqual(false);
+        expect(ac.can('user3').execute('create').on('video').granted).toEqual(true);
     });
 
-    it('should grant access and check permissions for wilded card actions', function () {
+    it('should grant access and check permissions for wildcard actions', function () {
         const ac = this.ac;
         const attrs = ['*', '!size'];
         const conditionalAttrs = [{
@@ -234,8 +234,8 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user2').execute('update').on('photo').granted).toEqual(true);
         expect(ac.can('user2').execute('create').on('photo').granted).toEqual(true);
 
-        ac.grant('user3').execute(['*', '!(create|update)']).on(['photo'], attrs);
-        expect(ac.can('user3').execute('update').on('photo').granted).toEqual(false);
+        ac.grant('user3').execute(['*', '!create']).on(['photo'], attrs);
+        expect(ac.can('user3').execute('update').on('photo').granted).toEqual(true);
         expect(ac.can('user3').execute('create').on('photo').granted).toEqual(false);
     });
 

@@ -1,5 +1,6 @@
 import { IAccessInfo, IQueryInfo, ICondition } from './core';
 declare const utils: {
+    anyMatch(strings: string | string[], patterns: string | string[]): boolean;
     clone(o: any): any;
     type(o: any): string;
     hasDefined(o: any, propName: string): boolean;
