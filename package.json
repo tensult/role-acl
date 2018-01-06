@@ -16,8 +16,7 @@
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "npm run clean && mkdirp ./lib && tsc",
-    "test": "npm run build && node test",
-    "docs": "docma -c ./docma.config.json"
+    "test": "npm run build && node test"
   },
   "repository": {
     "type": "git",
@@ -51,7 +50,6 @@
   "homepage": "https://github.com/tensult/role-acl#readme",
   "devDependencies": {
     "@types/node": "^8.0.24",
-    "docma": "^1.5.1",
     "jasmine": "^2.7.0",
     "jasmine-console-reporter": "^2.0.1",
     "mkdirp": "^0.5.1",
