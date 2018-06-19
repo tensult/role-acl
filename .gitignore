@@ -62,3 +62,5 @@ typings/
 
 #compiled output
 lib/
+bundle.js
+role-acl.js
