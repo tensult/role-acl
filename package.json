@@ -14,8 +14,7 @@
   ],
   "types": "./lib/index.d.ts",
   "scripts": {
-    "clean": "rimraf ./lib",
-    "build": "npm run clean && mkdirp ./lib && tsc",
+    "build": "rimraf ./lib && mkdirp ./lib && tsc",
     "test": "npm run build && node test",
     "webpack": "webpack"
   },
