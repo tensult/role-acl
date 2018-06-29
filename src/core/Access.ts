@@ -134,7 +134,7 @@ class Access {
 
     /**
      *  Sets condition for this `Access` instance.
-     *  @param {Array<ICondition>|Array<Array<ICondition>>} value
+     *  @param {ICondition} value
      *         Conditions to be set.
      *  @returns {Access}
      *           Self instance of `Access`.

@@ -10,23 +10,31 @@ import { StartsWithCondition } from "./StartsWithCondition";
 import { AccessControlError, ICondition } from '../core';
 
 export namespace Conditions {
-    export const AND = new AndCondition();    
+    export const AND = new AndCondition();
     export const TRUE = new TrueCondition();
     export const EQUALS = new EqualsCondition();
     export const LIST_CONTAINS = new ListContainsCondition();
     export const NOT_EQUALS = new NotEqualsCondition();
     export const NOT = new NotCondition();
     export const OR = new OrCondition();
-    export const STARTS_WITH = new StartsWithCondition();        
+    export const STARTS_WITH = new StartsWithCondition();
 }
 
 export const conditionEvaluator = (condition: ICondition, context): boolean => {
-    if(!condition) {
+    if (!condition) {
         return true;
     }
 
-    if(!Conditions[condition.Fn]) {
-        throw new AccessControlError(`Condtion function:${condition.Fn} not found`)
+    if(typeof condition === 'function') {
+        return condition(context);
     }
-    return (Conditions[condition.Fn] as IConditionFunction).evaluate(condition.args, context);
+
+    if(typeof condition === 'object') {
+        if (!Conditions[condition.Fn]) {
+            throw new AccessControlError(`Condtion function:${condition.Fn} not found`)
+        }
+        return (Conditions[condition.Fn] as IConditionFunction).evaluate(condition.args, context);
+    }
+
+    return false;
 }

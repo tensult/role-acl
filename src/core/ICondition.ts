@@ -8,9 +8,13 @@ import {IDictionary} from './IDictionary'
  *  @author Dilip Kola <dilip@tensult.com>
  */
 
-interface ICondition {
+export interface IStandardCondition {
     Fn: string;
-    args: string | string[] | IDictionary<any> | ICondition | ICondition[];
+    args: string | string[] | IDictionary<any> | IStandardCondition | IStandardCondition[];
 }
 
-export { ICondition };
+export interface IFunctionCondition {
+    (context: any): boolean;
+}
+
+export type ICondition = IStandardCondition | IFunctionCondition;

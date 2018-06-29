@@ -390,6 +390,17 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
+    it('should grant access with and with custom condition function', function () {
+        const ac = this.ac;
+
+        ac.grant('user').condition((context) => {
+            return context.category !== 'politics'
+        }).execute('create').on('article');
+        expect(ac.can('user').context(categorySportsContext).execute('create').on('article').granted).toEqual(true);
+        expect(ac.can('user').context(categoryPoliticsContext).execute('create').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
+    });
+
     it('should grant access with and condition with single value and check permissions', function () {
         const ac = this.ac;
 

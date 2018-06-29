@@ -57,7 +57,6 @@ console.log(permission.attributes); // —> ['title']
 
 ### Conditions Examples
 
-Define roles and grants one by one.
 ```js
 const ac = new AccessControl();
 ac.grant('user').condition(
@@ -75,7 +74,17 @@ console.log(permission.attributes); // —> ['*'] (all attributes)
 permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
+
+// Using custom/own condition functions
+ac.grant('user').condition(
+    (context) => {
+        return context.category !== 'politics'
+    }
+).execute('create').on('article');
+permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article');
+console.log(permission.granted);    // —> true
 ```
+
 ### Wildcard (glob notation) Resource and Actions Examples
 ```js
 ac.grant({
