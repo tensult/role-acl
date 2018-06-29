@@ -17,7 +17,6 @@ e.g. `ac.can(role).execute('create').on(resource)`
 - Grant permissions by resources and actions define by glob notation.
 - Grant permissions by attributes defined by glob notation (with nested object support).
 - Ability to filter data (model) instance by allowed attributes.
-- Ability to control access on "own" or "any" resources.
 - Ability to control access using conditions.
 - Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH, LIST_CONTAINS conditions.
 - You can define your own condition functions too but please note if you use custom functions instead of standard conditions, you won't be able to save them as json in the DB.
