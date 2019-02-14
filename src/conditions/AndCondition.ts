@@ -1,11 +1,11 @@
-import { IConditionFunction } from "./IConditionFunction";
-import { conditionEvaluator } from "./index";
-import {AccessControlError, ICondition} from '../core';
+import { IConditionFunction } from './IConditionFunction';
+import { conditionEvaluator } from './index';
+import { AccessControlError, ICondition } from '../core';
 import utils from '../utils';
 
 /**
  * And condition
- * 
+ *
  *  @author Dilip Kola <dilip@tensult.com>
  */
 export class AndCondition implements IConditionFunction {
@@ -19,8 +19,8 @@ export class AndCondition implements IConditionFunction {
             return false;
         }
 
-        if(utils.type(args) !== 'array' && utils.type(args) !== 'object') {
-            throw new AccessControlError('AndCondition expects type of args to be array or object') 
+        if (utils.type(args) !== 'array' && utils.type(args) !== 'object') {
+            throw new AccessControlError('AndCondition expects type of args to be array or object')
         }
 
         const conditions = utils.toArray(args);
@@ -28,7 +28,7 @@ export class AndCondition implements IConditionFunction {
         return conditions.every((condition) => {
             return conditionEvaluator(condition, context);
         });
-        
+
     }
 }
 

@@ -217,8 +217,8 @@ class AccessControl {
     /**
      * Get roles which allow this permission
      * @param {IQueryInfo} - permission query object we want to check
-     * 
-     * @returns {String[]} - roles 
+     *
+     * @returns {String[]} - roles
      */
     allowingRoles(query: IQueryInfo) {
         return utils.getAllowingRoles(this._grants, query);
@@ -228,7 +228,7 @@ class AccessControl {
     /**
      * Get allowed actions of resource when conditions are skipped
      * @param {IQueryInfo} - permission query object we want to check
-     * 
+     *
      *  @returns {String[]} - actions
      */
     allowedActions(query: IQueryInfo) {
@@ -307,7 +307,7 @@ class AccessControl {
      *  var ac = new AccessControl(grants);
      *  var permission = ac.permission({
      *      role: "user",
-     *      action: "update,
+     *      action: "update",
      *      resource: "profile"
      *  });
      *  permission.granted; // Boolean

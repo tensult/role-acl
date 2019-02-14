@@ -1,10 +1,10 @@
-import { IConditionFunction } from "./IConditionFunction";
-import {AccessControlError} from '../core';
+import { IConditionFunction } from './IConditionFunction';
+import { AccessControlError } from '../core';
 import utils from '../utils';
 
 /**
  * Not equals condition
- * 
+ *
  *  @author Dilip Kola <dilip@tensult.com>
  */
 export class NotEqualsCondition implements IConditionFunction {
@@ -16,8 +16,8 @@ export class NotEqualsCondition implements IConditionFunction {
         if (!context) {
             return false;
         }
-        if(utils.type(args) !== 'object') {
-            throw new AccessControlError('EqualsCondition expects type of args to be object') 
+        if (utils.type(args) !== 'object') {
+            throw new AccessControlError('EqualsCondition expects type of args to be object')
         }
         return Object.keys(args).every((key) => {
             return utils.matchesAllElement(args[key], (elm) => { return elm !== context[key] })

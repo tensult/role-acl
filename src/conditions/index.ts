@@ -4,9 +4,9 @@ import { NotEqualsCondition } from './NotEqualsCondition';
 import { NotCondition } from './NotCondition';
 import { ListContainsCondition } from './ListContainsCondition';
 import { IConditionFunction } from './IConditionFunction';
-import { OrCondition } from "./OrCondition";
-import { AndCondition } from "./AndCondition";
-import { StartsWithCondition } from "./StartsWithCondition";
+import { OrCondition } from './OrCondition';
+import { AndCondition } from './AndCondition';
+import { StartsWithCondition } from './StartsWithCondition';
 import { AccessControlError, ICondition } from '../core';
 
 export namespace Conditions {
@@ -25,11 +25,11 @@ export const conditionEvaluator = (condition: ICondition, context): boolean => {
         return true;
     }
 
-    if(typeof condition === 'function') {
+    if (typeof condition === 'function') {
         return condition(context);
     }
 
-    if(typeof condition === 'object') {
+    if (typeof condition === 'object') {
         if (!Conditions[condition.Fn]) {
             throw new AccessControlError(`Condtion function:${condition.Fn} not found`)
         }

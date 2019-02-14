@@ -1,10 +1,10 @@
-import { IConditionFunction } from "./IConditionFunction";
-import {AccessControlError} from '../core';
+import { IConditionFunction } from './IConditionFunction';
+import { AccessControlError } from '../core';
 import utils from '../utils';
 
 /**
  * Equals condition
- * 
+ *
  *  @author Dilip Kola <dilip@tensult.com>
  */
 
@@ -19,8 +19,8 @@ export class EqualsCondition implements IConditionFunction {
             return false;
         }
 
-        if(utils.type(args) !== 'object') {
-            throw new AccessControlError('EqualsCondition expects type of args to be object') 
+        if (utils.type(args) !== 'object') {
+            throw new AccessControlError('EqualsCondition expects type of args to be object')
         }
 
         return Object.keys(args).every((key) => {

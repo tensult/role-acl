@@ -1,6 +1,6 @@
 import { IAccessInfo } from '../core';
 import utils from '../utils';
-import { ICondition } from "./ICondition";
+import { ICondition } from './ICondition';
 
 /**
  *  Represents the inner `Access` class that helps build an access information

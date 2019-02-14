@@ -1,11 +1,11 @@
-import { IConditionFunction } from "./IConditionFunction";
-import { conditionEvaluator } from "./index";
-import {AccessControlError, ICondition} from '../core';
+import { IConditionFunction } from './IConditionFunction';
+import { conditionEvaluator } from './index';
+import { AccessControlError, ICondition } from '../core';
 import utils from '../utils';
 
 /**
  * Or condition
- * 
+ *
  *  @author Dilip Kola <dilip@tensult.com>
  */
 export class OrCondition implements IConditionFunction {
@@ -19,8 +19,8 @@ export class OrCondition implements IConditionFunction {
             return false;
         }
 
-        if(utils.type(args) !== 'array' && utils.type(args) !== 'object') {
-            throw new AccessControlError('OrCondition expects type of args to be array or object') 
+        if (utils.type(args) !== 'array' && utils.type(args) !== 'object') {
+            throw new AccessControlError('OrCondition expects type of args to be array or object')
         }
 
         const conditions = utils.toArray(args);

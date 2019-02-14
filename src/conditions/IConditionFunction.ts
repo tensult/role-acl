@@ -1,7 +1,7 @@
 /**
  *  Condition function interface
  *  @interface
- * 
+ *
  *  @author Dilip Kola <dilip@tensult.com>
  */
 

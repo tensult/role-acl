@@ -10,12 +10,12 @@ interface IQueryInfo {
      *  Indicates a single or multiple roles to be queried.
      *  @type {String|Array<String>}
      */
-    role?:string|string[];
+    role?: string | string[];
     /**
      *  Indicates the resource to be queried.
      *  @type {String}
      */
-    resource?:string;
+    resource?: string;
     /**
      *  Defines the type of the operation that is (or not) to be performed on
      *  the resource by the defined role(s).
@@ -23,7 +23,7 @@ interface IQueryInfo {
      *  for possible values.
      *  @type {String}
      */
-    action?:string;
+    action?: string;
     /**
      *  Indicates if conditions to be skipped while querying.
      */

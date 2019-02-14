@@ -131,7 +131,7 @@ class Query {
 
     /**
      *  A chainer method that sets the action for this `Query` instance.
-     * 
+     *
      * @param {String} action
      *         Action that we are check if role has access or not
      */

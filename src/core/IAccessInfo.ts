@@ -1,4 +1,4 @@
-import { ICondition } from "./ICondition";
+import { ICondition } from './ICondition';
 
 /**
  *  An interface that defines an access information to be granted or denied.
