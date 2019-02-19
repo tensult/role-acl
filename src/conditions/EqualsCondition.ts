@@ -1,6 +1,6 @@
+import { CommonUtil } from './../utils/common';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
-import utils from '../utils';
 
 /**
  * Equals condition
@@ -19,12 +19,12 @@ export class EqualsCondition implements IConditionFunction {
             return false;
         }
 
-        if (utils.type(args) !== 'object') {
+        if (CommonUtil.type(args) !== 'object') {
             throw new AccessControlError('EqualsCondition expects type of args to be object')
         }
 
         return Object.keys(args).every((key) => {
-            return utils.matchesAnyElement(args[key], (elm) => { return elm === context[key] });
+            return CommonUtil.matchesAnyElement(args[key], (elm) => { return elm === context[key] });
         });
     }
 }

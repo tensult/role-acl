@@ -1,3 +1,4 @@
+import { CommonUtil } from './../utils/common';
 import { IQueryInfo, Permission } from '../core';
 import utils from '../utils';
 
@@ -41,7 +42,7 @@ class Query {
         this._grants = grants;
         // if this is a (permission) object, we directly build attributes from
         // grants.
-        if (utils.type(role) === 'object') {
+        if (CommonUtil.type(role) === 'object') {
             this._ = <IQueryInfo>role;
         } else {
             // if this is just role(s); a string or array; we start building

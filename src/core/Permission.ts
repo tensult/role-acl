@@ -1,9 +1,9 @@
+import { CommonUtil } from './../utils/common';
 // dep modules
 import * as Notation from 'notation';
 // own modules
 import { IQueryInfo } from '../core';
 import { conditionEvaluator } from '../conditions';
-import utils from '../utils';
 
 /**
  *  Represents the inner `Permission` class that defines the granted or denied
@@ -55,7 +55,7 @@ class Permission {
         this._.role = query.role;
         this._.resource = query.resource;
         this._.context = query.context;
-        this._.attributes = utils.getUnionAttrsOfRoles(grants, query);
+        this._.attributes = CommonUtil.getUnionAttrsOfRoles(grants, query);
     }
 
     /**
@@ -132,7 +132,7 @@ class Permission {
      *           The filtered data object.
      */
     filter(data: any): any {
-        return utils.filterAll(data, this.attributes);
+        return CommonUtil.filterAll(data, this.attributes);
     }
 
 }

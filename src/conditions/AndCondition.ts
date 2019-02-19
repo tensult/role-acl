@@ -2,6 +2,7 @@ import { IConditionFunction } from './IConditionFunction';
 import { conditionEvaluator } from './index';
 import { AccessControlError, ICondition } from '../core';
 import utils from '../utils';
+import { ArrayUtil, CommonUtil } from '../utils/';
 
 /**
  * And condition
@@ -19,11 +20,11 @@ export class AndCondition implements IConditionFunction {
             return false;
         }
 
-        if (utils.type(args) !== 'array' && utils.type(args) !== 'object') {
+        if (CommonUtil.type(args) !== 'array' && CommonUtil.type(args) !== 'object') {
             throw new AccessControlError('AndCondition expects type of args to be array or object')
         }
 
-        const conditions = utils.toArray(args);
+        const conditions = ArrayUtil.toArray(args);
 
         return conditions.every((condition) => {
             return conditionEvaluator(condition, context);
