@@ -49,6 +49,7 @@
   },
   "homepage": "https://github.com/tensult/role-acl#readme",
   "devDependencies": {
+    "@types/matcher": "^1.1.0",
     "@types/node": "^9.4.7",
     "jasmine": "^3.1.0",
     "jasmine-console-reporter": "^2.0.1",

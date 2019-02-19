@@ -1,5 +1,5 @@
-import Notation from 'notation';
-import Matcher from 'matcher';
+import * as Notation from 'notation';
+import * as Matcher from 'matcher';
 import { ArrayUtil } from './array';
 import { conditionEvaluator } from '../conditions';
 import { AccessControlError, IQueryInfo, IAccessInfo, ICondition } from '../core';
