@@ -1,4 +1,4 @@
-import { CommonUtil } from './../utils/common';
+import { CommonUtil } from './../utils/';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
 

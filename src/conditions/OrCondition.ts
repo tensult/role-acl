@@ -2,7 +2,6 @@ import { CommonUtil } from './../utils/common';
 import { IConditionFunction } from './IConditionFunction';
 import { conditionEvaluator } from './index';
 import { AccessControlError, ICondition } from '../core';
-import utils from '../utils';
 import { ArrayUtil } from '../utils/';
 
 /**

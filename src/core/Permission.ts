@@ -1,9 +1,7 @@
-import { CommonUtil } from './../utils/common';
+import { CommonUtil } from './../utils/';
 // dep modules
-import * as Notation from 'notation';
 // own modules
 import { IQueryInfo } from '../core';
-import { conditionEvaluator } from '../conditions';
 
 /**
  *  Represents the inner `Permission` class that defines the granted or denied

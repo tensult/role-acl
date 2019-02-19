@@ -1,4 +1,4 @@
-import { CommonUtil } from './../utils/common';
+import { CommonUtil } from './../utils/';
 import { IAccessInfo } from '../core';
 import { ICondition } from './ICondition';
 

@@ -1,6 +1,5 @@
-import { CommonUtil } from './utils/common';
+import { ArrayUtil, CommonUtil } from './utils/';
 import { Access, IAccessInfo, ICondition, Query, IQueryInfo, Permission, AccessControlError } from './core';
-import { ArrayUtil } from './utils/';
 
 /**
  *  @classdesc

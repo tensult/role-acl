@@ -1,6 +1,5 @@
-import { CommonUtil } from './../utils/common';
+import { CommonUtil } from './../utils/';
 import { IQueryInfo, Permission } from '../core';
-import utils from '../utils';
 
 /**
  *  Represents the inner `Query` class that helps build an access information
