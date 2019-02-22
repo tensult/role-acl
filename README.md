@@ -314,7 +314,7 @@ You can set/get grants any time:
 const ac = new AccessControl();
 ac.setGrants(grantsObject);
 console.log(ac.getGrants());
-// You can save ac.getGrants() to DB 
+// You can save ac.getGrants() to Database
 // Please note: User should be part of your code and wraps calls to User to table/collection.
 await User.save({permissions: JSON.stringify(acl.getGrants())}); 
 // Retrieve from DB
