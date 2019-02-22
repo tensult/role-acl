@@ -286,7 +286,7 @@ const ac = new AccessControl(grantsObject);
 ```
 ... or an `Array` (useful when fetched from a database):
 ```js
-// grant list fetched from DB (to be converted to a valid grants object, internally)
+// grant list fetched from Database (to be converted to a valid grants object, internally)
 let grantList = [
     { role: 'admin', resource: 'video', action: 'create', attributes: ['*'] },
     { role: 'admin', resource: 'video', action: 'read', attributes: ['*'] },
