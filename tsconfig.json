@@ -1,46 +1,39 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-      "declaration": true,
-      "declarationDir": "./lib",
-      "target": "es5",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "removeComments": false,
-      "noLib": false,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "lib": ["es6", "es2015", "dom"],
-      "sourceMap": false,
-      "pretty": true,
-      "allowUnreachableCode": false,
-      "allowUnusedLabels": false,
-      "allowJs": false, // cannot be true when decleration is true
-      "noImplicitAny": false,
-      "suppressImplicitAnyIndexErrors": true,
-      "noImplicitReturns": true,
-      "noImplicitUseStrict": false,
-      "noFallthroughCasesInSwitch": true,
-      "typeRoots": [
-          "./node_modules/@types",
-          "./node_modules"
-      ],
-      "types": [
-          "node"
-      ],
-      "outDir": "./lib"
-  },
-  "include": [
-      "./src/**/*.ts"
-  ],
-  "exclude": [
-      "./node_modules",
-      "./lib",
-      "./dev",
-      "./docs",
-      "./test",
-      "./tasks",
-      "./backup",
-      "./gruntfile.js"
-  ]
+    "compileOnSave": false,
+    "compilerOptions": {
+        "declaration": true,
+        "declarationDir": "./lib",
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "removeComments": false,
+        "noLib": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": ["es6", "es2015", "dom"],
+        "sourceMap": false,
+        "pretty": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "allowJs": false, // cannot be true when decleration is true
+        "noImplicitAny": false,
+        "suppressImplicitAnyIndexErrors": true,
+        "noImplicitReturns": true,
+        "noImplicitUseStrict": false,
+        "noFallthroughCasesInSwitch": true,
+        "outDir": "./lib"
+    },
+    "include": [
+        "./src/**/*.ts",
+        "test/**/*.ts"
+    ],
+    "exclude": [
+        "./node_modules",
+        "./lib",
+        "./dev",
+        "./docs",
+        "./tasks",
+        "./backup",
+        "./gruntfile.js"
+    ]
 }
