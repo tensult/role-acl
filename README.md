@@ -1,4 +1,4 @@
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ) [![Build Status](https://travis-ci.org/tensult/role-acl.png?branch=master)](https://travis-ci.org/tensult/role-acl) [![Test Coverage](https://api.codeclimate.com/v1/badges/2d748a99b2c54e057cc2/test_coverage)](https://codeclimate.com/github/tensult/role-acl/test_coverage) [![NPM Version](https://badge.fury.io/js/role-acl.svg?style=flat)](https://npmjs.org/package/role-acl) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/tensult/role-acl/issues)
 
 Role, Attribute and conditions based Access Control for Node.js  
 
