@@ -1,4 +1,5 @@
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ) [![Build Status](https://travis-ci.org/tensult/role-acl.png?branch=master)](https://travis-ci.org/tensult/role-acl)
+
 
 Role, Attribute and conditions based Access Control for Node.js  
 
