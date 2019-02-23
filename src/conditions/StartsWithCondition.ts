@@ -1,6 +1,6 @@
+import { CommonUtil } from './../utils/';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
-import utils from '../utils';
 
 /**
  * Starts with condition
@@ -18,13 +18,13 @@ export class StartsWithCondition implements IConditionFunction {
             return false;
         }
 
-        if (utils.type(args) !== 'object') {
+        if (CommonUtil.type(args) !== 'object') {
             throw new AccessControlError('StartsWithCondition expects type of args to be object')
         }
 
         return Object.keys(args).every((key) => {
-            return utils.type(context[key]) === 'string'
-                && utils.matchesAnyElement(args[key],
+            return CommonUtil.type(context[key]) === 'string'
+                && CommonUtil.matchesAnyElement(args[key],
                     (elm) => {
                         return context[key].startsWith(elm)
                     });

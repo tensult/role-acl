@@ -1,5 +1,5 @@
+import { ArrayUtil, CommonUtil } from './utils/';
 import { Access, IAccessInfo, ICondition, Query, IQueryInfo, Permission, AccessControlError } from './core';
-import utils from './utils';
 
 /**
  *  @classdesc
@@ -106,11 +106,11 @@ class AccessControl {
      */
     setGrants(grantsObject: any): AccessControl {
         this._grants = {};
-        let type: string = utils.type(grantsObject);
+        let type: string = CommonUtil.type(grantsObject);
         if (type === 'object') {
-            this._grants = utils.normalizeGrantsObject(grantsObject);
+            this._grants = CommonUtil.normalizeGrantsObject(grantsObject);
         } else if (type === 'array') {
-            grantsObject.forEach((item: any) => utils.commitToGrants(this._grants, item));
+            grantsObject.forEach((item: any) => CommonUtil.commitToGrants(this._grants, item));
         }
         return this;
     }
@@ -147,7 +147,7 @@ class AccessControl {
      *          If a role is extended by itself or a non-existent role.
      */
     extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl {
-        utils.extendRole(this._grants, roles, extenderRoles, condition);
+        CommonUtil.extendRole(this._grants, roles, extenderRoles, condition);
         return this;
     }
 
@@ -161,7 +161,7 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeRoles(roles: string | string[]): AccessControl {
-        let rolesToRemove: string[] = utils.toStringArray(roles).sort();
+        let rolesToRemove: string[] = ArrayUtil.toStringArray(roles).sort();
         // Remove these roles from $extend list of each remaining role.
         this._each((role: string, roleItem: any) => {
             if (roleItem.$extend) {
@@ -212,7 +212,7 @@ class AccessControl {
     *  @returns {IAccessInfo[]} - grants
     */
     allowedGrants(query: IQueryInfo) {
-        return utils.getUnionGrantsOfRoles(this._grants, query);
+        return CommonUtil.getUnionGrantsOfRoles(this._grants, query);
     }
     /**
      * Get roles which allow this permission
@@ -221,7 +221,7 @@ class AccessControl {
      * @returns {String[]} - roles
      */
     allowingRoles(query: IQueryInfo) {
-        return utils.getAllowingRoles(this._grants, query);
+        return CommonUtil.getAllowingRoles(this._grants, query);
     }
 
 
@@ -232,7 +232,7 @@ class AccessControl {
      *  @returns {String[]} - actions
      */
     allowedActions(query: IQueryInfo) {
-        return utils.getUnionActionsOfRoles(this._grants, query);
+        return CommonUtil.getUnionActionsOfRoles(this._grants, query);
     }
 
     /**
@@ -242,7 +242,7 @@ class AccessControl {
      *  @returns {String[]} - resources
      */
     allowedResources(query: IQueryInfo) {
-        return utils.getUnionResourcesOfRoles(this._grants, query);
+        return CommonUtil.getUnionResourcesOfRoles(this._grants, query);
     }
 
     /**
@@ -391,14 +391,14 @@ class AccessControl {
      *  @private
      */
     private _each(callback: (role: string, roleDefinition: any) => void) {
-        utils.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
+        CommonUtil.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
     }
 
     /**
      *  @private
      */
     private _eachRole(callback: (role: string) => void) {
-        utils.eachKey(this._grants, (role: string) => callback(role));
+        CommonUtil.eachKey(this._grants, (role: string) => callback(role));
     }
 
     /**
@@ -452,7 +452,7 @@ class AccessControl {
      *  console.log(assets); // {}
      */
     static filter(data: any, attributes: string[]): any {
-        return utils.filterAll(data, attributes);
+        return CommonUtil.filterAll(data, attributes);
     }
 
     /**
