@@ -1,4 +1,6 @@
 sudo: required
+env:
+  - CC_TEST_REPORTER_ID=16d60a754f35d135681ebdc1e750743a3909ffac0f35f842f526ba2419cf0076
 addons:
   chrome: stable
 language: node_js
