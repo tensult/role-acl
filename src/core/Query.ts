@@ -1,5 +1,5 @@
+import { CommonUtil } from './../utils/';
 import { IQueryInfo, Permission } from '../core';
-import utils from '../utils';
 
 /**
  *  Represents the inner `Query` class that helps build an access information
@@ -41,7 +41,7 @@ class Query {
         this._grants = grants;
         // if this is a (permission) object, we directly build attributes from
         // grants.
-        if (utils.type(role) === 'object') {
+        if (CommonUtil.type(role) === 'object') {
             this._ = <IQueryInfo>role;
         } else {
             // if this is just role(s); a string or array; we start building

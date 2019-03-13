@@ -1,5 +1,5 @@
+import { CommonUtil } from './../utils/';
 import { IAccessInfo } from '../core';
-import utils from '../utils';
 import { ICondition } from './ICondition';
 
 /**
@@ -46,14 +46,14 @@ class Access {
         this._grants = grants;
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
-        } else if (utils.type(roleOrInfo) === 'object') {
+        } else if (CommonUtil.type(roleOrInfo) === 'object') {
             // if an IAccessInfo instance is passed and it has 'action' defined, we
             // should directly commit it to grants.
             this._ = roleOrInfo;
         }
 
-        if (utils.isInfoFulfilled(this._)) {
-            utils.commitToGrants(grants, this._);
+        if (CommonUtil.isInfoFulfilled(this._)) {
+            CommonUtil.commitToGrants(grants, this._);
         }
     }
 
@@ -91,7 +91,7 @@ class Access {
      *           Self instance of `Access`.
      */
     commit(): Access {
-        utils.commitToGrants(this._grants, this._);
+        CommonUtil.commitToGrants(this._grants, this._);
         return this
     }
 
@@ -152,7 +152,7 @@ class Access {
      *           Self instance of `Access`.
      */
     extend(roles: string | string[]): Access {
-        utils.extendRole(this._grants, this._.role, roles);
+        CommonUtil.extendRole(this._grants, this._.role, roles);
         return this;
     }
 
@@ -229,7 +229,7 @@ class Access {
         this._.action = action;
         if (resource) this._.resource = resource;
         if (attributes) this._.attributes = attributes;
-        utils.commitToGrants(this._grants, this._);
+        CommonUtil.commitToGrants(this._grants, this._);
         // important: reset attributes for chained methods
         this._.attributes = undefined;
         return this;
