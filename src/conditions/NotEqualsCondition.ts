@@ -1,6 +1,7 @@
 import { CommonUtil } from './../utils/';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
+import { ConditionUtil } from './util';
 
 /**
  * Not equals condition
@@ -17,11 +18,9 @@ export class NotEqualsCondition implements IConditionFunction {
             return false;
         }
         if (CommonUtil.type(args) !== 'object') {
-            throw new AccessControlError('EqualsCondition expects type of args to be object')
+            throw new AccessControlError('NotEqualsCondition expects type of args to be object')
         }
-        return Object.keys(args).every((key) => {
-            return CommonUtil.matchesAllElement(args[key], (elm) => { return elm !== context[key] })
-        });
+        return !ConditionUtil.EQUALS.evaluate(args, context);
     }
 }
 

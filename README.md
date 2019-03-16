@@ -1,4 +1,4 @@
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=73QY55FZWSPRJ) [![Build Status](https://travis-ci.org/tensult/role-acl.png?branch=master)](https://travis-ci.org/tensult/role-acl) [![Test Coverage](https://api.codeclimate.com/v1/badges/2d748a99b2c54e057cc2/test_coverage)](https://codeclimate.com/github/tensult/role-acl/test_coverage) [![NPM Version](https://badge.fury.io/js/role-acl.svg?style=flat)](https://npmjs.org/package/role-acl) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/tensult/role-acl/issues)
 
 Role, Attribute and conditions based Access Control for Node.js  
 
@@ -76,6 +76,31 @@ console.log(permission.attributes); // —> ['*'] (all attributes)
 permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
+
+// Condition with dynamic context values using JSONPath
+// We can use this to allow only owner of the article to edit it
+ac.grant('user').condition(
+    {
+        Fn: 'EQUALS',
+        args: {
+            'requester': '$.owner'
+        }
+    }).execute('edit').on('article');
+
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article');
+console.log(permission.granted);    // —> true
+
+// We can use this to prevent someone to approve their own article so that it goes to review by someone before publishing
+ac.grant('user').condition(
+    {
+        Fn: 'NOT_EQUALS',
+        args: {
+            'requester': '$.owner'
+        }
+    }).execute('approve').on('article');
+
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article');
+console.log(permission.granted);    // —> false
 
 // Using custom/own condition functions
 ac.grant('user').condition(
@@ -412,3 +437,6 @@ console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // ->
 [license]:https://github.com/tensult/role-acl/blob/master/LICENSE
 [onury-accesscontrol-license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
 [tests]:https://github.com/tensult/role-acl/blob/master/test/ac.spec.js
+
+## Contact us
+This product is supported and actively developed by [Tensult](https://wwww/tensult.com). You can contact us at info@tensult.com.

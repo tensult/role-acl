@@ -1,7 +1,7 @@
 import * as Notation from 'notation';
 import * as Matcher from 'matcher';
 import { ArrayUtil } from './array';
-import { conditionEvaluator } from '../conditions';
+import { ConditionUtil } from '../conditions';
 import { AccessControlError, IQueryInfo, IAccessInfo, ICondition } from '../core';
 
 export class CommonUtil {
@@ -44,7 +44,7 @@ export class CommonUtil {
             if (!roleItem) throw new AccessControlError(`Role not found: "${roleName}"`);
             if (roleItem.$extend) {
                 const rolesMetCondition = Object.keys(roleItem.$extend).filter((role) => {
-                    return skipConditions || conditionEvaluator(roleItem.$extend[role].condition, context);
+                    return skipConditions || ConditionUtil.evaluate(roleItem.$extend[role].condition, context);
                 });
                 arr = ArrayUtil.uniqConcat(arr, this.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
             }
@@ -184,7 +184,7 @@ export class CommonUtil {
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
         }, []).filter((grant) => {
-            return query.skipConditions || conditionEvaluator(grant.condition, query.context);
+            return query.skipConditions || ConditionUtil.evaluate(grant.condition, query.context);
         });
     }
 
@@ -233,7 +233,7 @@ export class CommonUtil {
         return grants.some((grant) => {
             return this.anyMatch(query.resource, grant.resource)
                 && this.anyMatch(query.action, grant.action)
-                && (query.skipConditions || conditionEvaluator(grant.condition, query.context));
+                && (query.skipConditions || ConditionUtil.evaluate(grant.condition, query.context));
         });
     }
 
@@ -243,7 +243,7 @@ export class CommonUtil {
         }
         return Object.keys(roleExtensionObject).some((role) => {
             return allowingRoles[role] &&
-                (query.skipConditions || conditionEvaluator(roleExtensionObject[role].condition, query.context));
+                (query.skipConditions || ConditionUtil.evaluate(roleExtensionObject[role].condition, query.context));
         });
     }
 

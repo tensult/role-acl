@@ -1,6 +1,7 @@
 import { CommonUtil } from './../utils/common';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
+import { ConditionUtil } from './util';
 
 /**
  * List contains condition
@@ -19,12 +20,14 @@ export class ListContainsCondition implements IConditionFunction {
         }
 
         if (CommonUtil.type(args) !== 'object') {
-            throw new AccessControlError('EqualsCondition expects type of args to be object')
+            throw new AccessControlError('ListContainsCondition expects type of args to be object')
         }
 
         return Object.keys(args).every((key) => {
             return Array.isArray(context[key]) &&
-                CommonUtil.matchesAnyElement(args[key], (elm) => { return context[key].includes(elm); })
+                CommonUtil.matchesAnyElement(args[key], (elm) => {
+                    return context[key].includes(ConditionUtil.getValueByPath(context, elm));
+                });
         });
     }
 }

@@ -1,6 +1,7 @@
 import { CommonUtil } from './../utils/';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
+import { ConditionUtil } from './util';
 
 /**
  * Starts with condition
@@ -26,7 +27,7 @@ export class StartsWithCondition implements IConditionFunction {
             return CommonUtil.type(context[key]) === 'string'
                 && CommonUtil.matchesAnyElement(args[key],
                     (elm) => {
-                        return context[key].startsWith(elm)
+                        return context[key].startsWith(ConditionUtil.getValueByPath(context, elm))
                     });
         });
     }

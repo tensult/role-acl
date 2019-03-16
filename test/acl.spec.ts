@@ -384,6 +384,36 @@ describe('Test Suite: Access Control', function () {
         expect(ac.can('user').context({ category: 'tech' }).execute('create').on('article').granted).toEqual(true);
     });
 
+    it('should grant access with JSONPath context values with EQUALS condition', function () {
+        const ac = this.ac;
+        ac.grant('user').condition(
+            {
+                Fn: 'EQUALS',
+                args: {
+                    'requester': '$.owner'
+                }
+            }).execute('edit').on('article');
+        expect(ac.can('user').context({ owner: 'dilip', requester: 'dilip' })
+            .execute('edit').on('article').granted).toEqual(true);
+        expect(ac.can('user').context({ owner: 'tensult', requester: 'dilip' })
+            .execute('edit').on('article').granted).toEqual(false);
+    });
+
+    it('should grant access with JSONPath context values with NOT_EQUALS condition', function () {
+        const ac = this.ac;
+        ac.grant('user').condition(
+            {
+                Fn: 'NOT_EQUALS',
+                args: {
+                    'requester': '$.owner'
+                }
+            }).execute('approve').on('article');
+        expect(ac.can('user').context({ owner: 'dilip', requester: 'dilip' })
+            .execute('approve').on('article').granted).toEqual(false);
+        expect(ac.can('user').context({ owner: 'tensult', requester: 'dilip' })
+            .execute('approve').on('article').granted).toEqual(true);
+    });
+
     it('should grant access with and with custom condition function', function () {
         const ac = this.ac;
 
