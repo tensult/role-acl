@@ -46,5 +46,4 @@ export class ArrayUtil {
     public static subtractArray(arrA: string[], arrB: string[]) {
         return arrA.slice().filter(element => arrB.indexOf(element) === -1);
     }
-
 }

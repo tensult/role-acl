@@ -1,6 +1,7 @@
 import { CommonUtil } from './../utils/common';
 import { IConditionFunction } from './IConditionFunction';
 import { AccessControlError } from '../core';
+import { ConditionUtil } from './util';
 
 /**
  * Equals condition
@@ -24,9 +25,9 @@ export class EqualsCondition implements IConditionFunction {
         }
 
         return Object.keys(args).every((key) => {
-            return CommonUtil.matchesAnyElement(args[key], (elm) => { return elm === context[key] });
+            return CommonUtil.matchesAnyElement(args[key], (elm) => {
+                return ConditionUtil.getValueByPath(context, elm) === context[key]
+            });
         });
     }
 }
-
-

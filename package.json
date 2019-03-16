@@ -63,6 +63,7 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
+    "jsonpath-plus": "^0.18.0",
     "matcher": "^1.0.0",
     "notation": "^1.3.5"
   }

@@ -77,6 +77,31 @@ permission = ac.can('user').context({ category: 'tech' }).execute('create').on('
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
+// Condition with dynamic context values using JSONPath
+// We can use this to allow only owner of the article to edit it
+ac.grant('user').condition(
+    {
+        Fn: 'EQUALS',
+        args: {
+            'requester': '$.owner'
+        }
+    }).execute('edit').on('article');
+
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article');
+console.log(permission.granted);    // —> true
+
+// We can use this to prevent someone to approve their own article so that it goes to review by someone before publishing
+ac.grant('user').condition(
+    {
+        Fn: 'NOT_EQUALS',
+        args: {
+            'requester': '$.owner'
+        }
+    }).execute('approve').on('article');
+
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article');
+console.log(permission.granted);    // —> false
+
 // Using custom/own condition functions
 ac.grant('user').condition(
     (context) => {

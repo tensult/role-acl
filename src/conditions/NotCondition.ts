@@ -1,6 +1,6 @@
 import { CommonUtil } from './../utils/common';
 import { IConditionFunction } from './IConditionFunction';
-import { conditionEvaluator } from './index';
+import { ConditionUtil } from './index';
 import { AccessControlError, ICondition } from '../core';
 import { ArrayUtil } from '../utils/';
 
@@ -28,7 +28,7 @@ export class NotCondition implements IConditionFunction {
         const conditions = ArrayUtil.toArray(args);
 
         return conditions.every((condition: ICondition) => {
-            return !conditionEvaluator(condition, context);
+            return !ConditionUtil.evaluate(condition, context);
         });
     }
 }

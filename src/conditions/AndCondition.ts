@@ -1,5 +1,5 @@
 import { IConditionFunction } from './IConditionFunction';
-import { conditionEvaluator } from './index';
+import { ConditionUtil } from './index';
 import { AccessControlError } from '../core';
 import { ArrayUtil, CommonUtil } from '../utils/';
 
@@ -26,7 +26,7 @@ export class AndCondition implements IConditionFunction {
         const conditions = ArrayUtil.toArray(args);
 
         return conditions.every((condition) => {
-            return conditionEvaluator(condition, context);
+            return ConditionUtil.evaluate(condition, context);
         });
 
     }
