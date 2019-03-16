@@ -90,7 +90,8 @@ ac.grant('user').condition(
 permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article');
 console.log(permission.granted);    // —> true
 
-// We can use this to prevent someone to approve their own article so that it goes to review by someone before publishing
+// We can use this to prevent someone to approve their own article so that it goes to review 
+// by someone else before publishing
 ac.grant('user').condition(
     {
         Fn: 'NOT_EQUALS',
