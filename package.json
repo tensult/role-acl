@@ -1,6 +1,6 @@
 {
   "name": "role-acl",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "Role, Attribute and Condition based Access Control for Node.js",
   "main": "./index.js",
   "directories": {
@@ -15,7 +15,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "rimraf ./lib && mkdirp ./lib && tsc",
-    "publish": "npm run build && npm publish",
+    "prepublish": "npm run build",
     "test": "ts-node ./node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=jasmine.json",
     "test:coverage": "./node_modules/istanbul/lib/cli.js cover -e .ts  -x \"*.d.ts\" -x \"*.spec.ts\" ts-node node_modules/jasmine/bin/jasmine.js -- JASMINE_CONFIG_PATH=jasmine.json",
     "webpack": "webpack"
