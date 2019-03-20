@@ -15,7 +15,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "rimraf ./lib && mkdirp ./lib && tsc",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "test": "ts-node ./node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=jasmine.json",
     "test:coverage": "./node_modules/istanbul/lib/cli.js cover -e .ts  -x \"*.d.ts\" -x \"*.spec.ts\" ts-node node_modules/jasmine/bin/jasmine.js -- JASMINE_CONFIG_PATH=jasmine.json",
     "webpack": "webpack"
