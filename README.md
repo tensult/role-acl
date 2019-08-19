@@ -438,7 +438,7 @@ console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // ->
 [onury-accesscontrol]: https://github.com/onury/accesscontrol
 [license]:https://github.com/tensult/role-acl/blob/master/LICENSE
 [onury-accesscontrol-license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
-[tests]:https://github.com/tensult/role-acl/blob/master/test/ac.spec.js
+[tests]:https://github.com/tensult/role-acl/blob/master/test/acl.spec.ts
 
 ## Contact us
 This product is supported and actively developed by [Tensult](https://wwww/tensult.com). You can contact us at info@tensult.com.
