@@ -12,7 +12,7 @@
     "lib",
     "LICENSE"
   ],
-  "types": "./lib/index.d.ts",
+  "types": "./lib/src/index.d.ts",
   "scripts": {
     "build": "rimraf ./lib && mkdirp ./lib && tsc",
     "prepare": "npm run build",
