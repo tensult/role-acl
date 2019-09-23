@@ -55,7 +55,7 @@ class Query {
     // -------------------------------
 
     /**
-     *  A chainer method that sets the role(s) for this `Query` instance.
+     *  A chained method that sets the role(s) for this `Query` instance.
      *  @param {String|Array<String>} roles
      *         A single or array of roles.
      *  @returns {Query}
@@ -67,7 +67,7 @@ class Query {
     }
 
     /**
-     *  A chainer method that sets the resource for this `Query` instance.
+     *  A chained method that sets the resource for this `Query` instance.
      *  @param {String} resource
      *         Target resource for this `Query` instance.
      *  @returns {Query}
@@ -94,12 +94,12 @@ class Query {
      *           An object that defines whether the permission is granted; and
      *           the resource attributes that the permission is granted for.
      */
-    on(resource: string, skipConditions?: boolean): Permission {
+    async on(resource: string, skipConditions?: boolean) {
         return this._getPermission(this._.action, resource, skipConditions);
     }
 
     /**
-     *  A chainer method that sets the context for this `Query` instance.
+     *  A chained method that sets the context for this `Query` instance.
      *  @param {String} context
      *         Target context for this `Query` instance.
      *  @returns {Query}
@@ -111,7 +111,7 @@ class Query {
     }
 
     /**
-     * A chainer method that sets the skipConditions for this `Query` instance.
+     * A chained method that sets the skipConditions for this `Query` instance.
      * @param {Boolean} value
      *          Indicates if conditions to skipped while querying
      * @returns {Query}
@@ -130,7 +130,7 @@ class Query {
     }
 
     /**
-     *  A chainer method that sets the action for this `Query` instance.
+     *  A chained method that sets the action for this `Query` instance.
      *
      * @param {String} action
      *         Action that we are check if role has access or not
@@ -150,13 +150,13 @@ class Query {
      *  @param {String} [resource]
      *  @returns {Permission}
      */
-    private _getPermission(action: string, resource?: string, skipConditions?: boolean): Permission {
+    private async _getPermission(action: string, resource?: string, skipConditions?: boolean) {
         this._.action = action;
         if (resource) this._.resource = resource;
         if (skipConditions !== undefined) {
             this._.skipConditions = skipConditions;
         }
-        return new Permission(this._grants, this._);
+        return new Permission(this._, await CommonUtil.getUnionAttrsOfRoles(this._grants, this._));
     }
 }
 

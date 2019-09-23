@@ -49,11 +49,11 @@ class Permission {
      *  @param {IQueryInfo} query
      *         An `IQueryInfo` arbitrary object.
      */
-    constructor(grants: any, query: IQueryInfo) {
+    constructor(query: IQueryInfo, attributes: any) {
         this._.role = query.role;
         this._.resource = query.resource;
         this._.context = query.context;
-        this._.attributes = CommonUtil.getUnionAttrsOfRoles(grants, query);
+        this._.attributes = attributes;
     }
 
     /**
@@ -64,7 +64,7 @@ class Permission {
      *  If the returned array has multiple roles, this does not necessarily mean
      *  that the queried permission is granted or denied for each and all roles.
      *  Note that when a permission is queried for multiple roles, attributes
-     *  are unioned (merged) for all given roles. This means "at least one of
+     *  are union (merged) for all given roles. This means "at least one of
      *  these roles" have the permission for this action and resource attribute.
      *
      *  @name AccessControl~Permission#roles
@@ -91,11 +91,11 @@ class Permission {
      *  Glob notation. If access is not granted, this will be an empty array.
      *
      *  Note that when a permission is queried for multiple roles, attributes
-     *  are unioned (merged) for all given roles. This means "at least one of
+     *  are union (merged) for all given roles. This means "at least one of
      *  these roles" have the permission for this action and resource attribute.
      *
      *  @name AccessControl~Permission#attributes
-     *  @type {Array<string>}
+     *  @type {Promise<Array<string>>}
      *  @readonly
      */
     get attributes(): string[] {
@@ -107,12 +107,13 @@ class Permission {
      *  least one attribute of the target resource is allowed.
      *
      *  @name AccessControl~Permission#granted
-     *  @type {Boolean}
+     *  @type {Promise<boolean>}
      *  @readonly
      */
-    get granted(): boolean {
-        if (!this.attributes || this.attributes.length === 0) return false;
-        // just one non-negated attribute is enough.
+    get granted() {
+        if (!this.attributes || this.attributes.length === 0) {
+            return false;
+        }
         return this.attributes.some((attr: string) => {
             return attr.trim().slice(0, 1) !== '!';
         });
@@ -129,7 +130,7 @@ class Permission {
      *  @returns {Object|Array}
      *           The filtered data object.
      */
-    filter(data: any): any {
+    filter(data: any) {
         return CommonUtil.filterAll(data, this.attributes);
     }
 

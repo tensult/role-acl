@@ -35,20 +35,28 @@ export class CommonUtil {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    public static getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): string[] {
+    public static async getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean) {
         roles = ArrayUtil.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.slice();
-        roles.forEach((roleName: string) => {
+        for (let roleName of roles) {
             let roleItem: any = grants[roleName];
             if (!roleItem) throw new AccessControlError(`Role not found: "${roleName}"`);
             if (roleItem.$extend) {
-                const rolesMetCondition = Object.keys(roleItem.$extend).filter((role) => {
-                    return skipConditions || ConditionUtil.evaluate(roleItem.$extend[role].condition, context);
-                });
-                arr = ArrayUtil.uniqConcat(arr, this.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
+                let rolesMetCondition = [];
+                if (skipConditions) {
+                    rolesMetCondition = Object.keys(roleItem.$extend);
+                } else {
+                    for (let extendedRoleName of Object.keys(roleItem.$extend)) {
+                        if (await ConditionUtil.evaluate(roleItem.$extend[extendedRoleName].condition,
+                            context)) {
+                            rolesMetCondition.push(extendedRoleName);
+                        }
+                    }
+                }
+                arr = ArrayUtil.uniqConcat(arr, await this.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
             }
-        });
+        }
         return arr;
     }
 
@@ -133,7 +141,7 @@ export class CommonUtil {
     }
 
     /**
-     *  Checks whether the given access info can be commited to grants model.
+     *  Checks whether the given access info can be committed to grants model.
      *  @param {IAccessInfo|IQueryInfo} info
      *  @returns {Boolean}
      */
@@ -165,7 +173,7 @@ export class CommonUtil {
         });
     }
 
-    public static getUnionGrantsOfRoles(grants: any, query: IQueryInfo): any[] {
+    public static async getUnionGrantsOfRoles(grants: any, query: IQueryInfo) {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -174,31 +182,41 @@ export class CommonUtil {
         query = this.normalizeQueryInfo(query);
 
         // get roles and extended roles in a flat array
-        const roles: string[] = this.getFlatRoles(grants, query.role, query.context, query.skipConditions);
+        const roles: string[] = await this.getFlatRoles(grants, query.role, query.context, query.skipConditions);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
-        return roles.filter((role) => {
+        const allGrantsOfAllRoles = roles.filter((role) => {
             return grants[role] && grants[role].grants;
         }).map((role) => {
             return grants[role].grants;
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
-        }, []).filter((grant) => {
-            return query.skipConditions || ConditionUtil.evaluate(grant.condition, query.context);
-        });
+        }, []);
+
+        if (query.skipConditions) {
+            return allGrantsOfAllRoles;
+        } else {
+            const matchingGrantsOfAllRoles = [];
+            for (let grant of allGrantsOfAllRoles) {
+                if (await ConditionUtil.evaluate(grant.condition, query.context)) {
+                    matchingGrantsOfAllRoles.push(grant);
+                }
+            }
+            return matchingGrantsOfAllRoles;
+        }
     }
 
-    public static getUnionResourcesOfRoles(grants: any, query: IQueryInfo): string[] {
+    public static async getUnionResourcesOfRoles(grants: any, query: IQueryInfo) {
         query.skipConditions = query.skipConditions || !query.context;
-        return this.getUnionGrantsOfRoles(grants, query)
+        return (await this.getUnionGrantsOfRoles(grants, query))
             .map((grant) => {
                 return ArrayUtil.toStringArray(grant.resource);
             }).reduce(Notation.Glob.union, []);
     }
 
-    public static getUnionActionsOfRoles(grants: any, query: IQueryInfo): string[] {
+    public static async getUnionActionsOfRoles(grants: any, query: IQueryInfo) {
         query.skipConditions = query.skipConditions || !query.context;
-        return this.getUnionGrantsOfRoles(grants, query)
+        return (await this.getUnionGrantsOfRoles(grants, query))
             .filter((grant) => {
                 return this.anyMatch(query.resource, grant.resource)
             }).map((grant) => {
@@ -217,8 +235,8 @@ export class CommonUtil {
      *
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
-    public static getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
-        return this.getUnionGrantsOfRoles(grants, query).filter((grant) => {
+    public static async getUnionAttrsOfRoles(grants: any, query: IQueryInfo) {
+        return (await this.getUnionGrantsOfRoles(grants, query)).filter((grant) => {
             return this.anyMatch(query.resource, grant.resource)
                 && this.anyMatch(query.action, grant.action);
         }).map((grant) => {
@@ -226,41 +244,43 @@ export class CommonUtil {
         }).reduce(Notation.Glob.union, []);
     }
 
-    public static areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
+    public static async areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
         if (!grants) {
             return false;
         }
-        return grants.some((grant) => {
-            return this.anyMatch(query.resource, grant.resource)
+        let result = false;
+        for (let grant of grants) {
+            result = result || (this.anyMatch(query.resource, grant.resource)
                 && this.anyMatch(query.action, grant.action)
-                && (query.skipConditions || ConditionUtil.evaluate(grant.condition, query.context));
-        });
+                && (query.skipConditions || await ConditionUtil.evaluate(grant.condition, query.context)))
+        }
+        return result;
     }
 
-    public static areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo) {
+    public static async areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo) {
         if (!roleExtensionObject) {
             return false;
         }
-        return Object.keys(roleExtensionObject).some((role) => {
-            return allowingRoles[role] &&
-                (query.skipConditions || ConditionUtil.evaluate(roleExtensionObject[role].condition, query.context));
-        });
+        let result = false;
+        for (let roleName in roleExtensionObject) {
+            result = result || (allowingRoles[roleName] && (query.skipConditions ||
+                await ConditionUtil.evaluate(roleExtensionObject[roleName].condition, query.context)));
+        }
+        return result;
     }
 
-    public static getAllowingRoles(grants: any, query: IQueryInfo) {
+    public static async getAllowingRoles(grants: any, query: IQueryInfo) {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
-        const roles = Object.keys(grants);
         const allowingRoles = {};
-        roles.sort((role1, role2) => {
+        let sortedRoles = Object.keys(grants).sort((role1, role2) => {
             return grants[role1].score - grants[role2].score
-        }).reduce((allowingRoles, role) => {
-            allowingRoles[role] = this.areGrantsAllowing(grants[role].grants, query) ||
-                this.areExtendingRolesAllowing(grants[role].$extend, allowingRoles, query);
-            return allowingRoles;
-        }, allowingRoles);
-
+        });
+        for (let role of sortedRoles) {
+            allowingRoles[role] = await this.areGrantsAllowing(grants[role].grants, query) ||
+                await this.areExtendingRolesAllowing(grants[role].$extend, allowingRoles, query);
+        }
         return Object.keys(allowingRoles).filter((role) => {
             return allowingRoles[role];
         });
@@ -303,7 +323,7 @@ export class CommonUtil {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    public static extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
+    public static async extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
         let arrExtRoles: string[] = ArrayUtil.toStringArray(extenderRoles);
         if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles: string[] = this.getNonExistentRoles(grants, arrExtRoles);
@@ -312,7 +332,7 @@ export class CommonUtil {
         }
         roles = ArrayUtil.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        const allExtendingRoles = this.getFlatRoles(grants, arrExtRoles, null, true);
+        const allExtendingRoles = await this.getFlatRoles(grants, arrExtRoles, null, true);
         const extensionScore = allExtendingRoles.reduce((total, role) => {
             return total + grants[role].score;
         }, 0)
