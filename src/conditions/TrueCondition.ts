@@ -10,5 +10,3 @@ export class TrueCondition implements IConditionFunction {
         return true;
     }
 }
-
-

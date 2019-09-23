@@ -21,7 +21,7 @@ export class ConditionUtil {
     public static readonly OR = new OrCondition();
     public static readonly STARTS_WITH = new StartsWithCondition();
 
-    public static evaluate(condition: ICondition, context): boolean {
+    public static evaluate(condition: ICondition, context): boolean | Promise<boolean> {
         if (!condition) {
             return true;
         }

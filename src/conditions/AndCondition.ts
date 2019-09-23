@@ -10,7 +10,7 @@ import { ArrayUtil, CommonUtil } from '../utils/';
  */
 export class AndCondition implements IConditionFunction {
 
-    evaluate(args?: any, context?: any) {
+    async evaluate(args?: any, context?: any) {
         if (!args) {
             return true;
         }
@@ -25,10 +25,11 @@ export class AndCondition implements IConditionFunction {
 
         const conditions = ArrayUtil.toArray(args);
 
-        return conditions.every((condition) => {
-            return ConditionUtil.evaluate(condition, context);
-        });
-
+        let result = true;
+        for (let condition of conditions) {
+            result = result && await ConditionUtil.evaluate(condition, context);
+        }
+        return result;
     }
 }
 

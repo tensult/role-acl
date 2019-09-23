@@ -11,7 +11,7 @@ import { ArrayUtil } from '../utils/';
  */
 export class OrCondition implements IConditionFunction {
 
-    evaluate(args?: any, context?: any) {
+    async evaluate(args?: any, context?: any) {
         if (!args) {
             return true;
         }
@@ -26,9 +26,11 @@ export class OrCondition implements IConditionFunction {
 
         const conditions = ArrayUtil.toArray(args);
 
-        return conditions.some((condition) => {
-            return ConditionUtil.evaluate(condition, context);
-        });
+        let result = false;
+        for (let condition of conditions) {
+            result = result || await ConditionUtil.evaluate(condition, context);
+        }
+        return result;
     }
 }
 
