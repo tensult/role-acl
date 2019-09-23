@@ -146,8 +146,8 @@ class AccessControl {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl {
-        CommonUtil.extendRole(this._grants, roles, extenderRoles, condition);
+    async extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
+        await CommonUtil.extendRole(this._grants, roles, extenderRoles, condition);
         return this;
     }
 
@@ -274,7 +274,7 @@ class AccessControl {
      *
      *  // To check for multiple roles:
      *  ac.can(['admin', 'user']).createOwn('profile');
-     *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
+     *  // Note: when multiple roles checked, acquired attributes are union (merged).
      */
     can(role: string | string[] | IQueryInfo): Query {
         return new Query(this._grants, role);
@@ -314,8 +314,8 @@ class AccessControl {
      *  permission.attributes; // Array e.g. [ 'username', 'password', 'company.*']
      *  permission.filter(object); // { username, password, company: { name, address, ... } }
      */
-    permission(queryInfo: IQueryInfo): Permission {
-        return new Permission(this._grants, queryInfo);
+    async permission(queryInfo: IQueryInfo) {
+        return new Permission(queryInfo, await CommonUtil.getUnionAttrsOfRoles(this._grants, queryInfo));
     }
 
     /**

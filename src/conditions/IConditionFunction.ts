@@ -6,5 +6,5 @@
  */
 
 export interface IConditionFunction {
-    evaluate(args?: any, context?: any): boolean;
+    evaluate(args?: any, context?: any): boolean | Promise<boolean>;
 }
