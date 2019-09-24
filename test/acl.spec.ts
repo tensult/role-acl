@@ -1,3 +1,4 @@
+
 const AccessControl = require('../src').AccessControl;
 
 function type(o) {
@@ -11,6 +12,15 @@ function throwsAccessControlError(fn, errMsg?) {
     } catch (err) {
         expect(err instanceof AccessControl.Error).toEqual(true);
         expect(AccessControl.isACError(err)).toEqual(true);
+        if (errMsg) expect(err.message).toContain(errMsg);
+    }
+}
+
+async function promiseThrowsError(promise: Promise<any>, errMsg?) {
+    try {
+        await promise;
+        fail('should throw error');
+    } catch (err) {
         if (errMsg) expect(err.message).toContain(errMsg);
     }
 }
@@ -423,6 +433,35 @@ describe('Test Suite: Access Control', function () {
         expect((await ac.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
         expect((await ac.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
+    });
+
+    it('should grant access with and with async custom condition function', async function () {
+        const ac = this.ac;
+
+        ac.grant('user').condition((context) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(context.category !== 'politics');
+                }, 200);
+            });
+        }).execute('create').on('article');
+        expect((await ac.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
+        expect((await ac.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
+        expect((await ac.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
+    });
+
+    it('should grant access with and with async custom bad condition function', async function () {
+        const ac = this.ac;
+
+        ac.grant('user').condition((context) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    reject('I am bad function');
+                }, 200);
+            });
+        }).execute('create').on('article');
+
+        await promiseThrowsError(ac.can('user').context(categorySportsContext).execute('create').on('article'));
     });
 
     it('should grant access with and condition with single value and check permissions', async function () {
@@ -859,16 +898,8 @@ describe('Test Suite: Access Control', function () {
         expect(ac.getGrants().agent).toBeUndefined();
         expect(ac.getGrants().admin.$extend['editor']).toBeUndefined();
         expect(ac.getGrants().admin.$extend['agent']).toBeUndefined();
-        try {
-            await ac.grant('roleX').extend('roleX')
-            fail('should throw error');
-        } catch (error) {
-        }
-        try {
-            await ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3'])
-            fail('should throw error');
-        } catch (error) {
-        }
+        await promiseThrowsError(ac.grant('roleX').extend('roleX'));
+        await promiseThrowsError(ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3']));
     });
 
     it('should throw error while trying extend own role', async function () {
@@ -876,17 +907,8 @@ describe('Test Suite: Access Control', function () {
         ac.grant('user').execute('create').when(categorySportsCondition).on('book');
         await ac.extendRole('editor', 'user');
         ac.grant('editor').execute('delete').on('book');
-        try {
-            await ac.extendRole('user', 'editor')
-            fail('should throw error');
-        } catch (error) {
-        }
-
-        try {
-            await ac.extendRole('user', 'user');
-            fail('should throw error');
-        } catch (error) {
-        }
+        await promiseThrowsError(ac.extendRole('user', 'editor'));
+        await promiseThrowsError(ac.extendRole('user', 'user'));
     });
 
     it('should extend roles when conditions used', async function () {
@@ -1032,14 +1054,7 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
         throwsAccessControlError(() => ac.grant().execute('create').on());
         ac.setGrants(grantsObject);
-        try {
-            await ac.can('invalid-role').execute('create').on('video');
-            fail('should throw error');
-        } catch (err) {
-            expect(err instanceof AccessControl.Error).toEqual(true);
-            expect(AccessControl.isACError(err)).toEqual(true);
-            expect(err.message).toContain('Role not found');
-        }
+        await promiseThrowsError(ac.can('invalid-role').execute('create').on('video'), 'Role not found');
     });
 
     it('should filter granted attributes', async function () {

@@ -35,8 +35,8 @@ const AccessControl = require('role-acl');
 // import { AccessControl } from 'role-acl';
 ```
 
-### Basic Example
-
+## Example for versions < 4.0.0
+### Basic Examples
 Define roles and grants one by one.
 ```js
 const ac = new AccessControl();
@@ -384,15 +384,15 @@ console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
 // third level of extension (extending with condition)
-ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
+ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
     Fn: 'EQUALS',
     args: { status: 'draft' }
 });
-permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post');
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('conditonal/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post');
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post');
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```
@@ -422,8 +422,8 @@ console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // ->
 ```
 **NOTE:**  allowedResources and allowedActions skip the conditions when context is not passed
 
-### Read more
-[More Examples][tests]
+### Example for versions >= 4.0.0
+[Take a look at the test cases][tests]
 
 ## Licenses
 
