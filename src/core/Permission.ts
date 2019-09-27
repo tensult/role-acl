@@ -95,7 +95,7 @@ class Permission {
      *  these roles" have the permission for this action and resource attribute.
      *
      *  @name AccessControl~Permission#attributes
-     *  @type {Promise<Array<string>>}
+     *  @type {Array<string>}
      *  @readonly
      */
     get attributes(): string[] {
@@ -107,7 +107,7 @@ class Permission {
      *  least one attribute of the target resource is allowed.
      *
      *  @name AccessControl~Permission#granted
-     *  @type {Promise<boolean>}
+     *  @type {Boolean}
      *  @readonly
      */
     get granted() {

@@ -10,21 +10,21 @@ export class CommonUtil {
         return typeof value === 'string' || ArrayUtil.isFilledStringArray(value);
     }
 
-    public static eachKey(obj: any, callback: (key: string, index?: number) => void) {
+    public static eachKey(obj: any, callback: (key: string, index?: number) => void): void {
         return Object.keys(obj).forEach(callback);
     }
 
-    public static anyMatch(strings: string | string[], patterns: string | string[]) {
+    public static anyMatch(strings: string | string[], patterns: string | string[]): boolean {
         const stringArray = ArrayUtil.toStringArray(strings);
         const patternArray = ArrayUtil.toStringArray(patterns);
         return Matcher(stringArray, patternArray).length !== 0;
     }
 
-    public static clone(o: any) {
+    public static clone(o: any): object {
         return JSON.parse(JSON.stringify(o));
     }
 
-    public static type(o: any) {
+    public static type(o: any): string {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
     }
 
@@ -35,7 +35,7 @@ export class CommonUtil {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    public static async getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean) {
+    public static async getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): Promise<string[]> {
         roles = ArrayUtil.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.slice();
@@ -159,7 +159,7 @@ export class CommonUtil {
      *  @param {IAccessInfo} access
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
-    public static commitToGrants(grants: any, access: IAccessInfo) {
+    public static commitToGrants(grants: any, access: IAccessInfo): void {
         access = this.normalizeAccessInfo(access);
         (access.role as Array<string>).forEach((role: string) => {
             grants[role] = grants[role] || { score: 1 };
@@ -173,7 +173,7 @@ export class CommonUtil {
         });
     }
 
-    public static async getUnionGrantsOfRoles(grants: any, query: IQueryInfo) {
+    public static async getUnionGrantsOfRoles(grants: any, query: IQueryInfo): Promise<any[]> {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -206,7 +206,7 @@ export class CommonUtil {
         }
     }
 
-    public static async getUnionResourcesOfRoles(grants: any, query: IQueryInfo) {
+    public static async getUnionResourcesOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         query.skipConditions = query.skipConditions || !query.context;
         return (await this.getUnionGrantsOfRoles(grants, query))
             .map((grant) => {
@@ -214,7 +214,7 @@ export class CommonUtil {
             }).reduce(Notation.Glob.union, []);
     }
 
-    public static async getUnionActionsOfRoles(grants: any, query: IQueryInfo) {
+    public static async getUnionActionsOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         query.skipConditions = query.skipConditions || !query.context;
         return (await this.getUnionGrantsOfRoles(grants, query))
             .filter((grant) => {
@@ -235,7 +235,7 @@ export class CommonUtil {
      *
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
-    public static async getUnionAttrsOfRoles(grants: any, query: IQueryInfo) {
+    public static async getUnionAttrsOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         return (await this.getUnionGrantsOfRoles(grants, query)).filter((grant) => {
             return this.anyMatch(query.resource, grant.resource)
                 && this.anyMatch(query.action, grant.action);
@@ -244,7 +244,7 @@ export class CommonUtil {
         }).reduce(Notation.Glob.union, []);
     }
 
-    public static async areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo) {
+    public static async areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): Promise<boolean> {
         if (!grants) {
             return false;
         }
@@ -257,7 +257,7 @@ export class CommonUtil {
         return result;
     }
 
-    public static async areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo) {
+    public static async areExtendingRolesAllowing(roleExtensionObject: any, allowingRoles: any, query: IQueryInfo): Promise<boolean> {
         if (!roleExtensionObject) {
             return false;
         }
@@ -269,7 +269,7 @@ export class CommonUtil {
         return result;
     }
 
-    public static async getAllowingRoles(grants: any, query: IQueryInfo) {
+    public static async getAllowingRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -294,7 +294,7 @@ export class CommonUtil {
      *  @returns {Array<String>} - Array of non-existent roles. Empty array if
      *  all exist.
      */
-    public static getNonExistentRoles(grants: any, roles: string[]) {
+    public static getNonExistentRoles(grants: any, roles: string[]): string[] {
         let non: string[] = [];
         for (let role of roles) {
             if (!grants.hasOwnProperty(role)) non.push(role);
@@ -323,7 +323,7 @@ export class CommonUtil {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    public static async extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
+    public static async extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): Promise<void> {
         let arrExtRoles: string[] = ArrayUtil.toStringArray(extenderRoles);
         if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles: string[] = this.getNonExistentRoles(grants, arrExtRoles);
@@ -335,7 +335,7 @@ export class CommonUtil {
         const allExtendingRoles = await this.getFlatRoles(grants, arrExtRoles, null, true);
         const extensionScore = allExtendingRoles.reduce((total, role) => {
             return total + grants[role].score;
-        }, 0)
+        }, 0);
         roles.forEach((role: string) => {
             if (allExtendingRoles.indexOf(role) >= 0) {
                 throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
@@ -350,12 +350,12 @@ export class CommonUtil {
         });
     }
 
-    public static matchesAllElement(values: any, predicateFn: (elm) => boolean) {
+    public static matchesAllElement(values: any, predicateFn: (elm) => boolean): boolean {
         values = ArrayUtil.toArray(values);
         return values.every(predicateFn);
     }
 
-    public static matchesAnyElement(values: any, predicateFn: (elm) => boolean) {
+    public static matchesAnyElement(values: any, predicateFn: (elm) => boolean): boolean {
         values = ArrayUtil.toArray(values);
         return values.some(predicateFn);
     }

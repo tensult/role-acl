@@ -12,7 +12,7 @@ import { ArrayUtil } from '../utils/';
 
 export class NotCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any) {
+    async evaluate(args?: any, context?: any): Promise<boolean> {
         if (!args) {
             return true;
         }
