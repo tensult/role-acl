@@ -10,7 +10,7 @@ import { ArrayUtil, CommonUtil } from '../utils/';
  */
 export class AndCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any) {
+    async evaluate(args?: any, context?: any): Promise<boolean> {
         if (!args) {
             return true;
         }

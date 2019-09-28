@@ -146,7 +146,7 @@ class AccessControl {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    async extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition) {
+    async extendRole(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): Promise<AccessControl> {
         await CommonUtil.extendRole(this._grants, roles, extenderRoles, condition);
         return this;
     }
@@ -206,42 +206,41 @@ class AccessControl {
 
     /**
     *  Get allowed grants when conditions are skipped
-    *  @param {String | String[]} role - Role to be checked.
-    *  @param {Object} - context to be applied.
+     return CommonUtil.getUnionGrantsOfRoles(this._grants, query);
 
     *  @returns {IAccessInfo[]} - grants
     */
-    allowedGrants(query: IQueryInfo) {
+    async allowedGrants(query: IQueryInfo): Promise<any[]> {
         return CommonUtil.getUnionGrantsOfRoles(this._grants, query);
     }
     /**
      * Get roles which allow this permission
-     * @param {IQueryInfo} - permission query object we want to check
+     * @param {IQueryInfo} query - permission query object we want to check
      *
      * @returns {String[]} - roles
      */
-    allowingRoles(query: IQueryInfo) {
+    async allowingRoles(query: IQueryInfo): Promise<string[]> {
         return CommonUtil.getAllowingRoles(this._grants, query);
     }
 
 
     /**
      * Get allowed actions of resource when conditions are skipped
-     * @param {IQueryInfo} - permission query object we want to check
+     * @param {IQueryInfo} query - permission query object we want to check
      *
      *  @returns {String[]} - actions
      */
-    allowedActions(query: IQueryInfo) {
+    async allowedActions(query: IQueryInfo): Promise<string[]> {
         return CommonUtil.getUnionActionsOfRoles(this._grants, query);
     }
 
     /**
      * Get allowed resources when conditions are skipped
-     * @param {IQueryInfo} - permission query object we want to check
+     * @param {IQueryInfo} query - permission query object we want to check
      *
      *  @returns {String[]} - resources
      */
-    allowedResources(query: IQueryInfo) {
+    async allowedResources(query: IQueryInfo): Promise<string[]> {
         return CommonUtil.getUnionResourcesOfRoles(this._grants, query);
     }
 
@@ -314,7 +313,7 @@ class AccessControl {
      *  permission.attributes; // Array e.g. [ 'username', 'password', 'company.*']
      *  permission.filter(object); // { username, password, company: { name, address, ... } }
      */
-    async permission(queryInfo: IQueryInfo) {
+    async permission(queryInfo: IQueryInfo): Promise<Permission> {
         return new Permission(queryInfo, await CommonUtil.getUnionAttrsOfRoles(this._grants, queryInfo));
     }
 
@@ -390,14 +389,14 @@ class AccessControl {
     /**
      *  @private
      */
-    private _each(callback: (role: string, roleDefinition: any) => void) {
+    private _each(callback: (role: string, roleDefinition: any) => void): void {
         CommonUtil.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
     }
 
     /**
      *  @private
      */
-    private _eachRole(callback: (role: string) => void) {
+    private _eachRole(callback: (role: string) => void): void {
         CommonUtil.eachKey(this._grants, (role: string) => callback(role));
     }
 
