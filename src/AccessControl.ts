@@ -376,10 +376,16 @@ class AccessControl {
 
     /**
      *  Alias of `grant()`.
-     *  @private
      */
     allow(role: string | string[] | IAccessInfo): Access {
         return this.grant(role);
+    }
+
+    /**
+     * Converts grants object to JSON format
+     */
+    toJSON(): string {
+        return CommonUtil.toExtendedJSON(this._grants);
     }
 
     // -------------------------------
@@ -475,6 +481,15 @@ class AccessControl {
      */
     static isAccessControlError(object: any): boolean {
         return AccessControl.isACError(object);
+    }
+
+    /**
+     * Prepare AccessControl from JSON
+     * @param aclJSON JSON generated from toJSON method.
+     */
+    static fromJSON(aclJSON: string): AccessControl {
+        let grants = CommonUtil.fromExtendedJSON(aclJSON);
+        return new AccessControl(grants);
     }
 }
 

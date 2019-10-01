@@ -422,6 +422,7 @@ describe('Test Suite: Access Control', function () {
             .execute('approve').on('article')).granted).toEqual(false);
         expect((await ac.can('user').context({ owner: 'tensult', requester: 'dilip' })
             .execute('approve').on('article')).granted).toEqual(true);
+
     });
 
     it('should grant access with and with custom condition function', async function () {
@@ -448,6 +449,23 @@ describe('Test Suite: Access Control', function () {
         expect((await ac.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
         expect((await ac.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
+    });
+
+    it('should stringfy and restore ACL with async custom condition function', async function () {
+        const ac = this.ac;
+
+        ac.grant('user').condition((context) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(context.category !== 'politics');
+                }, 200);
+            });
+        }).execute('create').on('article');
+        const newAC = AccessControl.fromJSON(ac.toJSON());
+        expect(ac.toJSON()).toEqual(newAC.toJSON());
+        expect((await newAC.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
+        expect((await newAC.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
+        expect((await newAC.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
     });
 
     it('should grant access with and with async custom bad condition function', async function () {
@@ -850,7 +868,6 @@ describe('Test Suite: Access Control', function () {
         expect((await ac.can('r1').execute('update').on('c')).granted).toEqual(true);
         expect((await ac.can('r2').execute('create').on('b')).granted).toEqual(true);
         expect((await ac.can('r2').execute('read').on('b')).granted).toEqual(true);
-        // console.log(JSON.stringify(ac.getGrants(), null, "  "));
     });
 
     it('should grant comma/semi-colon separated roles', async function () {
@@ -1121,7 +1138,5 @@ describe('Test Suite: Access Control', function () {
         expect((await ac.can('user').execute('create').on('video')).attributes).toEqual(['*']);
 
         expect((await ac.can('user').execute('create').on('non-existent')).granted).toEqual(false);
-
-        // console.log(JSON.stringify(ac.getGrants(), null, "  "));
     });
 });

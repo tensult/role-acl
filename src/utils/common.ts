@@ -20,8 +20,29 @@ export class CommonUtil {
         return Matcher(stringArray, patternArray).length !== 0;
     }
 
+    public static toExtendedJSON(o: any): string {
+        return JSON.stringify(o, function (key, value) {
+            if (typeof value === 'function') {
+                return '/Function(' + value.toString() + ')/';
+            }
+            return value;
+        });
+    }
+
+    public static fromExtendedJSON(json: string): any {
+        return JSON.parse(json, function (key, value) {
+            if (typeof value === 'string' &&
+                value.startsWith('/Function(') &&
+                value.endsWith(')/')) {
+                value = value.substring(10, value.length - 2);
+                return new Function('return ' + value)();
+            }
+            return value;
+        });
+    }
+
     public static clone(o: any): object {
-        return JSON.parse(JSON.stringify(o));
+        return CommonUtil.fromExtendedJSON(CommonUtil.toExtendedJSON(o));
     }
 
     public static type(o: any): string {
