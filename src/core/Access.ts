@@ -208,8 +208,8 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    when(condtion: ICondition): Access {
-        this._.condition = condtion;
+    when(condition: ICondition): Access {
+        this._.condition = condition;
         return this
     }
 
