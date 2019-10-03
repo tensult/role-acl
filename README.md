@@ -56,7 +56,7 @@ console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
 permission = ac.can('admin').execute('update').on('video'); // <-- for < 4.0.0
-permission = ac.can('admin').execute('update').on('video'); // <-- for >= 4.0.0
+permission = await ac.can('admin').execute('update').on('video'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['title']
 ```
