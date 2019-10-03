@@ -146,19 +146,23 @@ ac.grant({
     condition: {Fn: 'EQUALS', args: {category: 'politics'}},
     attributes: ['*']
 });
-permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article');
+permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article'); // <-- for < 4.0.0
+permission = await ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article'); // <-- for >= 4.0.0
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('article');
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('article'); // <-- for < 4.0.0
+permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('article'); // <-- for >= 4.0.0
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('blog');
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('blog'); // <-- for < 4.0.0
+permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('blog'); // <-- for >= 4.0.0
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle');
+permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle'); // <-- for < 4.0.0
+permission = await ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle'); // <-- for >= 4.0.0
 console(permission.granted); // -> false
 ```
 
@@ -203,16 +207,19 @@ ac.grant(['admin', 'superadmin']).extend('moderator');
 
 ```js
 ac.grant('editor').execute('publish').on('article');
-let permission = ac.can('editor').execute('publish').on('article');
+let permission = ac.can('editor').execute('publish').on('article'); // <-- for < 4.0.0
+let permission = await ac.can('editor').execute('publish').on('article'); // <-- for >= 4.0.0
 console(permission.attributes); // —> ['*'] (all attributes)
 console(permission.granted); // -> true
 
 ac.grant('sports/editor').execute('publish').when({Fn: 'EQUALS', args: {category: 'sports'}}).on('article');
-permission = ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article');
+permission = ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article'); // <-- for < 4.0.0
+permission = await ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article'); // <-- for >= 4.0.0
 console(permission.attributes); // —> ['*'] (all attributes)
 console(permission.granted); // -> true
 
-permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article');
+permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article'); // <-- for < 4.0.0
+permission = await ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article'); // <-- for >= 4.0.0
 console(permission.attributes); // -> []
 console(permission.granted); // -> false
 ```
@@ -377,17 +384,20 @@ ac.grant(editorGrant);
 ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}});
 ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}});
 
-let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post');
+let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post'); // <-- for < 4.0.0
+let permission = await ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post');
+permission = ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for < 4.0.0
+permission = await ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
 // second level of extension (extending without condition)
 ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
-permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post');
+permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for < 4.0.0
+permission = await ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
@@ -396,11 +406,13 @@ ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/edi
     Fn: 'EQUALS',
     args: { status: 'draft' }
 });
-permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post');
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post'); // <-- for < 4.0.0
+permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post');
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post'); // <-- for < 4.0.0
+permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```
