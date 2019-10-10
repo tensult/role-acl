@@ -35,8 +35,8 @@ const AccessControl = require('role-acl');
 // import { AccessControl } from 'role-acl';
 ```
 
-## Example for versions < 4.0.0
-**These versions don't support async condition functions**
+## Examples
+**Versions below 4.0.0 don't support async condition functions but if you need that then please use versions above 4.0.0**
 ### Basic Examples
 Define roles and grants one by one.
 ```js
@@ -50,11 +50,13 @@ ac.grant('user')                    // define new or modify existing role. also 
     .execute('update').on('video', ['title'])  // explicitly defined attributes
     .execute('delete').on('video');
 
-const permission = ac.can('user').execute('create').on('video');
+const permission = ac.can('user').execute('create').on('video'); // <-- for < 4.0.0
+const permission = await ac.can('user').execute('create').on('video'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('admin').execute('update').on('video');
+permission = ac.can('admin').execute('update').on('video'); // <-- for < 4.0.0
+permission = ac.can('admin').execute('update').on('video'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['title']
 ```
@@ -71,11 +73,13 @@ ac.grant('user').condition(
         }
     }).execute('create').on('article');
 
-let permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article');
+let permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for < 4.0.0
+let permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article');
+permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article'); // <-- for < 4.0.0
+permission = await ac.can('user').context({ category: 'tech' }).execute('create').on('article'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
@@ -89,7 +93,8 @@ ac.grant('user').condition(
         }
     }).execute('edit').on('article');
 
-permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article');
+permission =  ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article'); // <-- for < 4.0.0
+permission =  await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 
 // We can use this to prevent someone to approve their own article so that it goes to review 
@@ -102,7 +107,8 @@ ac.grant('user').condition(
         }
     }).execute('approve').on('article');
 
-permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article');
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article'); // <-- for < 4.0.0
+permission = await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> false
 
 // Using custom/own condition functions
@@ -111,7 +117,8 @@ ac.grant('user').condition(
         return context.category !== 'politics'
     }
 ).execute('create').on('article');
-permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article');
+permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for < 4.0.0
+permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for >= 4.0.0
 console.log(permission.granted);    // —> true
 ```
 
@@ -151,7 +158,7 @@ permission = ac.can('admin').execute('publish').with({category: 'politics'}).on(
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('article');
+permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle');
 console(permission.granted); // -> false
 ```
 
@@ -426,6 +433,13 @@ console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // ->
 ### Example for versions >= 4.0.0
 **These versions support async condition functions so everything returned by ACL is a promise**
 [Take a look at the test cases][tests]
+
+## Upgrading to >= 4.0.0
+* There are many breaking changes and all grant querying related functions return a promise so please update the code accordingly.
+* All future updates and bug fixes will happen only to versions >= 4.
+* New features only available in >= 4
+  * Storing and retrieving of custom condition functions.
+  * Promise based conditional functions.
 
 ## Licenses
 

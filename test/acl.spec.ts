@@ -322,7 +322,7 @@ describe('Test Suite: Access Control', function () {
             }).execute('create').on('article');
         expect((await ac.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(true);
-        expect((await ac.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(false);
+        expect((await ac.can('user').context({ tag: 'tech' }).execute('create').on('article')).granted).toEqual(false);
     });
 
     it('should grant access with equals condition with single and check permissions', async function () {
