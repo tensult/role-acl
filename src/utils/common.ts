@@ -184,7 +184,7 @@ export class CommonUtil {
         access = this.normalizeAccessInfo(access);
         (access.role as Array<string>).forEach((role: string) => {
             grants[role] = grants[role] || { score: 1 };
-            grants[role].grants = grants[role].grants || []
+            grants[role].grants = grants[role].grants || [];
             grants[role].grants.push({
                 resource: access.resource,
                 action: access.action,
@@ -194,7 +194,7 @@ export class CommonUtil {
         });
     }
 
-    public static async getUnionGrantsOfRoles(grants: any, query: IQueryInfo): Promise<any[]> {
+    public static async getUnionGrantsOfRoles(grants: any, query: IQueryInfo): Promise<IAccessInfo[]> {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -204,32 +204,24 @@ export class CommonUtil {
 
         // get roles and extended roles in a flat array
         const roles: string[] = await this.getFlatRoles(grants, query.role, query.context, query.skipConditions);
+
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
-        const allGrantsOfAllRoles = roles.filter((role) => {
+        return roles.filter((role) => {
             return grants[role] && grants[role].grants;
         }).map((role) => {
             return grants[role].grants;
         }).reduce((allGrants, roleGrants) => {
             return allGrants.concat(roleGrants);
         }, []);
-
-        if (query.skipConditions) {
-            return allGrantsOfAllRoles;
-        } else {
-            const matchingGrantsOfAllRoles = [];
-            for (let grant of allGrantsOfAllRoles) {
-                if (await ConditionUtil.evaluate(grant.condition, query.context)) {
-                    matchingGrantsOfAllRoles.push(grant);
-                }
-            }
-            return matchingGrantsOfAllRoles;
-        }
     }
 
     public static async getUnionResourcesOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         query.skipConditions = query.skipConditions || !query.context;
-        return (await this.getUnionGrantsOfRoles(grants, query))
+
+        const matchingGrants = (await this.getUnionGrantsOfRoles(grants, query));
+
+        return (await this.filterGrantsAllowing(matchingGrants, query))
             .map((grant) => {
                 return ArrayUtil.toStringArray(grant.resource);
             }).reduce(Notation.Glob.union, []);
@@ -237,10 +229,14 @@ export class CommonUtil {
 
     public static async getUnionActionsOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
         query.skipConditions = query.skipConditions || !query.context;
-        return (await this.getUnionGrantsOfRoles(grants, query))
+
+        const matchingGrants = (await this.getUnionGrantsOfRoles(grants, query))
             .filter((grant) => {
                 return this.anyMatch(query.resource, grant.resource)
-            }).map((grant) => {
+            });
+
+        return (await this.filterGrantsAllowing(matchingGrants, query))
+            .map((grant) => {
                 return ArrayUtil.toStringArray(grant.action);
             }).reduce(Notation.Glob.union, []);
     }
@@ -257,12 +253,30 @@ export class CommonUtil {
      *  @returns {Array<String>} - Array of union'ed attributes.
      */
     public static async getUnionAttrsOfRoles(grants: any, query: IQueryInfo): Promise<string[]> {
-        return (await this.getUnionGrantsOfRoles(grants, query)).filter((grant) => {
-            return this.anyMatch(query.resource, grant.resource)
-                && this.anyMatch(query.action, grant.action);
-        }).map((grant) => {
-            return grant.attributes.slice();
-        }).reduce(Notation.Glob.union, []);
+        const matchingGrants = (await this.getUnionGrantsOfRoles(grants, query))
+            .filter((grant) => {
+                return this.anyMatch(query.resource, grant.resource)
+                    && this.anyMatch(query.action, grant.action);
+            });
+
+        return (await this.filterGrantsAllowing(matchingGrants, query))
+            .map((grant) => {
+                return ArrayUtil.toStringArray(grant.attributes);
+            }).reduce(Notation.Glob.union, []);
+    }
+
+    public static async filterGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): Promise<IAccessInfo[]> {
+        if (query.skipConditions) {
+            return grants;
+        } else {
+            const matchingGrants = [];
+            for (let grant of grants) {
+                if (await ConditionUtil.evaluate(grant.condition, query.context)) {
+                    matchingGrants.push(grant);
+                }
+            }
+            return matchingGrants;
+        }
     }
 
     public static async areGrantsAllowing(grants: IAccessInfo[], query: IQueryInfo): Promise<boolean> {

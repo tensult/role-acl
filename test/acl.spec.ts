@@ -127,7 +127,7 @@ describe('Test Suite: Access Control', function () {
                 condition: categorySportsCondition
             }]
         }
-    }
+    };
 
     beforeEach(function () {
         this.ac = new AccessControl();
