@@ -56,7 +56,7 @@ export class CommonUtil {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    public static async getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): Promise<string[]> {
+    public static getFlatRoles(grants: any, roles: string | string[], context?: any, skipConditions?: boolean): string[] {
         roles = ArrayUtil.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr: string[] = roles.slice();
@@ -75,7 +75,7 @@ export class CommonUtil {
                         }
                     }
                 }
-                arr = ArrayUtil.uniqConcat(arr, await this.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
+                arr = ArrayUtil.uniqConcat(arr, this.getFlatRoles(grants, rolesMetCondition, context, skipConditions));
             }
         }
         return arr;
@@ -358,7 +358,7 @@ export class CommonUtil {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    public static async extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): Promise<void> {
+    public static extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void {
         let arrExtRoles: string[] = ArrayUtil.toStringArray(extenderRoles);
         if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles: string[] = this.getNonExistentRoles(grants, arrExtRoles);
@@ -367,7 +367,7 @@ export class CommonUtil {
         }
         roles = ArrayUtil.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        const allExtendingRoles = await this.getFlatRoles(grants, arrExtRoles, null, true);
+        const allExtendingRoles = this.getFlatRoles(grants, arrExtRoles, null, true);
         const extensionScore = allExtendingRoles.reduce((total, role) => {
             return total + grants[role].score;
         }, 0);
