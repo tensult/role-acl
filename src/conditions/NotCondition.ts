@@ -12,7 +12,7 @@ import { ArrayUtil } from '../utils/';
 
 export class NotCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any): Promise<boolean> {
+    evaluate(args?: any, context?: any): boolean | Promise<boolean> {
         if (!args) {
             return true;
         }
@@ -22,16 +22,26 @@ export class NotCondition implements IConditionFunction {
         }
 
         if (CommonUtil.type(args) !== 'array' && CommonUtil.type(args) !== 'object') {
-            throw new AccessControlError('NotCondition expects type of args to be array or object')
+            throw new AccessControlError('AndCondition expects type of args to be array or object')
         }
 
-        const conditions = ArrayUtil.toArray(args);
+        return this.evaluateConditions(ArrayUtil.toArray(args), context);
+    }
 
-        let result = true;
-        for (let condition of conditions) {
-            result = result && !(await ConditionUtil.evaluate(condition, context));
+    private evaluateConditions(conditions: ICondition[], context?: any): boolean | Promise<boolean> {
+        const conditionPromisables = conditions.map((condition) => {
+            return ConditionUtil.evaluate(condition, context);
+        });
+
+        const anyConditionIsPromise = conditionPromisables.some((conditionPromisable) => {
+            return CommonUtil.isPromise(conditionPromisable);
+        });
+
+        if (anyConditionIsPromise) {
+            return Promise.all(conditionPromisables).then(CommonUtil.allFalse);
+        } else {
+            return CommonUtil.allFalse(conditionPromisables as boolean[]);
         }
-        return result;
     }
 }
 

@@ -1,6 +1,6 @@
 import { IConditionFunction } from './IConditionFunction';
 import { ConditionUtil } from './index';
-import { AccessControlError } from '../core';
+import { AccessControlError, ICondition } from '../core';
 import { ArrayUtil, CommonUtil } from '../utils/';
 
 /**
@@ -10,7 +10,7 @@ import { ArrayUtil, CommonUtil } from '../utils/';
  */
 export class AndCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any): Promise<boolean> {
+    evaluate(args?: any, context?: any): boolean | Promise<boolean> {
         if (!args) {
             return true;
         }
@@ -23,13 +23,24 @@ export class AndCondition implements IConditionFunction {
             throw new AccessControlError('AndCondition expects type of args to be array or object')
         }
 
-        const conditions = ArrayUtil.toArray(args);
 
-        let result = true;
-        for (let condition of conditions) {
-            result = result && await ConditionUtil.evaluate(condition, context);
+        return this.evaluateConditions(ArrayUtil.toArray(args), context);
+    }
+
+    private evaluateConditions(conditions: ICondition[], context?: any): boolean | Promise<boolean> {
+        const conditionPromisables = conditions.map((condition) => {
+            return ConditionUtil.evaluate(condition, context);
+        });
+
+        const anyConditionIsPromise = conditionPromisables.some((conditionPromisable) => {
+            return CommonUtil.isPromise(conditionPromisable);
+        });
+
+        if (anyConditionIsPromise) {
+            return Promise.all(conditionPromisables).then(CommonUtil.allTrue);
+        } else {
+            return CommonUtil.allTrue(conditionPromisables as boolean[]);
         }
-        return result;
     }
 }
 

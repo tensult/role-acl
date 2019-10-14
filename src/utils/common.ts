@@ -20,6 +20,24 @@ export class CommonUtil {
         return Matcher(stringArray, patternArray).length !== 0;
     }
 
+    public static allTrue(booleanVals: boolean[]) {
+        return booleanVals.every((booleanVal) => {
+            return booleanVal;
+        });
+    }
+
+    public static allFalse(booleanVals: boolean[]) {
+        return booleanVals.every((booleanVal) => {
+            return !booleanVal;
+        });
+    }
+
+    public static someTrue(booleanVals: boolean[]) {
+        return booleanVals.some((booleanVal) => {
+            return booleanVal;
+        });
+    }
+
     public static toExtendedJSON(o: any): string {
         return JSON.stringify(o, function (key, value) {
             if (typeof value === 'function') {
@@ -79,6 +97,10 @@ export class CommonUtil {
             }
         }
         return arr;
+    }
+
+    public static isPromise(obj: any) {
+        return obj && typeof obj.then === 'function';
     }
 
     public static normalizeGrantsObject(grants: any): any {
