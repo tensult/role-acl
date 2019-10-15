@@ -26,6 +26,9 @@ e.g. `ac.can(role).execute('create').on(resource)`
 - Policies are JSON compatible so can be stored and retrieved from database.
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
+- **Note**: 
+  - For versions < 4.0: Every function in AccessControl class in synchronous.
+  - For versions >= 4.0 Most of the functions in AccessControl class are asychronous.
 
 ## Guide
 
