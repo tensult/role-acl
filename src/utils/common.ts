@@ -1,8 +1,9 @@
-import * as Notation from 'notation';
-import * as Matcher from 'matcher';
+import Notation from 'notation';
+import Matcher from 'matcher';
 import { ArrayUtil } from './array';
 import { ConditionUtil } from '../conditions';
 import { AccessControlError, IQueryInfo, IAccessInfo, ICondition } from '../core';
+import cloneDeep from 'lodash.clonedeep';
 
 export class CommonUtil {
 
@@ -42,7 +43,7 @@ export class CommonUtil {
     }
 
     public static clone(o: any): object {
-        return CommonUtil.fromExtendedJSON(CommonUtil.toExtendedJSON(o));
+        return cloneDeep(o);
     }
 
     public static type(o: any): string {
