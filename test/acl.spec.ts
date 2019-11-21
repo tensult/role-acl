@@ -81,6 +81,8 @@ describe('Test Suite: Access Control', function () {
     let categoryPoliticsCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'politics' } };
     let categorySportsContext = { category: 'sports' };
     let categoryPoliticsContext = { category: 'politics' };
+    let categoryCustomContextAllowed = { loginUserId: '1', resourceProfileId: '1' };
+    let categoryCustomContextNotAllowed = { loginUserId: '1', resourceProfileId: '2' };
 
     let conditionalGrantList = [
         {
@@ -128,6 +130,38 @@ describe('Test Suite: Access Control', function () {
             }]
         }
     };
+
+    let conditionalGrantObjectWithCustomFunction = {
+        'sports/custom':
+        {
+            grants: [
+                {
+                    resource: 'profile', action: ['create', 'edit'], attributes: ['*'],
+                    condition: (context) => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                resolve(context.loginUserId === context.resourceProfileId);
+                            }, 200);
+                        });
+                    }
+                }
+            ]
+        }
+    };
+
+    let conditionalGrantArrayWithCustomFunction = [
+        {
+            role: 'sports/custom',
+            resource: 'profile', action: ['create', 'edit'], attributes: ['*'],
+            condition: (context) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(context.loginUserId === context.resourceProfileId);
+                    }, 200);
+                });
+            }
+        }
+    ];
 
     beforeEach(function () {
         this.ac = new AccessControl();
@@ -449,6 +483,22 @@ describe('Test Suite: Access Control', function () {
         expect((await ac.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
         expect((await ac.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
+    });
+
+    it('should support initializing ACL when grants has custom functions', async function () {
+        // Using object
+        const acUsingObj = new AccessControl(conditionalGrantObjectWithCustomFunction);
+        expect((await acUsingObj.can('sports/custom').context(categoryCustomContextAllowed)
+            .execute('create').on('profile')).granted).toEqual(true);
+        expect((await acUsingObj.can('sports/custom').context(categoryCustomContextNotAllowed)
+            .execute('edit').on('profile')).granted).toEqual(false);
+
+        // Using array
+        const acUsingArray = new AccessControl(conditionalGrantArrayWithCustomFunction);
+        expect((await acUsingArray.can('sports/custom').context(categoryCustomContextAllowed)
+            .execute('create').on('profile')).granted).toEqual(true);
+        expect((await acUsingArray.can('sports/custom').context(categoryCustomContextNotAllowed)
+            .execute('edit').on('profile')).granted).toEqual(false);
     });
 
     it('should stringfy and restore ACL with async custom condition function', async function () {
