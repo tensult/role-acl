@@ -1,8 +1,9 @@
-import * as Notation from 'notation';
-import * as Matcher from 'matcher';
+import Notation from 'notation';
+import Matcher from 'matcher';
 import { ArrayUtil } from './array';
 import { ConditionUtil } from '../conditions';
 import { AccessControlError, IQueryInfo, IAccessInfo, ICondition } from '../core';
+import cloneDeep from 'lodash.clonedeep';
 
 export class CommonUtil {
 
@@ -42,7 +43,7 @@ export class CommonUtil {
     }
 
     public static clone(o: any): object {
-        return CommonUtil.fromExtendedJSON(CommonUtil.toExtendedJSON(o));
+        return cloneDeep(o);
     }
 
     public static type(o: any): string {
@@ -97,54 +98,54 @@ export class CommonUtil {
 
     public static normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
         // clone the object
-        query = Object.assign({}, query);
+        const newQuery: IQueryInfo = this.clone(query);
         // validate and normalize role(s)
-        query.role = ArrayUtil.toStringArray(query.role);
-        if (!ArrayUtil.isFilledStringArray(query.role)) {
-            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(query.role)}`);
+        newQuery.role = ArrayUtil.toStringArray(newQuery.role);
+        if (!ArrayUtil.isFilledStringArray(newQuery.role)) {
+            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(newQuery.role)}`);
         }
 
         // validate resource
-        if (query.resource) {
-            if (typeof query.resource !== 'string' || query.resource.trim() === '') {
-                throw new AccessControlError(`Invalid resource: "${query.resource}"`);
+        if (newQuery.resource) {
+            if (typeof newQuery.resource !== 'string' || newQuery.resource.trim() === '') {
+                throw new AccessControlError(`Invalid resource: "${newQuery.resource}"`);
             }
-            query.resource = query.resource.trim();
+            newQuery.resource = newQuery.resource.trim();
         }
 
         // validate action
-        if (query.action) {
-            if (typeof query.action !== 'string' || query.action.trim() === '') {
-                throw new AccessControlError(`Invalid action: ${query.action}`);
+        if (newQuery.action) {
+            if (typeof newQuery.action !== 'string' || newQuery.action.trim() === '') {
+                throw new AccessControlError(`Invalid action: ${newQuery.action}`);
             }
         }
-        return query;
+        return newQuery;
     }
 
     public static normalizeAccessInfo(access: IAccessInfo): IAccessInfo {
         // clone the object
-        access = Object.assign({}, access);
+        const newAccess: IAccessInfo = this.clone(access);
         // validate and normalize role(s)
-        access.role = ArrayUtil.toStringArray(access.role);
-        if (!ArrayUtil.isFilledStringArray(access.role)) {
-            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(access.role)}`);
+        newAccess.role = ArrayUtil.toStringArray(newAccess.role);
+        if (!ArrayUtil.isFilledStringArray(newAccess.role)) {
+            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(newAccess.role)}`);
         }
 
         // validate and normalize resource
-        access.resource = ArrayUtil.toStringArray(access.resource);
-        if (!ArrayUtil.isFilledStringArray(access.resource)) {
-            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.resource)}`);
+        newAccess.resource = ArrayUtil.toStringArray(newAccess.resource);
+        if (!ArrayUtil.isFilledStringArray(newAccess.resource)) {
+            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(newAccess.resource)}`);
         }
 
         // validate and normalize resource
-        access.action = ArrayUtil.toStringArray(access.action);
-        if (!ArrayUtil.isFilledStringArray(access.action)) {
-            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.action)}`);
+        newAccess.action = ArrayUtil.toStringArray(newAccess.action);
+        if (!ArrayUtil.isFilledStringArray(newAccess.action)) {
+            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(newAccess.action)}`);
         }
 
-        access.attributes = !access.attributes ? ['*'] : ArrayUtil.toStringArray(access.attributes);
+        newAccess.attributes = !newAccess.attributes ? ['*'] : ArrayUtil.toStringArray(newAccess.attributes);
 
-        return access;
+        return newAccess;
     }
 
     /**
