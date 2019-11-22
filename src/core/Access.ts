@@ -157,6 +157,18 @@ class Access {
     }
 
     /**
+     *  Sets the roles to be extended for this `Access` instance.
+     *  @param {String|Array<String>} roles
+     *         A single or array of roles.
+     *  @returns {Access}
+     *           Self instance of `Access`.
+     */
+    extendSync(roles: string | string[]): Access {
+        CommonUtil.extendRoleSync(this._grants, this._.role, roles);
+        return this;
+    }
+
+    /**
      *  Shorthand to switch to a new `Access` instance with a different role
      *  within the method chain.
      *

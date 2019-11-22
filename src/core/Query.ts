@@ -94,8 +94,13 @@ class Query {
      *           An object that defines whether the permission is granted; and
      *           the resource attributes that the permission is granted for.
      */
-    async on(resource: string, skipConditions?: boolean) {
-        return this._getPermission(this._.action, resource, skipConditions);
+    on(resource: string, skipConditions?: boolean) {
+        return this._getPermission(this._.action, resource, skipConditions || this._.skipConditions, this._.checkInSync);
+    }
+
+    sync(): Query {
+        this._.checkInSync = true;
+        return this;
     }
 
     /**
@@ -148,15 +153,21 @@ class Query {
      *  @private
      *  @param {String} action
      *  @param {String} [resource]
-     *  @returns {Permission}
+     *  @returns {Permission | Promise<Permission>}
      */
-    private async _getPermission(action: string, resource?: string, skipConditions?: boolean) {
+    private _getPermission(action: string, resource?: string,
+        skipConditions?: boolean,
+        checkInSync?: boolean): Permission | Promise<Permission> {
         this._.action = action;
         if (resource) this._.resource = resource;
         if (skipConditions !== undefined) {
             this._.skipConditions = skipConditions;
         }
-        return new Permission(this._, await CommonUtil.getUnionAttrsOfRoles(this._grants, this._));
+        if (checkInSync) {
+            return new Permission(this._, CommonUtil.getUnionAttrsOfRolesSync(this._grants, this._))
+        }
+        return CommonUtil.getUnionAttrsOfRoles(this._grants, this._)
+            .then((attributes) => new Permission(this._, attributes));
     }
 }
 

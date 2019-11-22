@@ -10,7 +10,7 @@ import { ArrayUtil, CommonUtil } from '../utils/';
  */
 export class AndCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any): Promise<boolean> {
+     evaluate(args?: any, context?: any):boolean | Promise<boolean> {
         if (!args) {
             return true;
         }
@@ -24,12 +24,14 @@ export class AndCondition implements IConditionFunction {
         }
 
         const conditions = ArrayUtil.toArray(args);
-
-        let result = true;
-        for (let condition of conditions) {
-            result = result && await ConditionUtil.evaluate(condition, context);
+        const conditionEvaluations = conditions.map((condition) => {
+            return ConditionUtil.evaluate(condition, context);
+        });
+        if (CommonUtil.containsPromises(conditionEvaluations)) {
+            return Promise.all(conditionEvaluations).then(CommonUtil.allTrue);
+        } else {
+            return CommonUtil.allTrue(conditionEvaluations as boolean[]);
         }
-        return result;
     }
 }
 

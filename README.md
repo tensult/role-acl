@@ -27,8 +27,7 @@ e.g. `ac.can(role).execute('create').on(resource)`
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
 - **Note**: 
-  - For versions < 4.0: Every function in AccessControl class in synchronous.
-  - For versions >= 4.0 Most of the functions in AccessControl class are asychronous.
+  - For versions < 4.0: follow this [ReadMe](https://github.com/tensult/role-acl/blob/6cde220e5d4956270c60f5fe58f84dcd8a257924/README.md).
 
 ## Guide
 
@@ -39,7 +38,6 @@ const AccessControl = require('role-acl');
 ```
 
 ## Examples
-**Versions below 4.0.0 don't support async condition functions but if you need that then please use versions above 4.0.0**
 ### Basic Examples
 Define roles and grants one by one.
 ```js
@@ -53,13 +51,13 @@ ac.grant('user')                    // define new or modify existing role. also 
     .execute('update').on('video', ['title'])  // explicitly defined attributes
     .execute('delete').on('video');
 
-const permission = ac.can('user').execute('create').on('video'); // <-- for < 4.0.0
-const permission = await ac.can('user').execute('create').on('video'); // <-- for >= 4.0.0
+const permission = ac.can('user').execute('create').sync().on('video'); // <-- Sync Example
+const permission = await ac.can('user').execute('create').on('video'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('admin').execute('update').on('video'); // <-- for < 4.0.0
-permission = await ac.can('admin').execute('update').on('video'); // <-- for >= 4.0.0
+permission = ac.can('admin').execute('update').sync().on('video'); // <-- Sync Example
+permission = await ac.can('admin').execute('update').on('video'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['title']
 ```
@@ -76,13 +74,13 @@ ac.grant('user').condition(
         }
     }).execute('create').on('article');
 
-let permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for < 4.0.0
-let permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for >= 4.0.0
+let permission = ac.can('user').context({ category: 'sports' }).execute('create').sync().on('article'); // <-- Sync Example
+let permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
-permission = ac.can('user').context({ category: 'tech' }).execute('create').on('article'); // <-- for < 4.0.0
-permission = await ac.can('user').context({ category: 'tech' }).execute('create').on('article'); // <-- for >= 4.0.0
+permission = ac.can('user').context({ category: 'tech' }).execute('create').sync().on('article'); // <-- Sync Example
+permission = await ac.can('user').context({ category: 'tech' }).execute('create').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
@@ -96,8 +94,8 @@ ac.grant('user').condition(
         }
     }).execute('edit').on('article');
 
-permission =  ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article'); // <-- for < 4.0.0
-permission =  await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article'); // <-- for >= 4.0.0
+permission =  ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').sync().on('article'); // <-- Sync Example
+permission =  await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('edit').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> true
 
 // We can use this to prevent someone to approve their own article so that it goes to review 
@@ -110,8 +108,8 @@ ac.grant('user').condition(
         }
     }).execute('approve').on('article');
 
-permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article'); // <-- for < 4.0.0
-permission = await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article'); // <-- for >= 4.0.0
+permission = ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').sync().on('article'); // <-- Sync Example
+permission = await ac.can('user').context({ requester: 'dilip', owner: 'dilip' }).execute('approve').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> false
 
 // Using custom/own condition functions
@@ -120,8 +118,8 @@ ac.grant('user').condition(
         return context.category !== 'politics'
     }
 ).execute('create').on('article');
-permission = ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for < 4.0.0
-permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- for >= 4.0.0
+permission = ac.can('user').context({ category: 'sports' }).execute('create').sync().on('article'); // <-- Sync Example
+permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> true
 ```
 
@@ -149,23 +147,23 @@ ac.grant({
     condition: {Fn: 'EQUALS', args: {category: 'politics'}},
     attributes: ['*']
 });
-permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article'); // <-- for < 4.0.0
-permission = await ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article'); // <-- for >= 4.0.0
+permission = ac.can('politics/editor').execute('publish').with({category: 'politics'}).sync().on('article'); // <-- Sync Example
+permission = await ac.can('politics/editor').execute('publish').with({category: 'politics'}).on('article'); // <-- Async Example
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('article'); // <-- for < 4.0.0
-permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('article'); // <-- for >= 4.0.0
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).sync().on('article'); // <-- Sync Example
+permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('article'); // <-- Async Example
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('admin').execute('publish').with({category: 'politics'}).on('blog'); // <-- for < 4.0.0
-permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('blog'); // <-- for >= 4.0.0
+permission = ac.can('admin').execute('publish').with({category: 'politics'}).sync().on('blog'); // <-- Sync Example
+permission = await ac.can('admin').execute('publish').with({category: 'politics'}).on('blog'); // <-- Async Example
 console(permission.attributes); // -> ['*']
 console(permission.granted); // -> true
 
-permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle'); // <-- for < 4.0.0
-permission = await ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle'); // <-- for >= 4.0.0
+permission = ac.can('politics/writer').execute('publish').with({category: 'politics'}).sync().on('arti`cle'); // <-- Sync Example
+permission = await ac.can('politics/writer').execute('publish').with({category: 'politics'}).on('arti`cle'); // <-- Async Example
 console(permission.granted); // -> false
 ```
 
@@ -210,19 +208,19 @@ ac.grant(['admin', 'superadmin']).extend('moderator');
 
 ```js
 ac.grant('editor').execute('publish').on('article');
-let permission = ac.can('editor').execute('publish').on('article'); // <-- for < 4.0.0
-let permission = await ac.can('editor').execute('publish').on('article'); // <-- for >= 4.0.0
+let permission = ac.can('editor').execute('publish').sync().on('article'); // <-- Sync Example
+let permission = await ac.can('editor').execute('publish').on('article'); // <-- Async Example
 console(permission.attributes); // —> ['*'] (all attributes)
 console(permission.granted); // -> true
 
 ac.grant('sports/editor').execute('publish').when({Fn: 'EQUALS', args: {category: 'sports'}}).on('article');
-permission = ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article'); // <-- for < 4.0.0
-permission = await ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article'); // <-- for >= 4.0.0
+permission = ac.can('sports/editor').execute('publish').with({category: 'sports'}).sync().on('article'); // <-- Sync Example
+permission = await ac.can('sports/editor').execute('publish').with({category: 'sports'}).on('article'); // <-- Async Example
 console(permission.attributes); // —> ['*'] (all attributes)
 console(permission.granted); // -> true
 
-permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article'); // <-- for < 4.0.0
-permission = await ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article'); // <-- for >= 4.0.0
+permission = ac.can('sports/editor').execute('publish').with({category: 'politics'})).sync().on('article'); // <-- Sync Example
+permission = await ac.can('sports/editor').execute('publish').with({category: 'politics'})).on('article'); // <-- Async Example
 console(permission.attributes); // -> []
 console(permission.granted); // -> false
 ```
@@ -384,38 +382,47 @@ const editorGrant = {
 };
 ac.grant(editorGrant);
 // first level of extension (extending with condition)
-ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}});
-ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}});
+ac.extendRoleSync('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}}) //  <-- Sync Example
+await ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}}); // <-- Async Example
+ac.extendRoleSync('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}}); // <-- Sync Example
+await ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}}); // <-- Async Example
 
-let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post'); // <-- for < 4.0.0
-let permission = await ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post'); // <-- for >= 4.0.0
+
+let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').sync().on('post'); // <-- Sync Example
+let permission = await ac.can('sports/editor').context({category: 'sports'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for < 4.0.0
-permission = await ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for >= 4.0.0
+permission = ac.can('sports/editor').context({category: 'politics'}).execute('create').sync().on('post'); // <-- Sync Example
+permission = await ac.can('sports/editor').context({category: 'politics'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
 // second level of extension (extending without condition)
-ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
-permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for < 4.0.0
-permission = await ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- for >= 4.0.0
+ac.extendRoleSync('sports-and-politics/editor', ['sports/editor', 'politics/editor']); // <-- Sync Example
+await ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']); // <-- Async Example
+permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').sync().on('post'); // <-- Sync Example
+permission = await ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
 // third level of extension (extending with condition)
-ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
+ac.extendRoleSync('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
     Fn: 'EQUALS',
     args: { status: 'draft' }
-});
-permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post'); // <-- for < 4.0.0
-permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post'); // <-- for >= 4.0.0
+}); // <-- Sync Example
+await ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
+    Fn: 'EQUALS',
+    args: { status: 'draft' }
+}); // <-- Async Example
+
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').sync().on('post'); // <-- Sync Example
+permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'draft'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
-permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post'); // <-- for < 4.0.0
-permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post'); // <-- for >= 4.0.0
+permission = ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').sync().on('post'); // <-- Sync Example
+permission = await ac.can('conditional/sports-and-politics/editor').context({category: 'politics', status: 'published'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 ```
@@ -425,36 +432,51 @@ console.log(permission.attributes); // —> []
 const ac = new AccessControl();
 ac.grant('user').condition({Fn: 'EQUALS', args: {category: 'sports'}}).execute('create').on('article');
 ac.grant('user').execute('*').on('image');
-ac.extendRole('admin', 'user');
+ac.extendRoleSync('admin', 'user'); // <-- Sync Example
+await ac.extendRole('admin', 'user'); // <-- Async Example
+
 ac.grant('admin').execute('delete').on('article');        
 ac.grant('admin').execute('*').on('category');
-ac.extendRole('owner', 'admin');
+ac.extendRoleSync('owner', 'admin'); // <-- Sync Example
+await ac.extendRole('owner', 'admin'); // <-- Async Example
+
 ac.grant('owner').execute('*').on('video');
 
-console.log(ac.allowedResources({role: 'user'}).sort()); // -> ['article', 'image']
-console.log(ac.allowedResources({role: 'user', context: {category: 'politics'}}).sort()); // -> ['image']       
-console.log(ac.allowedResources({role: 'admin'}).sort()); // -> ['article', 'category', 'image']
-console.log(ac.allowedResources({role: 'owner'}).sort()); // -> ['article', 'category', 'image', 'video']
-console.log(ac.allowedResources({role: ['admin', 'owner']}).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(ac.allowedResourcesSync({role: 'user'}).sort()); // -> ['article', 'image'] 
+console.log(await ac.allowedResources({role: 'user'}).sort()); // -> ['article', 'image'] 
+console.log(ac.allowedResourcesSync({role: 'user', context: {category: 'politics'}}).sort()); // -> ['image']      
+console.log(await ac.allowedResources({role: 'user', context: {category: 'politics'}}).sort()); // -> ['image']
+console.log(ac.allowedResourcesSync({role: 'admin'}).sort()); // -> ['article', 'category', 'image']
+console.log(await ac.allowedResources({role: 'admin'}).sort()); // -> ['article', 'category', 'image']
+console.log(ac.allowedResourcesSync({role: 'owner'}).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(await ac.allowedResources({role: 'owner'}).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(ac.allowedResourcesSync({role: ['admin', 'owner']}).sort()); // -> ['article', 'category', 'image', 'video']
+console.log(await ac.allowedResources({role: ['admin', 'owner']}).sort()); // -> ['article', 'category', 'image', 'video']
 
-console.log(ac.allowedActions({role: 'user', resource: 'article'}).sort()); // -> ['create']
-console.log(ac.allowedActions({role: 'user', resource: 'article', context: {category: 'politics'}})); // -> []        
-console.log(ac.allowedActions({role: ['admin', 'user'], resource: 'article'}).sort()); // -> ['create', 'delete']
-console.log(ac.allowedActions({role: 'admin', resource: 'category'}).sort()); // -> ['*']
-console.log(ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // -> ['*']
+console.log(ac.allowedActionsSync({role: 'user', resource: 'article'}).sort()); // -> ['create']
+console.log(await ac.allowedActions({role: 'user', resource: 'article'}).sort()); // -> ['create']
+console.log(ac.allowedActionsSync({role: 'user', resource: 'article', context: {category: 'politics'}})); // -> []        
+console.log(await ac.allowedActions({role: 'user', resource: 'article', context: {category: 'politics'}})); // -> []        
+console.log(ac.allowedActionsSync({role: ['admin', 'user'], resource: 'article'}).sort()); // -> ['create', 'delete']
+console.log(await ac.allowedActions({role: ['admin', 'user'], resource: 'article'}).sort()); // -> ['create', 'delete']
+console.log(ac.allowedActionsSync({role: 'admin', resource: 'category'}).sort()); // -> ['*']
+console.log(await ac.allowedActions({role: 'admin', resource: 'category'}).sort()); // -> ['*']
+console.log(ac.allowedActionsSync({role: 'owner', resource: 'video'}).sort()); // -> ['*']
+console.log(await ac.allowedActions({role: 'owner', resource: 'video'}).sort()); // -> ['*']
+
 ```
 **NOTE:**  allowedResources and allowedActions skip the conditions when context is not passed
 
 ### Example for versions >= 4.0.0
-**These versions support async condition functions so everything returned by ACL is a promise**
 [Take a look at the test cases][tests]
 
 ## Upgrading to >= 4.0.0
-* There are many breaking changes and all grant querying related functions return a promise so please update the code accordingly.
+* There are many breaking changes so please update the code accordingly.
 * All future updates and bug fixes will happen only to versions >= 4.
 * New features only available in >= 4
   * Storing and retrieving of custom condition functions.
   * Promise based conditional functions.
+  * For Sync use cases use function with Sync suffix.
 
 ## Licenses
 
