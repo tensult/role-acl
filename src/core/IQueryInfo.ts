@@ -28,6 +28,11 @@ interface IQueryInfo {
      *  Indicates if conditions to be skipped while querying.
      */
     skipConditions?: boolean
+
+     /**
+     *  Indicates if conditions to be evaluated in sync;
+     */
+    checkInSync?: boolean;
     /**
      * Context for evaluating the condition
      * @type {Object}

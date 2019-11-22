@@ -11,7 +11,7 @@ import { ArrayUtil } from '../utils/';
  */
 export class OrCondition implements IConditionFunction {
 
-    async evaluate(args?: any, context?: any): Promise<boolean> {
+    evaluate(args?: any, context?: any): boolean | Promise<boolean> {
         if (!args) {
             return true;
         }
@@ -25,12 +25,14 @@ export class OrCondition implements IConditionFunction {
         }
 
         const conditions = ArrayUtil.toArray(args);
-
-        let result = false;
-        for (let condition of conditions) {
-            result = result || await ConditionUtil.evaluate(condition, context);
+        const conditionEvaluations = conditions.map((condition) => {
+            return ConditionUtil.evaluate(condition, context);
+        });
+        if (CommonUtil.containsPromises(conditionEvaluations)) {
+            return Promise.all(conditionEvaluations).then(CommonUtil.someTrue);
+        } else {
+            return CommonUtil.someTrue(conditionEvaluations as boolean[]);
         }
-        return result;
     }
 }
 

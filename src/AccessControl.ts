@@ -151,6 +151,11 @@ class AccessControl {
         return this;
     }
 
+     extendRoleSync(roles: string | string[], extenderRoles: string | string[], condition?: ICondition): AccessControl {
+        CommonUtil.extendRoleSync(this._grants, roles, extenderRoles, condition);
+        return this;
+    }
+
     /**
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
@@ -213,6 +218,10 @@ class AccessControl {
     async allowedGrants(query: IQueryInfo): Promise<any[]> {
         return CommonUtil.getUnionGrantsOfRoles(this._grants, query);
     }
+
+    allowedGrantsSync(query: IQueryInfo): any[] {
+        return CommonUtil.getUnionGrantsOfRolesSync(this._grants, query);
+    }
     /**
      * Get roles which allow this permission
      * @param {IQueryInfo} query - permission query object we want to check
@@ -221,6 +230,10 @@ class AccessControl {
      */
     async allowingRoles(query: IQueryInfo): Promise<string[]> {
         return CommonUtil.getAllowingRoles(this._grants, query);
+    }
+    
+    allowingRolesSync(query: IQueryInfo): string[] {
+        return CommonUtil.getAllowingRolesSync(this._grants, query);
     }
 
 
@@ -234,6 +247,10 @@ class AccessControl {
         return CommonUtil.getUnionActionsOfRoles(this._grants, query);
     }
 
+    allowedActionsSync(query: IQueryInfo): string[] {
+        return CommonUtil.getUnionActionsOfRolesSync(this._grants, query);
+    }
+
     /**
      * Get allowed resources when conditions are skipped
      * @param {IQueryInfo} query - permission query object we want to check
@@ -242,6 +259,10 @@ class AccessControl {
      */
     async allowedResources(query: IQueryInfo): Promise<string[]> {
         return CommonUtil.getUnionResourcesOfRoles(this._grants, query);
+    }
+
+    allowedResourcesSync(query: IQueryInfo): string[] {
+        return CommonUtil.getUnionResourcesOfRolesSync(this._grants, query);
     }
 
     /**
@@ -265,11 +286,11 @@ class AccessControl {
      *  @example
      *  var ac = new AccessControl(grants);
      *
-     *  ac.can('admin').createAny('profile');
+     *  ac.can('admin').create('profile');
      *  // equivalent to:
-     *  ac.can().role('admin').createAny('profile');
+     *  ac.can().role('admin').create('profile');
      *  // equivalent to:
-     *  ac.can().role('admin').resource('profile').createAny();
+     *  ac.can().role('admin').resource('profile').createA();
      *
      *  // To check for multiple roles:
      *  ac.can(['admin', 'user']).createOwn('profile');
@@ -315,6 +336,10 @@ class AccessControl {
      */
     async permission(queryInfo: IQueryInfo): Promise<Permission> {
         return new Permission(queryInfo, await CommonUtil.getUnionAttrsOfRoles(this._grants, queryInfo));
+    }
+
+    permissionSync (queryInfo: IQueryInfo): Permission {
+        return new Permission(queryInfo, CommonUtil.getUnionAttrsOfRolesSync(this._grants, queryInfo));
     }
 
     /**
