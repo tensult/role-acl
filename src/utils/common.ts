@@ -536,31 +536,8 @@ export class CommonUtil {
      *  @throws {Error}
      *          If a role is extended by itself or a non-existent role.
      */
-    public static async extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): Promise<void> {
-        let arrExtRoles: string[] = ArrayUtil.toStringArray(extenderRoles);
-        if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
-        let nonExistentExtRoles: string[] = this.getNonExistentRoles(grants, arrExtRoles);
-        if (nonExistentExtRoles.length > 0) {
-            throw new AccessControlError(`Cannot extend with non-existent role(s): "${nonExistentExtRoles.join(', ')}"`);
-        }
-        roles = ArrayUtil.toStringArray(roles);
-        if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        const allExtendingRoles = await this.getFlatRoles(grants, arrExtRoles, null, true);
-        const extensionScore = allExtendingRoles.reduce((total, role) => {
-            return total + grants[role].score;
-        }, 0);
-        roles.forEach((role: string) => {
-            if (allExtendingRoles.indexOf(role) >= 0) {
-                throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
-            }
-            grants[role] = grants[role] || { score: 1 };
-            grants[role].score += extensionScore;
-            grants[role].$extend = grants[role].$extend || {};
-            arrExtRoles.forEach((extRole) => {
-                grants[role].$extend[extRole] = grants[role].$extend[extRole] || {};
-                grants[role].$extend[extRole].condition = condition
-            });
-        });
+    public static extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void {
+        CommonUtil.extendRoleSync(grants, roles, extenderRoles, condition);
     }
 
     public static extendRoleSync(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void {

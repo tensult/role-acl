@@ -151,9 +151,9 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    async extend(roles: string | string[]): Promise<Access> {
-        await CommonUtil.extendRole(this._grants, this._.role, roles);
-        return this;
+    extend(roles: string | string[]): Access {
+        // When extending role we are not checking for conditions so we can use sync method
+        return this.extendSync(roles);
     }
 
     /**

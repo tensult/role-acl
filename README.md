@@ -382,10 +382,8 @@ const editorGrant = {
 };
 ac.grant(editorGrant);
 // first level of extension (extending with condition)
-ac.extendRoleSync('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}}) //  <-- Sync Example
-await ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}}); // <-- Async Example
-ac.extendRoleSync('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}}); // <-- Sync Example
-await ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}}); // <-- Async Example
+ac.extendRole('sports/editor', 'editor', {Fn: 'EQUALS', args: {category: 'sports'}});
+ac.extendRole('politics/editor', 'editor', {Fn: 'EQUALS', args: {category: 'politics'}}); 
 
 
 let permission = ac.can('sports/editor').context({category: 'sports'}).execute('create').sync().on('post'); // <-- Sync Example
@@ -399,19 +397,14 @@ console.log(permission.granted);    // —> false
 console.log(permission.attributes); // —> []
 
 // second level of extension (extending without condition)
-ac.extendRoleSync('sports-and-politics/editor', ['sports/editor', 'politics/editor']); // <-- Sync Example
-await ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']); // <-- Async Example
+ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
 permission = ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').sync().on('post'); // <-- Sync Example
 permission = await ac.can('sports-and-politics/editor').context({category: 'politics'}).execute('create').on('post'); // <-- Async Example
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*']
 
 // third level of extension (extending with condition)
-ac.extendRoleSync('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
-    Fn: 'EQUALS',
-    args: { status: 'draft' }
-}); // <-- Sync Example
-await ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
+ac.extendRole('conditional/sports-and-politics/editor', 'sports-and-politics/editor', {
     Fn: 'EQUALS',
     args: { status: 'draft' }
 }); // <-- Async Example
@@ -432,13 +425,11 @@ console.log(permission.attributes); // —> []
 const ac = new AccessControl();
 ac.grant('user').condition({Fn: 'EQUALS', args: {category: 'sports'}}).execute('create').on('article');
 ac.grant('user').execute('*').on('image');
-ac.extendRoleSync('admin', 'user'); // <-- Sync Example
-await ac.extendRole('admin', 'user'); // <-- Async Example
+ac.extendRole('admin', 'user');
 
 ac.grant('admin').execute('delete').on('article');        
 ac.grant('admin').execute('*').on('category');
-ac.extendRoleSync('owner', 'admin'); // <-- Sync Example
-await ac.extendRole('owner', 'admin'); // <-- Async Example
+ac.extendRole('owner', 'admin'); // <-- Sync Example
 
 ac.grant('owner').execute('*').on('video');
 

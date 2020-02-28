@@ -1397,9 +1397,9 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
         ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
         ac.grant('user').execute('*').on('image');
-        await ac.extendRole('admin', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('*').on('category');
-        await ac.extendRole('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
 
         expect((await ac.allowedResources({ role: 'user' })).sort()).toEqual(['article', 'image']);
@@ -1414,9 +1414,9 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
         ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
         ac.grant('user').execute('*').on('image');
-        ac.extendRoleSync('admin', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('*').on('category');
-        ac.extendRoleSync('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
 
         expect((ac.allowedResourcesSync({ role: 'user' })).sort()).toEqual(['article', 'image']);
@@ -1431,10 +1431,10 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
         ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
         ac.grant('user').execute('*').on('image');
-        await ac.extendRole('admin', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('delete').on('article');
         ac.grant('admin').execute('*').on('category');
-        await ac.extendRole('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
 
         expect((await ac.allowedActions({ role: 'user', resource: 'article' })).sort()).toEqual(['create']);
@@ -1450,10 +1450,10 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
         ac.grant('user').condition(categorySportsCondition).execute('create').on('article');
         ac.grant('user').execute('*').on('image');
-        ac.extendRoleSync('admin', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('delete').on('article');
         ac.grant('admin').execute('*').on('category');
-        ac.extendRoleSync('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
 
         expect((ac.allowedActionsSync({ role: 'user', resource: 'article' })).sort()).toEqual(['create']);
@@ -1471,10 +1471,10 @@ describe('Test Suite: Access Control', function () {
         ac.setGrants(conditionalGrantObject);
         ac.grant('user').condition(categorySportsCondition).execute('create').on('blog');
         ac.grant('user').execute('*').on('image');
-        await ac.extendRole('sports/editor', 'user');
-        await ac.extendRole('admin', 'user');
+        ac.extendRole('sports/editor', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('*').on('category');
-        await ac.extendRole('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
         ac.grant('owner').execute('*').on('role');
 
@@ -1508,10 +1508,10 @@ describe('Test Suite: Access Control', function () {
         ac.setGrants(conditionalGrantObject);
         ac.grant('user').condition(categorySportsCondition).execute('create').on('blog');
         ac.grant('user').execute('*').on('image');
-        ac.extendRoleSync('sports/editor', 'user');
-        ac.extendRoleSync('admin', 'user');
+        ac.extendRole('sports/editor', 'user');
+        ac.extendRole('admin', 'user');
         ac.grant('admin').execute('*').on('category');
-        ac.extendRoleSync('owner', 'admin');
+        ac.extendRole('owner', 'admin');
         ac.grant('owner').execute('*').on('video');
         ac.grant('owner').execute('*').on('role');
 
@@ -1687,12 +1687,12 @@ describe('Test Suite: Access Control', function () {
         let ac = this.ac;
 
         ac.grant('admin').execute('create').on('book');
-        await ac.extendRole('onur', 'admin');
+        ac.extendRole('onur', 'admin');
         expect(ac.getGrants().onur.$extend['admin']).toEqual({ condition: undefined });
 
         ac.grant('role2, role3, editor, viewer, agent').execute('create').on('book');
 
-        await ac.extendRole('onur', ['role2', 'role3']);
+        ac.extendRole('onur', ['role2', 'role3']);
         expect(Object.keys(ac.getGrants().onur.$extend).sort()).toEqual(['admin', 'role2', 'role3']);
 
         await ac.grant('admin').extend('editor');
@@ -1707,20 +1707,20 @@ describe('Test Suite: Access Control', function () {
         expect(ac.getGrants().agent).toBeUndefined();
         expect(ac.getGrants().admin.$extend['editor']).toBeUndefined();
         expect(ac.getGrants().admin.$extend['agent']).toBeUndefined();
-        await promiseThrowsError(ac.grant('roleX').extend('roleX'));
-        await promiseThrowsError(ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3']));
+        throwsAccessControlError(() => ac.grant('roleX').extend('roleX'));
+        throwsAccessControlError(() =>ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3']));
     });
 
     it('should extend / remove roles synchronously', function () {
         let ac = this.ac;
 
         ac.grant('admin').execute('create').on('book');
-        ac.extendRoleSync('onur', 'admin');
+        ac.extendRole('onur', 'admin');
         expect(ac.getGrants().onur.$extend['admin']).toEqual({ condition: undefined });
 
         ac.grant('role2, role3, editor, viewer, agent').execute('create').on('book');
 
-        ac.extendRoleSync('onur', ['role2', 'role3']);
+        ac.extendRole('onur', ['role2', 'role3']);
         expect(Object.keys(ac.getGrants().onur.$extend).sort()).toEqual(['admin', 'role2', 'role3']);
 
         ac.grant('admin').extendSync('editor');
@@ -1739,22 +1739,22 @@ describe('Test Suite: Access Control', function () {
         throwsError(() => ac.grant(['admin2', 'roleX']).extendSync(['roleX', 'admin3']));
     });
 
-    it('should throw error while trying extend own role', async function () {
+    it('should throw error while trying extend own role', function () {
         let ac = this.ac;
         ac.grant('user').execute('create').when(categorySportsCondition).on('book');
-        await ac.extendRole('editor', 'user');
+        ac.extendRole('editor', 'user');
         ac.grant('editor').execute('delete').on('book');
-        await promiseThrowsError(ac.extendRole('user', 'editor'));
-        await promiseThrowsError(ac.extendRole('user', 'user'));
+        throwsAccessControlError(() => ac.extendRole('user', 'editor'));
+        throwsAccessControlError(() => ac.extendRole('user', 'user'));
     });
 
     it('should throw error while trying extend own role synchronously', function () {
         let ac = this.ac;
         ac.grant('user').execute('create').when(categorySportsCondition).on('book');
-        ac.extendRoleSync('editor', 'user');
+        ac.extendRole('editor', 'user');
         ac.grant('editor').execute('delete').on('book');
-        throwsError(() => ac.extendRoleSync('user', 'editor'));
-        throwsError(() => ac.extendRoleSync('user', 'user'));
+        throwsError(() => ac.extendRole('user', 'editor'));
+        throwsError(() => ac.extendRole('user', 'user'));
     });
 
 
@@ -1776,7 +1776,7 @@ describe('Test Suite: Access Control', function () {
         };
         ac.grant(sportsEditorGrant);
         ac.grant(politicsEditorGrant);
-        await ac.extendRole('editor', ['sports/editor', 'politics/editor']);
+        ac.extendRole('editor', ['sports/editor', 'politics/editor']);
         expect((await ac.can('editor').context(categorySportsContext).execute('create').on('post')).granted).toEqual(true);
         expect((await ac.can('editor').context(categoryPoliticsContext).execute('create').on('post')).granted).toEqual(true);
     });
@@ -1799,7 +1799,7 @@ describe('Test Suite: Access Control', function () {
         };
         ac.grant(sportsEditorGrant);
         ac.grant(politicsEditorGrant);
-        ac.extendRoleSync('editor', ['sports/editor', 'politics/editor']);
+        ac.extendRole('editor', ['sports/editor', 'politics/editor']);
         expect((ac.can('editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
         expect((ac.can('editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(true);
     });
@@ -1813,8 +1813,8 @@ describe('Test Suite: Access Control', function () {
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
-        await ac.extendRole('sports/editor', 'editor', categorySportsCondition);
-        await ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         expect((await ac.can('editor').execute('create').on('post')).granted).toEqual(true);
         expect((await ac.can('editor').context(categorySportsContext).execute('create').on('post')).granted).toEqual(true);
@@ -1834,8 +1834,8 @@ describe('Test Suite: Access Control', function () {
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
-        ac.extendRoleSync('sports/editor', 'editor', categorySportsCondition);
-        ac.extendRoleSync('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         expect((ac.can('editor').execute('create').sync().on('post')).granted).toEqual(true);
         expect((ac.can('editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
@@ -1857,16 +1857,16 @@ describe('Test Suite: Access Control', function () {
         };
         ac.grant(editorGrant);
         // first level of extension
-        await ac.extendRole('sports/editor', 'editor', categorySportsCondition);
-        await ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         // second level of extension
-        await ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
+        ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
         expect((await ac.can('sports-and-politics/editor').context(categorySportsContext).execute('create').on('post')).granted).toEqual(true);
         expect((await ac.can('sports-and-politics/editor').context(categoryPoliticsContext).execute('create').on('post')).granted).toEqual(true);
 
         // third level of extension
-        await ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
+        ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
             Fn: 'EQUALS',
             args: { status: 'draft' }
         });
@@ -1897,16 +1897,16 @@ describe('Test Suite: Access Control', function () {
         };
         ac.grant(editorGrant);
         // first level of extension
-        ac.extendRoleSync('sports/editor', 'editor', categorySportsCondition);
-        ac.extendRoleSync('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         // second level of extension
-        ac.extendRoleSync('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
+        ac.extendRole('sports-and-politics/editor', ['sports/editor', 'politics/editor']);
         expect((ac.can('sports-and-politics/editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
         expect((ac.can('sports-and-politics/editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(true);
 
         // third level of extension
-        ac.extendRoleSync('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
+        ac.extendRole('conditonal/sports-and-politics/editor', 'sports-and-politics/editor', {
             Fn: 'EQUALS',
             args: { status: 'draft' }
         });
@@ -1936,8 +1936,8 @@ describe('Test Suite: Access Control', function () {
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
-        await ac.extendRole('sports/editor', 'editor', categorySportsCondition);
-        await ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         ac.removeRoles('editor');
         expect((await ac.can('sports/editor').context(categoryPoliticsContext).execute('create').on('post')).granted).toEqual(false);
@@ -1953,8 +1953,8 @@ describe('Test Suite: Access Control', function () {
             attributes: ['*'] // grant only
         };
         ac.grant(editorGrant);
-        ac.extendRoleSync('sports/editor', 'editor', categorySportsCondition);
-        ac.extendRoleSync('politics/editor', 'editor', categoryPoliticsCondition);
+        ac.extendRole('sports/editor', 'editor', categorySportsCondition);
+        ac.extendRole('politics/editor', 'editor', categoryPoliticsCondition);
 
         ac.removeRoles('editor');
         expect((ac.can('sports/editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(false);
