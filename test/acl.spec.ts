@@ -674,7 +674,7 @@ describe('Test Suite: Access Control', function () {
         expect((ac.can('user').context({ category: 'tech' }).execute('create').sync().on('article')).granted).toEqual(true);
     });
 
-    it('should grant access with JSONPath context values with EQUALS condition', async function () {
+    it('should grant access with JSONPath context keys or values with EQUALS condition', async function () {
         const ac = this.ac;
         ac.grant('user').condition(
             {
@@ -687,6 +687,18 @@ describe('Test Suite: Access Control', function () {
             .execute('edit').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context({ owner: 'tensult', requester: 'dilip' })
             .execute('edit').on('article')).granted).toEqual(false);
+
+        ac.grant('user').condition(
+                {
+                    Fn: 'EQUALS',
+                    args: {
+                        '$.request.initiator': '$.owner'
+                    }
+                }).execute('edit').on('article');
+            expect((await ac.can('user').context({ owner: 'dilip', request: {initiator: 'dilip' }})
+                .execute('edit').on('article')).granted).toEqual(true);
+            expect((await ac.can('user').context({ owner: 'tensult', request: {initiator: 'dilip' } })
+                .execute('edit').on('article')).granted).toEqual(false);
     });
 
     it('should grant access with JSONPath context values with EQUALS condition synchronously', function () {
@@ -710,7 +722,7 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'NOT_EQUALS',
                 args: {
-                    'requester': '$.owner'
+                    '$.requester': '$.owner'
                 }
             }).execute('approve').on('article');
         expect((await ac.can('user').context({ owner: 'dilip', requester: 'dilip' })
@@ -725,7 +737,7 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'NOT_EQUALS',
                 args: {
-                    'requester': '$.owner'
+                    '$.requester': '$.owner'
                 }
             }).execute('approve').on('article');
         expect((ac.can('user').context({ owner: 'dilip', requester: 'dilip' })
@@ -1042,10 +1054,10 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'STARTS_WITH',
                 args: {
-                    tags: 'sports'
+                    tags: '$.category'
                 }
             }).execute('create').on('article');
-        expect((ac.can('user').context({ tags: 'sports' }).execute('create').sync().on('article')).granted).toEqual(true);
+        expect((ac.can('user').context({ tags: 'sports', category: 'sports'  }).execute('create').sync().on('article')).granted).toEqual(true);
         expect((ac.can('user').context({ tags: 'politics' }).execute('create').sync().on('article')).granted).toEqual(false);
     });
 
@@ -1056,11 +1068,11 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'STARTS_WITH',
                 args: {
-                    tags: ['sports', 'politics']
+                    tags: ['$.mainCategory', '$.subCategory']
                 }
             }).execute('create').on('article');
-        expect((await ac.can('user').context({ tags: 'sports' }).execute('create').on('article')).granted).toEqual(true);
-        expect((await ac.can('user').context({ tags: 'politics' }).execute('create').on('article')).granted).toEqual(true);
+        expect((await ac.can('user').context({ tags: 'sports', mainCategory: 'sports' }).execute('create').on('article')).granted).toEqual(true);
+        expect((await ac.can('user').context({ tags: 'politics', subCategory: 'politics' }).execute('create').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context({ tags: 'tech' }).execute('create').on('article')).granted).toEqual(false);
     });
 
@@ -1071,11 +1083,11 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'STARTS_WITH',
                 args: {
-                    tags: ['sports', 'politics']
+                    '$.tags': ['$.mainCategory', '$.subCategory']
                 }
             }).execute('create').on('article');
-        expect((ac.can('user').context({ tags: 'sports' }).execute('create').sync().on('article')).granted).toEqual(true);
-        expect((ac.can('user').context({ tags: 'politics' }).execute('create').sync().on('article')).granted).toEqual(true);
+        expect((ac.can('user').context({ tags: 'sports', mainCategory: 'sports' }).execute('create').sync().on('article')).granted).toEqual(true);
+        expect((ac.can('user').context({ tags: 'politics', subCategory: 'politics' }).execute('create').sync().on('article')).granted).toEqual(true);
         expect((ac.can('user').context({ tags: 'tech' }).execute('create').sync().on('article')).granted).toEqual(false);
     });
 
@@ -1086,7 +1098,7 @@ describe('Test Suite: Access Control', function () {
             {
                 Fn: 'LIST_CONTAINS',
                 args: {
-                    tags: ['sports', 'politics']
+                    '$.tags': ['sports', 'politics']
                 }
             }).execute('create').on('article');
         expect((await ac.can('user').context({ tags: ['sports'] }).execute('create').on('article')).granted).toEqual(true);

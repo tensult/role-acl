@@ -26,7 +26,6 @@ export class ListContainsCondition implements IConditionFunction {
         return Object.keys(args).every((key) => {
           
           const keyValue = key.startsWith('$.') ?  ConditionUtil.getValueByPath(context, key) : context[key];
-
             return Array.isArray(keyValue) &&
                 CommonUtil.matchesAnyElement(args[key], (elm) => {
                     return keyValue.includes(ConditionUtil.getValueByPath(context, elm));

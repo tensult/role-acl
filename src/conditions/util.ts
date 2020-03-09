@@ -43,7 +43,11 @@ export class ConditionUtil {
     public static getValueByPath(context: any, valuePathOrValue: any) {
         // Check if the value is JSONPath
         if (typeof valuePathOrValue === 'string' && valuePathOrValue.startsWith('$.')) {
-            return JSONPath({ path: valuePathOrValue, json: context, wrap: false });
+            let jsonPathVal = JSONPath({ path: valuePathOrValue, json: context, wrap: false });
+            if(Array.isArray(jsonPathVal)) {
+                jsonPathVal = jsonPathVal.flat();
+            }
+            return jsonPathVal;
         }
         return valuePathOrValue;
     }
