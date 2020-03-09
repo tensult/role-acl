@@ -24,10 +24,12 @@ export class StartsWithCondition implements IConditionFunction {
         }
 
         return Object.keys(args).every((key) => {
-            return CommonUtil.type(context[key]) === 'string'
+            const keyValue = key.startsWith('$.') ?  ConditionUtil.getValueByPath(context, key) : context[key];
+
+            return CommonUtil.type(keyValue) === 'string'
                 && CommonUtil.matchesAnyElement(args[key],
                     (elm) => {
-                        return context[key].startsWith(ConditionUtil.getValueByPath(context, elm))
+                        return keyValue.startsWith(ConditionUtil.getValueByPath(context, elm))
                     });
         });
     }
