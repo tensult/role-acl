@@ -14,6 +14,12 @@ interface IAccessInfo {
      *  @type {String|Array<String>}
      */
     role?: string | string[];
+
+     /**
+     *  Indicates a single or multiple roles to be extended by this role
+     *  @type {Array<String>}
+     */
+    extend?: string[];
     /**
      *  Indicates a single or multiple target resources for this access
      *  information.

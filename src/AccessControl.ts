@@ -117,8 +117,14 @@ class AccessControl {
     if (type === "object") {
       this._grants = CommonUtil.normalizeGrantsObject(grantsObject);
     } else if (type === "array") {
-      grantsObject.forEach((item: any) =>
+      grantsObject.filter((grant => !grant.extend || !grant.extend.length))
+      .forEach((item: any) =>
         CommonUtil.commitToGrants(this._grants, item)
+      );
+
+      grantsObject.filter((item => item.extend && item.extend.length))
+      .forEach((item: any) =>
+        CommonUtil.extendRole(this._grants, item.role, item.extend)
       );
     }
     return this;

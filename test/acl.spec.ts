@@ -42,7 +42,7 @@ function throwsError(fn, errMsg?, errName?) {
 describe('Test Suite: Access Control', function () {
 
     // grant list fetched from DB (to be converted to a valid grants object)
-    let grantList = [
+    let grantList: any[] = [
         { role: 'admin', resource: 'video', action: 'create', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'read', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'update', attributes: ['*'] },
@@ -53,6 +53,12 @@ describe('Test Suite: Access Control', function () {
         { role: 'user', resource: 'video', action: 'update', attributes: ['*'] },
         { role: 'user', resource: 'video', action: 'delete', attributes: ['*'] }
     ];
+
+    let grantListWithExtendRoles = grantList.concat([
+        { role: 'editor', resource: 'post', action: 'create', attributes: ['*'] },
+        { role: 'editor', extend: ['user']},
+        { role: 'editor', resource: 'post', action: 'delete', attributes: ['*'] }
+    ]);
 
 
     // valid grants object
@@ -94,10 +100,12 @@ describe('Test Suite: Access Control', function () {
     let categorySportsCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'sports' } };
     let categoryPoliticsCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'politics' } };
     let categoryHealthCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'health' } };
+    let categoryBusinessCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'business' } };
 
     let categorySportsContext = { category: 'sports' };
     let categoryPoliticsContext = { category: 'politics' };
     let categoryHealthContext = { category: 'health' };
+    let categoryBusinessContext = { category: 'business' };
 
     let categoryCustomContextAllowed = { loginUserId: '1', resourceProfileId: '1' };
     let categoryCustomContextNotAllowed = { loginUserId: '1', resourceProfileId: '2' };
@@ -230,6 +238,15 @@ describe('Test Suite: Access Control', function () {
         // no role named moderator but this should work
         ac.removeRoles(['user', 'moderator']);
         expect(ac.getRoles().length).toEqual(0);
+    });
+
+    it('should add grants from flat list (db) with extendRoles', async function () {
+        let ac = this.ac;
+        ac.setGrants(grantListWithExtendRoles);
+        expect((ac.can('user').execute('create').sync().on('video')).granted).toBeTruthy();
+        expect((ac.can('editor').execute('create').sync().on('post')).granted).toBeTruthy();
+        expect((ac.can('editor').execute('create').sync().on('video')).granted).toBeTruthy();
+        expect((ac.can('editor').execute('delete').sync().on('post')).granted).toBeTruthy();
     });
 
 
@@ -1839,9 +1856,20 @@ describe('Test Suite: Access Control', function () {
         
         ac.grant(sportsEditorGrant);
         ac.grant(politicsEditorGrant);
+
+        let businessEditorGrant = {
+            role: 'editor',
+            resource: 'post',
+            action: 'create', // action
+            attributes: ['*'], // grant only
+            condition: categoryBusinessCondition
+        };
+        ac.grant(businessEditorGrant);
+
         ac.extendRole('editor', ['news/editor']);
         expect((ac.can('editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
         expect((ac.can('editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(true);
+        expect((ac.can('editor').context(categoryBusinessContext).execute('create').sync().on('post')).granted).toEqual(true);
 
         // Add more permissions to original role
         let healthEditorGrant = {
