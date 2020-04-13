@@ -93,8 +93,12 @@ describe('Test Suite: Access Control', function () {
 
     let categorySportsCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'sports' } };
     let categoryPoliticsCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'politics' } };
+    let categoryHealthCondition = { 'Fn': 'EQUALS', 'args': { 'category': 'health' } };
+
     let categorySportsContext = { category: 'sports' };
     let categoryPoliticsContext = { category: 'politics' };
+    let categoryHealthContext = { category: 'health' };
+
     let categoryCustomContextAllowed = { loginUserId: '1', resourceProfileId: '1' };
     let categoryCustomContextNotAllowed = { loginUserId: '1', resourceProfileId: '2' };
 
@@ -1814,6 +1818,43 @@ describe('Test Suite: Access Control', function () {
         ac.extendRole('editor', ['sports/editor', 'politics/editor']);
         expect((ac.can('editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
         expect((ac.can('editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(true);
+    });
+
+    it('should extend roles and reflect the changes done to original role used synchronously', function () {
+        let ac = this.ac;
+        let sportsEditorGrant = {
+            role: 'news/editor',
+            resource: 'post',
+            action: 'create', // action
+            attributes: ['*'], // grant only
+            condition: categorySportsCondition
+        };
+        let politicsEditorGrant = {
+            role: 'news/editor',
+            resource: 'post',
+            action: 'create', // action
+            attributes: ['*'], // grant only
+            condition: categoryPoliticsCondition
+        };
+        
+        ac.grant(sportsEditorGrant);
+        ac.grant(politicsEditorGrant);
+        ac.extendRole('editor', ['news/editor']);
+        expect((ac.can('editor').context(categorySportsContext).execute('create').sync().on('post')).granted).toEqual(true);
+        expect((ac.can('editor').context(categoryPoliticsContext).execute('create').sync().on('post')).granted).toEqual(true);
+
+        // Add more permissions to original role
+        let healthEditorGrant = {
+            role: 'news/editor',
+            resource: 'post',
+            action: 'create', // action
+            attributes: ['*'], // grant only
+            condition: categoryHealthCondition
+        };
+
+        ac.grant(healthEditorGrant);
+
+        expect((ac.can('editor').context(categoryHealthContext).execute('create').sync().on('post')).granted).toEqual(true);
     });
 
     it('should extend roles with conditions', async function () {
