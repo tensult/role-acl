@@ -3,11 +3,15 @@ import {
   Access,
   IAccessInfo,
   ICondition,
+  IDictionary,
   Query,
   IQueryInfo,
   Permission,
-  AccessControlError
+  AccessControlError,
+  IFunctionCondition
 } from "./core";
+
+import { ConditionUtil } from "./conditions";
 
 /**
  *  @classdesc
@@ -79,12 +83,14 @@ class AccessControl {
 
   /**
    *  Initializes a new instance of `AccessControl` with the given grants.
-   *  @ignore
    *
    *  @param {Object|Array} grants - A list containing the access grant
    *      definitions. See the structure of this object in the examples.
+   * 
+   *  @param {Object} customConditionFns - custom condition functions
    */
-  constructor(grants: any = {}) {
+  constructor(grants: any = {}, customConditionFns: IDictionary<IFunctionCondition> = {} ) {
+    ConditionUtil.setCustomConditionFunctions(customConditionFns);
     this.setGrants(grants);
   }
 
@@ -438,7 +444,15 @@ class AccessControl {
    * Converts grants object to JSON format
    */
   toJSON(): string {
-    return CommonUtil.toExtendedJSON(this._grants);
+    return CommonUtil.toExtendedJSON({
+      grants: this._grants,
+      customConditionFunctions: ConditionUtil.getCustomConditionFunctions()
+    });
+  }
+
+  registerConditionFunction(funtionName: string, fn: IFunctionCondition): AccessControl {
+    ConditionUtil.registerCustomConditionFunction(funtionName, fn);
+    return this;
   }
 
   // -------------------------------
@@ -452,13 +466,6 @@ class AccessControl {
     CommonUtil.eachKey(this._grants, (role: string) =>
       callback(role, this._grants[role])
     );
-  }
-
-  /**
-   *  @private
-   */
-  private _eachRole(callback: (role: string) => void): void {
-    CommonUtil.eachKey(this._grants, (role: string) => callback(role));
   }
 
   /**
@@ -543,8 +550,8 @@ class AccessControl {
    * @param aclJSON JSON generated from toJSON method.
    */
   static fromJSON(aclJSON: string): AccessControl {
-    let grants = CommonUtil.fromExtendedJSON(aclJSON);
-    return new AccessControl(grants);
+    let aclObj = CommonUtil.fromExtendedJSON(aclJSON);
+    return new AccessControl(aclObj.grants, aclObj.customConditionFunctions);
   }
 }
 

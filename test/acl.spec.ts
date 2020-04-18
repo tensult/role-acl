@@ -107,8 +107,8 @@ describe('Test Suite: Access Control', function () {
     let categoryHealthContext = { category: 'health' };
     let categoryBusinessContext = { category: 'business' };
 
-    let categoryCustomContextAllowed = { loginUserId: '1', resourceProfileId: '1' };
-    let categoryCustomContextNotAllowed = { loginUserId: '1', resourceProfileId: '2' };
+    let customContextAllowed = { loginUserId: '1', resourceProfileId: '1' };
+    let customContextNotAllowed = { loginUserId: '1', resourceProfileId: '2' };
 
     let conditionalGrantList = [
         {
@@ -819,35 +819,79 @@ describe('Test Suite: Access Control', function () {
         throwsAccessControlError(() => { ac.can('user').context({ category: 'tech' }).execute('create').sync().on('article') });
     });
 
+    it('should support initializing ACL with custom named functions', async function () {
+        let conditionalGrantObjectWithCustomNamedFunction = {
+            grants: [
+                {
+                    role: 'user', resource: 'profile', action: ['create', 'edit'], attributes: ['*'],
+                    condition: "custom:isOwner"
+                }
+            ],
+            customConditionFunctions: {
+                isOwner: (context) => {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve(context.loginUserId === context.resourceProfileId);
+                        }, 200);
+                    });
+                }
+            }
+        };
+        const acUsingObj = new AccessControl(conditionalGrantObjectWithCustomNamedFunction.grants, conditionalGrantObjectWithCustomNamedFunction.customConditionFunctions);
+        expect((await acUsingObj.can('user').context(customContextAllowed)
+            .execute('create').on('profile')).granted).toEqual(true);
+        expect((await acUsingObj.can('user').context(customContextNotAllowed)
+            .execute('edit').on('profile')).granted).toEqual(false);
+    });
+
+    it('should support registering custom named functions', async function () {
+        let customConditionFunctions = {
+            isOwner: (context) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(context.loginUserId === context.resourceProfileId);
+                    }, 200);
+                });
+            }
+        }
+        const ac = new AccessControl();
+        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
+        ac.registerConditionFunction('isOwner', customConditionFunctions.isOwner);
+        expect((await ac.can('user').context(customContextAllowed)
+            .execute('create').on('profile')).granted).toEqual(true);
+        expect((await ac.can('user').context(customContextNotAllowed)
+            .execute('edit').on('profile')).granted).toEqual(false);
+    });
+
     it('should support initializing ACL when grants has custom functions', async function () {
         // Using object
         const acUsingObj = new AccessControl(conditionalGrantObjectWithCustomAsyncFunction);
-        expect((await acUsingObj.can('sports/custom').context(categoryCustomContextAllowed)
+        expect((await acUsingObj.can('sports/custom').context(customContextAllowed)
             .execute('create').on('profile')).granted).toEqual(true);
-        expect((await acUsingObj.can('sports/custom').context(categoryCustomContextNotAllowed)
+        expect((await acUsingObj.can('sports/custom').context(customContextNotAllowed)
             .execute('edit').on('profile')).granted).toEqual(false);
 
         // Using array
         const acUsingArray = new AccessControl(conditionalGrantArrayWithCustomAsyncFunction);
-        expect((await acUsingArray.can('sports/custom').context(categoryCustomContextAllowed)
+        expect((await acUsingArray.can('sports/custom').context(customContextAllowed)
             .execute('create').on('profile')).granted).toEqual(true);
-        expect((await acUsingArray.can('sports/custom').context(categoryCustomContextNotAllowed)
+        expect((await acUsingArray.can('sports/custom').context(customContextNotAllowed)
             .execute('edit').on('profile')).granted).toEqual(false);
     });
 
     it('should support initializing ACL when grants has custom functions synchronously', function () {
         // Using object
         const acUsingObj = new AccessControl(conditionalGrantObjectWithCustomSyncFunction);
-        expect((acUsingObj.can('sports/custom').context(categoryCustomContextAllowed)
+        expect((acUsingObj.can('sports/custom').context(customContextAllowed)
             .execute('create').sync().on('profile')).granted).toEqual(true);
-        expect((acUsingObj.can('sports/custom').context(categoryCustomContextNotAllowed)
+        expect((acUsingObj.can('sports/custom').context(customContextNotAllowed)
             .execute('edit').sync().on('profile')).granted).toEqual(false);
 
         // Using array
         const acUsingArray = new AccessControl(conditionalGrantArrayWithCustomSyncFunction);
-        expect((acUsingArray.can('sports/custom').context(categoryCustomContextAllowed)
+        expect((acUsingArray.can('sports/custom').context(customContextAllowed)
             .execute('create').sync().on('profile')).granted).toEqual(true);
-        expect((acUsingArray.can('sports/custom').context(categoryCustomContextNotAllowed)
+        expect((acUsingArray.can('sports/custom').context(customContextNotAllowed)
             .execute('edit').sync().on('profile')).granted).toEqual(false);
     });
 
@@ -866,6 +910,27 @@ describe('Test Suite: Access Control', function () {
         expect((await newAC.can('user').context(categorySportsContext).execute('create').on('article')).granted).toEqual(true);
         expect((await newAC.can('user').context(categoryPoliticsContext).execute('create').on('article')).granted).toEqual(false);
         expect((await newAC.can('user').context({ category: 'tech' }).execute('create').on('article')).granted).toEqual(true);
+    });
+
+    it('should stringfy and restore ACL with async custom named condition function', async function () {
+        let customConditionFunctions = {
+            isOwner: (context) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(context.loginUserId === context.resourceProfileId);
+                    }, 200);
+                });
+            }
+        }
+        const ac = new AccessControl();
+        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
+        ac.registerConditionFunction('isOwner', customConditionFunctions.isOwner);
+        const newAC = AccessControl.fromJSON(ac.toJSON());
+        expect(ac.toJSON()).toEqual(newAC.toJSON());
+        expect((await newAC.can('user').context(customContextAllowed)
+            .execute('create').on('profile')).granted).toEqual(true);
+        expect((await newAC.can('user').context(customContextNotAllowed)
+            .execute('edit').on('profile')).granted).toEqual(false);
     });
 
     it('should stringfy and restore ACL with sync custom condition function', function () {

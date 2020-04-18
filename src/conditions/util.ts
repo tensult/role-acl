@@ -1,27 +1,52 @@
 import { JSONPath } from 'jsonpath-plus';
 
-import { TrueCondition } from './TrueCondition';
-import { EqualsCondition } from './EqualsCondition';
-import { NotEqualsCondition } from './NotEqualsCondition';
-import { NotCondition } from './NotCondition';
-import { ListContainsCondition } from './ListContainsCondition';
-import { OrCondition } from './OrCondition';
-import { AndCondition } from './AndCondition';
+import { TrueCondition as TrueConditionFunction } from './TrueCondition';
+import { EqualsCondition as EqualsConditionFucntion } from './EqualsCondition';
+import { NotEqualsCondition as NotEqualsConditionFunction } from './NotEqualsCondition';
+import { NotCondition as NotConditionFunction } from './NotCondition';
+import { ListContainsCondition as ListContainsConditionFunction } from './ListContainsCondition';
+import { OrCondition as OrConditionFunction } from './OrCondition';
+import { AndCondition as AndConditionFunction } from './AndCondition';
 import { StartsWithCondition } from './StartsWithCondition';
 import { IConditionFunction } from './IConditionFunction';
-import { AccessControlError, ICondition } from '../core';
+import { AccessControlError, ICondition, IDictionary, IFunctionCondition } from '../core';
 
 export class ConditionUtil {
-    public static readonly AND = new AndCondition();
-    public static readonly TRUE = new TrueCondition();
-    public static readonly EQUALS = new EqualsCondition();
-    public static readonly LIST_CONTAINS = new ListContainsCondition();
-    public static readonly NOT_EQUALS = new NotEqualsCondition();
-    public static readonly NOT = new NotCondition();
-    public static readonly OR = new OrCondition();
+    public static readonly AND = new AndConditionFunction();
+    public static readonly TRUE = new TrueConditionFunction();
+    public static readonly EQUALS = new EqualsConditionFucntion();
+    public static readonly LIST_CONTAINS = new ListContainsConditionFunction();
+    public static readonly NOT_EQUALS = new NotEqualsConditionFunction();
+    public static readonly NOT = new NotConditionFunction();
+    public static readonly OR = new OrConditionFunction();
     public static readonly STARTS_WITH = new StartsWithCondition();
+    private static _customConditionFunctions : IDictionary<IFunctionCondition> = {};
 
-    public static evaluate(condition: ICondition, context): boolean | Promise<boolean> {
+    public static registerCustomConditionFunction(functionName: string, fn: IFunctionCondition) {
+        if(!functionName) {
+            throw new AccessControlError(`Condition function name:${functionName} is not valid`)
+        }
+
+        if(!functionName.startsWith('custom:')) {
+            functionName  = 'custom:'+ functionName;
+        }
+        if(ConditionUtil._customConditionFunctions[functionName]) {
+            console.warn("Replacing existing function: ", functionName, "with:", fn);
+          }
+          ConditionUtil._customConditionFunctions[functionName] = fn;
+    }
+
+    public static getCustomConditionFunctions() {
+        return ConditionUtil._customConditionFunctions;
+    }
+
+    public static setCustomConditionFunctions(customConditionFunctions: IDictionary<IFunctionCondition> = {}) {
+        for(let conditionFnName in customConditionFunctions) {
+            ConditionUtil.registerCustomConditionFunction(conditionFnName, customConditionFunctions[conditionFnName]);
+        }
+    }
+
+    public static evaluate(condition: ICondition, context: any): boolean | Promise<boolean> {
         if (!condition) {
             return true;
         }
@@ -30,11 +55,24 @@ export class ConditionUtil {
             return condition(context);
         }
 
+        if (typeof condition === 'string') {
+            if(!ConditionUtil._customConditionFunctions[condition]) {
+                throw new AccessControlError(`Condition function: ${condition} not found`)
+            }
+            return ConditionUtil._customConditionFunctions[condition](context);
+        }
+
         if (typeof condition === 'object') {
-            if (!ConditionUtil[condition.Fn]) {
+            if(!condition.Fn) {
+                throw new AccessControlError(`Condition function:${condition.Fn} is not valid`)
+            }
+
+            let conditionFn : IConditionFunction = ConditionUtil[condition.Fn];
+
+            if (!conditionFn) {
                 throw new AccessControlError(`Condition function:${condition.Fn} not found`)
             }
-            return (ConditionUtil[condition.Fn] as IConditionFunction).evaluate(condition.args, context);
+            return conditionFn.evaluate(condition.args, context);
         }
 
         return false;

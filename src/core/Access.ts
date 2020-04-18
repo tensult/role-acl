@@ -134,12 +134,12 @@ class Access {
 
     /**
      *  Sets condition for this `Access` instance.
-     *  @param {ICondition} value
+     *  @param {ICondition | string | Function} value
      *         Conditions to be set.
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    condition(value: ICondition) {
+    condition(value: ICondition ) {
         this._.condition = value;
         return this;
     }
