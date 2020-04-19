@@ -524,6 +524,27 @@ describe('Test Suite: Access Control', function () {
     });
 
 
+    it('should grant access with equals conditions with null values', function() {
+        const ac = new AccessControl({
+            user:  {
+                resource: 'task',
+                action: ['update'],
+                condition: {
+                    Fn: 'AND',
+                    args: [
+                        { 'Fn': 'EQUALS', 'args': { 'userId': '$.AssignedId' } },
+                        { 'Fn': 'EQUALS', 'args': { 'CompletedAt': null } }
+                    ]
+                }
+            }
+        });
+        expect(ac.can('user').context({ 
+            AssignedId: 'abc123',
+            CompletedAt: null,
+            userId: 'abc123'
+        }).execute('update').sync().on('task').granted).toEqual(false);
+
+    });
 
     it('should grant access with equals condition with list of values and check permissions ', async function () {
         const ac = this.ac;
