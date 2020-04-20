@@ -883,6 +883,28 @@ describe('Test Suite: Access Control', function () {
             .execute('edit').on('profile')).granted).toEqual(false);
     });
 
+    it('should support registering custom named functions as condition object', async function () {
+        let customConditionFunctions = {
+            gte: (context, args) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(context.level >= args.level);
+                    }, 200);
+                });
+            }
+        }
+
+        const ac = new AccessControl();
+        ac.grant("user").condition({Fn:'custom:gte', args:{level: 2}}).execute(['comment']).on('article');
+        ac.registerConditionFunction('gte', customConditionFunctions.gte);
+        expect((await ac.can('user').context({level: 2})
+            .execute('comment').on('article')).granted).toEqual(true);
+        expect((await ac.can('user').context({level: 3})
+            .execute('comment').on('article')).granted).toEqual(true);
+        expect((await ac.can('user').context({level: 1})
+            .execute('comment').on('article')).granted).toEqual(false);
+    });
+
     it('should support initializing ACL when grants has custom functions', async function () {
         // Using object
         const acUsingObj = new AccessControl(conditionalGrantObjectWithCustomAsyncFunction);

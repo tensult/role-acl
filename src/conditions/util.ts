@@ -91,14 +91,15 @@ export class ConditionUtil {
         );
       }
 
-      let conditionFn: IConditionFunction = ConditionUtil[condition.Fn];
-
-      if (!conditionFn) {
+      if (ConditionUtil[condition.Fn]) {
+          return (ConditionUtil[condition.Fn] as IConditionFunction).evaluate(condition.args, context);
+      } else if(ConditionUtil._customConditionFunctions[condition.Fn]) {
+          return ConditionUtil._customConditionFunctions[condition.Fn](context, condition.args);
+      } else {
         throw new AccessControlError(
-          `Condition function:${condition.Fn} not found`
-        );
+            `Condition function:${condition.Fn} is not found`
+          );
       }
-      return conditionFn.evaluate(condition.args, context);
     }
 
     return false;
