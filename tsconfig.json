@@ -11,7 +11,7 @@
         "noLib": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "lib": ["es6", "es2017", "dom", "esnext", "esnext.array"],
+        "lib": ["es2019"],
         "sourceMap": false,
         "pretty": true,
         "allowUnreachableCode": false,
