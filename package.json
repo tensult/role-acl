@@ -70,6 +70,7 @@
   "dependencies": {
     "jsonpath-plus": "^0.18.0",
     "lodash.clonedeep": "^4.5.0",
+    "lodash.flattendeep": "^4.4.0",
     "matcher": "^1.0.0",
     "notation": "^1.3.5"
   }

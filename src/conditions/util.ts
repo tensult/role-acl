@@ -1,4 +1,6 @@
 import { JSONPath } from "jsonpath-plus";
+import flattendeep from 'lodash.flattendeep';
+
 
 import { TrueCondition as TrueConditionFunction } from "./TrueCondition";
 import { EqualsCondition as EqualsConditionFucntion } from "./EqualsCondition";
@@ -118,7 +120,7 @@ export class ConditionUtil {
         wrap: false,
       });
       if (Array.isArray(jsonPathVal)) {
-        jsonPathVal = jsonPathVal.flat();
+        jsonPathVal = flattendeep(jsonPathVal);
       }
       return jsonPathVal;
     }
