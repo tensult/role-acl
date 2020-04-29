@@ -136,6 +136,7 @@ export class CommonUtil {
                 continue;
             }
             grantsCopy[role].grants.forEach((grant) => {
+                ConditionUtil.validateCondition(grant.condition);
                 grant.attributes = grant.attributes || ['*'];
             });
             grantsCopy[role].score = grantsCopy[role].score || 1;
@@ -233,6 +234,7 @@ export class CommonUtil {
         (access.role as Array<string>).forEach((role: string) => {
             grants[role] = grants[role] || { score: 1 };
             grants[role].grants = grants[role].grants || [];
+            ConditionUtil.validateCondition(access.condition);
             grants[role].grants.push({
                 resource: access.resource,
                 action: access.action,
@@ -537,10 +539,12 @@ export class CommonUtil {
      *          If a role is extended by itself or a non-existent role.
      */
     public static extendRole(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void {
+        ConditionUtil.validateCondition(condition);
         CommonUtil.extendRoleSync(grants, roles, extenderRoles, condition);
     }
 
     public static extendRoleSync(grants: any, roles: string | string[], extenderRoles: string | string[], condition?: ICondition): void {
+        ConditionUtil.validateCondition(condition);
         let arrExtRoles: string[] = ArrayUtil.toStringArray(extenderRoles);
         if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles: string[] = this.getNonExistentRoles(grants, arrExtRoles);
@@ -594,5 +598,4 @@ export class CommonUtil {
             return this.filter(o, attributes);
         });
     }
-
 }

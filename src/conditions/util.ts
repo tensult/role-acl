@@ -50,6 +50,10 @@ export class ConditionUtil {
     ConditionUtil._customConditionFunctions[functionName] = fn;
   }
 
+  public static resetCustomConditionFunctions() {
+    ConditionUtil._customConditionFunctions = {};
+  }
+  
   public static getCustomConditionFunctions() {
     return ConditionUtil._customConditionFunctions;
   }
@@ -62,6 +66,35 @@ export class ConditionUtil {
         conditionFnName,
         customConditionFunctions[conditionFnName]
       );
+    }
+  }
+
+  public static validateCondition(condition) {
+    if (!condition) {
+      return;
+    }
+
+    if (typeof condition === "function") {
+      return;
+    }
+
+    if (typeof condition === "string") {
+      if (!ConditionUtil._customConditionFunctions[condition]) {
+        throw new AccessControlError(
+          `Condition function: ${condition} not found`
+        );
+      }
+      return;
+    }
+
+    if (typeof condition === "object") {
+      if (!condition.Fn || !(ConditionUtil[condition.Fn] || 
+        ConditionUtil._customConditionFunctions[condition.Fn])) {
+        throw new AccessControlError(
+          `Condition function:${condition.Fn} is not valid`
+        );
+      }
+      return;
     }
   }
 

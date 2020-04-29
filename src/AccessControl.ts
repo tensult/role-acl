@@ -90,6 +90,7 @@ class AccessControl {
    *  @param {Object} customConditionFns - custom condition functions
    */
   constructor(grants: any = {}, customConditionFns: IDictionary<IFunctionCondition> = {} ) {
+    ConditionUtil.resetCustomConditionFunctions();
     ConditionUtil.setCustomConditionFunctions(customConditionFns);
     this.setGrants(grants);
   }
@@ -144,6 +145,7 @@ class AccessControl {
    */
   reset(): AccessControl {
     this._grants = {};
+    ConditionUtil.resetCustomConditionFunctions();
     return this;
   }
 

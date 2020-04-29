@@ -875,8 +875,8 @@ describe('Test Suite: Access Control', function () {
             }
         }
         const ac = new AccessControl();
-        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
         ac.registerConditionFunction('isOwner', customConditionFunctions.isOwner);
+        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
         expect((await ac.can('user').context(customContextAllowed)
             .execute('create').on('profile')).granted).toEqual(true);
         expect((await ac.can('user').context(customContextNotAllowed)
@@ -895,14 +895,28 @@ describe('Test Suite: Access Control', function () {
         }
 
         const ac = new AccessControl();
-        ac.grant("user").condition({Fn:'custom:gte', args:{level: 2}}).execute(['comment']).on('article');
         ac.registerConditionFunction('gte', customConditionFunctions.gte);
+        ac.grant("user").condition({Fn:'custom:gte', args:{level: 2}}).execute(['comment']).on('article');
         expect((await ac.can('user').context({level: 2})
             .execute('comment').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context({level: 3})
             .execute('comment').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context({level: 1})
             .execute('comment').on('article')).granted).toEqual(false);
+    });
+
+    it('should validate custom named functions as condition object', async function () {
+        const ac = new AccessControl();
+        expect(() => 
+        ac.grant("user").condition({Fn:'custom:gte', args:{level: 2}})
+        .execute(['comment']).on('article')).toThrow();
+    });
+
+    it('should validate custom named functions as condition string', async function () {
+        const ac = new AccessControl();
+        expect(() => 
+        ac.grant("user").condition('custom:gte')
+        .execute(['comment']).on('article')).toThrow();
     });
 
     it('should support initializing ACL when grants has custom functions', async function () {
@@ -965,8 +979,8 @@ describe('Test Suite: Access Control', function () {
             }
         }
         const ac = new AccessControl();
-        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
         ac.registerConditionFunction('isOwner', customConditionFunctions.isOwner);
+        ac.grant("user").condition('custom:isOwner').execute(['create', 'edit']).on('profile');
         const newAC = AccessControl.fromJSON(ac.toJSON());
         expect(ac.toJSON()).toEqual(newAC.toJSON());
         expect((await newAC.can('user').context(customContextAllowed)
