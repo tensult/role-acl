@@ -1,5 +1,6 @@
 
 const AccessControl = require('../src').AccessControl;
+const getValueByPath = require('../src').getValueByPath;
 
 function type(o) {
     return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
@@ -903,6 +904,216 @@ describe('Test Suite: Access Control', function () {
             .execute('comment').on('article')).granted).toEqual(true);
         expect((await ac.can('user').context({level: 1})
             .execute('comment').on('article')).granted).toEqual(false);
+    });
+
+    it('should have valid basic custom condition example in the docs', function () {
+        // 1. Define the condition handler
+        const greaterOrEqual = (context, args) => {
+            if (!args || typeof args.level !== 'number') {
+                throw new Error('custom:gte requires "level" argument');
+            }
+
+            return +context.level >= args.level;
+        }
+
+        const ac = new AccessControl();
+
+        // 2. Register the handler with appropriate name
+        ac.registerConditionFunction('gte', greaterOrEqual);
+
+        // 3. Use it in grants, same as core conditions but with "custom:" prefix
+        ac.grant('user')
+            .condition({
+                Fn: 'custom:gte',
+                args: { level: 2 }
+            })
+            .execute('comment').on('article');
+
+        // 4. Evaluate permissions with appropraite context (sync) - same as core conditions
+        const permission1 = ac
+            .can('user')
+            .context({ level: 2 })
+            .execute('comment')
+            .sync()
+            .on('article');
+
+        // prints "LEVEL 2 true"
+        expect(permission1.granted).toEqual(true);
+
+        const permission2 = ac
+            .can('user')
+            .context({ level: 1 })
+            .execute('comment')
+            .sync()
+            .on('article');
+
+        // prints "LEVEL 1 false"
+        expect(permission2.granted).toEqual(false);
+    });
+
+    it('should have valid no arguments custom condition example in the docs', function () {
+        const myConditions = {
+            isArticleOwner: (context) => {
+                return context.loginUserId && context.loginUserId === context.articleOwnerId
+            }
+        }
+        const ac = new AccessControl();
+        ac.registerConditionFunction('isArticleOwner', myConditions.isArticleOwner);
+        ac.grant("user").condition('custom:isArticleOwner').execute(['delete', 'update']).on('article');
+
+        expect(
+            ac.can('user').context({ loginUserId: 1, articleOwnerId: 1 })
+                .execute('update').sync().on('article').granted
+        ).toBe(true);
+    });
+
+    it('should have valid async custom condition example in the docs', async function () {
+        const asyncCheckResourceForUser = (resource, loginUserId, record) => new Promise((resolve) => {
+            resolve(resource === 'article' && loginUserId === 1 && record.id === 10);
+        });
+
+        const myConditions = {
+            isResourceOwner: async (context, args) => {
+                const { resource } = args || {};
+                const { loginUserId } = context;
+                return asyncCheckResourceForUser(resource, loginUserId, context[resource]);
+            }
+        }
+        const ac = new AccessControl();
+        ac.registerConditionFunction('isResourceOwner', myConditions.isResourceOwner);
+
+        ac.grant("user")
+            .condition({ Fn: 'custom:isResourceOwner', args: { resource: 'article' } })
+            .execute(['delete', 'update'])
+            .on('article');
+
+        expect(
+            (await ac.can('user').context({ loginUserId: 1, article: { id: 10 } })
+                .execute('update').on('article'))
+            .granted
+        ).toBe(true);
+        expect(
+            (await ac.can('user').context({ loginUserId: 2, article: { id: 10 } })
+                .execute('update').on('article'))
+            .granted
+        ).toBe(false);
+    });
+
+    it('should have valid serialization and batch register custom conditions example in the docs', async function () {
+        const myPolicy = {
+            // Serialized policy, can be stored in file, DB, etc
+            grants: [
+                {
+                    role: 'user',
+                    resource: 'profile',
+                    action: ['delete', 'update'],
+                    attributes: ['*'],
+                    condition: {
+                        Fn: 'custom:isResourceOwner',
+                        args: { resource: 'profile' }
+                    }
+                },
+                {
+                    role: 'user',
+                    resource: 'article',
+                    action: ['delete', 'update'],
+                    attributes: ['*'],
+                    condition: {
+                        Fn: 'custom:isResourceOwner',
+                        args: { resource: 'article' }
+                    }
+                },
+            ],
+            // Map your custom conditions to the serialized policy
+            myConditions: {
+                isResourceOwner: async ({ user, record }, { resource }) => {
+                    if (resource === 'profile' && user.id === 1 && record.id === 1) {
+                        return true;
+                    }
+                    if (resource === 'article' && user.id === 1 && record.id === 2) {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        };
+
+        // Register everything on initialization
+        const ac = new AccessControl(myPolicy.grants, myPolicy.myConditions);
+
+        // Use it
+        expect(
+            (await ac.can('user').context({ user: { id: 1 }, record: { id: 1 } })
+                .execute('update').on('profile')).granted
+        ).toBe(true); // granted === true
+
+        expect(
+            (await ac.can('user').context({ user: { id: 1 }, record: { id: 1 } })
+                .execute('delete').on('article')).granted
+        ).toBe(false);  // granted === false
+        
+        expect(
+            (await ac.can('user').context({ user: { id: 1 }, record: { id: 2 } })
+                .execute('delete').on('article')).granted
+        ).toBe(true);  // granted === true
+    });
+
+    it('should have valid mix custom and core conditions and use JSON path helper example in the docs', async function () {
+        const myPolicy = {
+            // Mix custom with core conditions
+            grants: [
+                {
+                    role: 'editor/news',
+                    resource: 'article',
+                    action: 'approve',
+                    attributes: ['*'],
+                    condition: {
+                        Fn: 'AND',
+                        args: [
+                            {
+                                Fn: 'custom:categoryMatcher',
+                                args: { type: 'news' }
+                            },
+                            {
+                                Fn: 'custom:isResourceOwner',
+                                args: { resource: 'article' }
+                            }
+                        ]
+                    }
+                },
+            ],
+            myConditions: {
+                categoryMatcher: (context, { type }) => {
+                    // A naive use of the JSON path util
+                    // Keep in mind it comes with performance penalties
+                    return type && getValueByPath(context, '$.category.type') === type;
+                },
+                isResourceOwner: (context, { resource }) => {
+                    if (!resource) {
+                        return false;
+                    }
+                    return getValueByPath(context, `$.${resource}.owner`) === getValueByPath(context, '$.user.id');
+                },
+            }
+        };
+        // Register everything on initialization
+        const ac = new AccessControl(myPolicy.grants, myPolicy.myConditions);
+
+        // Use it
+        expect(
+            (await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 1 }, category: { type: 'news' } })
+                .execute('approve').on('article')).granted
+        ).toBe(true); // granted === true
+
+        expect(
+            (await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 2 }, category: { type: 'news' } })
+                .execute('approve').on('article')).granted
+        ).toBe(false);  // granted === false
+        
+        expect(
+            (await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 1 }, category: { type: 'tutorials' } })
+                .execute('approve').on('article')).granted
+        ).toBe(false);  // granted === false
     });
 
     it('should validate custom named functions as condition object', async function () {

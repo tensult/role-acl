@@ -160,3 +160,6 @@ export class ConditionUtil {
     return valuePathOrValue;
   }
 }
+
+// Expose getValueByPath only as public API
+export const getValueByPath = ConditionUtil.getValueByPath;

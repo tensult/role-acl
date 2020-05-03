@@ -20,9 +20,10 @@ e.g. `ac.can(role).execute('create').on(resource)`
 - Grant permissions by attributes defined by glob notation (with nested object support).
 - Ability to filter data (model) instance by allowed attributes.
 - Ability to control access using conditions.
-- Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH, LIST_CONTAINS conditions.
-- You can specify dynamic context values in the conditions using JSON Paths.
-- You can define your own condition functions too but please note if you use custom functions instead of standard conditions, you won't be able to save them as json in the DB.
+- Supports AND, OR, NOT, EQUALS, NOT_EQUALS, STARTS_WITH, LIST_CONTAINS core conditions.
+- You can specify dynamic context values in the core conditions using JSON Paths.
+- Supports your own custom conditions e.g. `custom:isArticleOwner`.
+- You can define your own function conditions too but please note if you use custom functions instead of standard conditions, you won't be able to save them as json in the DB.
 - Policies are JSON compatible so can be stored and retrieved from database.
 - Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
@@ -121,6 +122,217 @@ ac.grant('user').condition(
 permission = ac.can('user').context({ category: 'sports' }).execute('create').sync().on('article'); // <-- Sync Example
 permission = await ac.can('user').context({ category: 'sports' }).execute('create').on('article'); // <-- Async Example
 console.log(permission.granted);    // —> true
+```
+
+### Custom Conditions
+
+You can declare your own conditions (**requires version >= 4.5.2**). Those declarations should be registerd with the library BEFORE your grants and permission checks. The custom condition declarations are allowing you to extend the library core conditions with your own business logic without sacrificing the abillity to serialize your grants.
+
+**Basic example:**
+```js
+// 1. Define the condition handler
+const greaterOrEqual = (context, args) => {
+    if (!args || typeof args.level !== 'number') {
+        throw new Error('custom:gte requires "level" argument');
+    }
+
+    return +context.level >= args.level;
+}
+
+const ac = new AccessControl();
+
+// 2. Register the condition with appropriate name
+ac.registerConditionFunction('gte', greaterOrEqual);
+
+// 3. Use it in grants, same as core conditions but with "custom:" prefix
+ac.grant('user')
+    .condition({
+        Fn: 'custom:gte', 
+        args: { level: 2 }
+    })
+    .execute('comment').on('article');
+
+// 4. Evaluate permissions with appropraite context (sync) - same as core conditions
+const permission1 = ac
+    .can('user')
+    .context({ level: 2 })
+    .execute('comment')
+    .sync()
+    .on('article');
+
+// prints "LEVEL 2 true"
+console.log('LEVEL 2', permission1.granted);
+
+const permission2 = ac
+    .can('user')
+    .context({ level: 1 })
+    .execute('comment')
+    .sync()
+    .on('article');
+
+// prints "LEVEL 1 false"
+console.log('LEVEL 1', permission2.granted);
+```
+
+**Argument is optional:**  
+
+Custom condition argument is optional - same as core conditions. 
+
+```js
+const myConditions = {
+    isArticleOwner: (context) => {
+        return context.loginUserId && context.loginUserId === context.articleOwnerId
+    }
+}
+const ac = new AccessControl();
+ac.registerConditionFunction('isArticleOwner', myConditions.isArticleOwner);
+ac.grant("user").condition('custom:isArticleOwner')
+    .execute(['delete', 'update']).on('article');
+
+ac.can('user').context({ loginUserId: 1, articleOwnerId: 1 })
+    .execute('update').sync().on('article'); 
+// { granted: true }
+```
+
+**Custom condition can be async:**
+```js
+import { asyncCheckResourceForUser } from './somewhere'; 
+
+const myConditions = {
+    isResourceOwner: (context, args) => {
+        const { resource } = args || {};
+        const { loginUserId } = context;
+        // your business logic to check resource owner e.g. vs DB
+        // send resource name, currently logged in user ID, record.id 
+        return asyncCheckResourceForUser(resource, loginUserId, context[resource]);
+    }
+}
+const ac = new AccessControl();
+ac.registerConditionFunction('isResourceOwner', myConditions.isResourceOwner);
+
+ac.grant("user")
+    .condition({ Fn: 'custom:isResourceOwner', args: { resource: 'article' } })
+    .execute(['delete', 'update'])
+    .on('article');
+
+// Provide currently logged in user and article.id in the context
+await ac.can('user').context({ loginUserId: 1, article: { id: 10 } })
+    .execute('update').on('article'); 
+```
+
+**Custom conditions allow security policy serializing and can be registered while initializing (in batch):**
+
+> NOTE: function conditions are not serializeable, so custom conditions are the recommended way to implement your permission policy. You can easiely convert your current function conditions to custom conditions.
+
+```js
+const myPolicy = {
+    // Serialized policy, can be stored in file, DB, etc
+    grants: [
+        {
+            role: 'user', 
+            resource: 'profile', 
+            action: ['delete', 'update'], 
+            attributes: ['*'],
+            condition: {
+                Fn: 'custom:isResourceOwner',
+                args: { resource: 'profile' }
+            }
+        },
+        {
+            role: 'user', 
+            resource: 'article', 
+            action: ['delete', 'update'], 
+            attributes: ['*'],
+            condition: {
+                Fn: 'custom:isResourceOwner',
+                args: { resource: 'article' }
+            }
+        },
+    ],
+    // Map your custom conditions to the serialized policy
+    myConditions: {
+        isResourceOwner: async ({ user, record }, { resource } = {}) => {
+            // Your business logic here, e.g. query database...
+            if (resource === 'profile' && user.id === 1 && record.id === 1) {
+                return true;
+            }
+            if (resource === 'article' && user.id === 1 && record.id === 2) {
+                return true;
+            }
+            return false;
+        }
+    }
+};
+
+// Register everything on initialization
+const ac = new AccessControl(myPolicy.grants, myPolicy.myConditions);
+
+// Use it
+await ac.can('user').context({ user: { id: 1 }, record: { id: 1 } })
+    .execute('update').on('profile'); // { granted: true }
+
+await ac.can('user').context({ user: { id: 1 }, record: { id: 1 } })
+    .execute('delete').on('article');  // { granted: false }
+
+await ac.can('user').context({ user: { id: 1 }, record: { id: 2 } })
+    .execute('delete').on('article');  // { granted: true }
+```
+
+**Mix with core conditions, use JSON path helper:**  
+
+> NOTE: `getValueByPath` is available in versions >= 4.5.5
+
+```js
+const myPolicy = {
+    grants: [
+        {
+            role: 'editor/news',
+            resource: 'article',
+            action: 'approve',
+            attributes: ['*'],
+            // Mix core with custom conditions
+            condition: {
+                Fn: 'AND',
+                args: [
+                    {
+                        Fn: 'custom:categoryMatcher',
+                        args: { type: 'news' }
+                    },
+                    {
+                        Fn: 'custom:isResourceOwner',
+                        args: { resource: 'article' }
+                    }
+                ]
+            }
+        },
+    ],
+    myConditions: {
+        categoryMatcher: (context, { type } = {}) => {
+            // A naive use of the JSON path util
+            // Keep in mind it comes with performance penalties
+            return type && getValueByPath(context, '$.category.type') === type;
+        },
+        isResourceOwner: (context, { resource } = {}) => {
+            if (!resource) {
+                return false;
+            }
+            return getValueByPath(context, `$.${resource}.owner`) === getValueByPath(context, '$.user.id');
+        },
+    }
+};
+const ac = new AccessControl(myPolicy.grants, myPolicy.myConditions);
+
+// Evaluate with article.owner equals to user.id, category.type equals to 'news'
+await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 1 }, category: { type: 'news' } })
+    .execute('approve').on('article'); // { granted: true }
+
+// Evaluate with article.owner DOESN'T equal to user.id, category.type equals to 'news'
+await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 2 }, category: { type: 'news' } })
+    .execute('approve').on('article');  // { granted: false }
+
+// Evaluate with article.owner equals to user.id, category.type DOESN'T equal to 'news'
+await ac.can('editor/news').context({ user: { id: 1 }, article: { owner: 1 }, category: { type: 'tutorials' } })
+    .execute('approve').on('article');  // { granted: false }
 ```
 
 ### Wildcard (glob notation) Resource and Actions Examples
