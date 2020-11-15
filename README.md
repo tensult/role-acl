@@ -697,4 +697,4 @@ console.log(await ac.allowedActions({role: 'owner', resource: 'video'}).sort());
 [tests]:https://github.com/tensult/role-acl/blob/master/test/acl.spec.ts
 
 ## Contact us
-This product is supported and actively developed by [Tensult](https://wwww/tensult.com). You can contact us at info@tensult.com.
+This product is supported and actively developed by [Tensult](https://www.tensult.com). You can contact us at info@tensult.com.
